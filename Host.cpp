@@ -1,0 +1,187 @@
+#include "Host.h"
+
+const std::string Host::kPluginsPath{ "plugins.txt" };
+
+Host::Host(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr, Steinberg::Vst::SpeakerArrangement sa) 
+	: block_size(bs), sample_rate(sr), speaker_arrangement(sa) {
+	buffers[0] = nullptr;
+	buffers[1] = nullptr;
+	AllocateBuffers();
+	LoadPluginList();
+	for (auto p : plugins)
+		p->CreateEditor();
+}
+
+Host::~Host() {
+	for (auto p : plugins)
+		delete p;
+	FreeBuffers();
+}
+
+Steinberg::tresult Host::LoadPlugin(std::string path) {
+	std::string name(path);
+	std::string::size_type pos = 0;
+	if ((pos = name.find_last_of('\\')) != std::string::npos)
+		name = name.substr(pos + 1);
+	else if ((pos = name.find_last_of('/')) != std::string::npos)
+		name = name.substr(pos + 1);
+	Plugin* plugin = nullptr;
+	PluginLoader loader(path);
+	if (loader.IsVST() || loader.IsVST3()) {
+		if (loader.IsVST()) {
+			AEffect* effect = nullptr;
+			auto init = static_cast<PluginLoader::VSTInitProc>(loader.GetInitProc());
+			effect = init(VSTPlugin::hostCallback);
+			plugin = new VSTPlugin(loader.GetModule(), effect, block_size, sample_rate, speaker_arrangement);
+		}
+		else if (loader.IsVST3()) {
+			Steinberg::IPluginFactory* factory = nullptr;
+			GetFactoryProc getFactory = static_cast<GetFactoryProc>(loader.GetInitProc());
+			if (getFactory) {
+				factory = getFactory();
+				plugin = new VST3Plugin(loader.GetModule(), factory, block_size, sample_rate, speaker_arrangement);
+			}
+		}
+		if (plugin->IsValid()) {
+			std::cout << "Loaded " << name << "." << std::endl;
+			plugins.push_back(plugin);
+			return Steinberg::kResultTrue;
+		}
+		else {
+			std::cout << name << " is not a supported VST plugin." << std::endl;
+			if (plugin)
+				delete plugin;
+			return Steinberg::kResultFalse;
+		}
+	}
+	else {
+		std::cout << name << " is not a VST plugin." << std::endl;
+		if (loader.GetModule())
+			FreeLibrary(loader.GetModule());
+		return Steinberg::kResultFalse;
+	}
+}
+
+void Host::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) {
+	if (plugins.size() == 1)
+		plugins.front()->Process(input, output);
+	else if (plugins.size() > 1) {
+		plugins.front()->Process(input,buffers[1]);
+		unsigned int i;
+		for (i = 1; i < plugins.size() - 1; i++) {
+			plugins[i]->Process(buffers[i % 2], buffers[(i + 1) % 2]);
+		}
+		plugins.back()->Process(buffers[i % 2], output);
+	}
+}
+
+void Host::Process(Steinberg::int8* input, Steinberg::int8* output) {
+	Process(reinterpret_cast<Steinberg::int16*>(input), reinterpret_cast<Steinberg::int16*>(output));
+}
+
+void Host::Process(Steinberg::int16* input, Steinberg::int16* output) {
+	ConvertFrom16Bits(input, buffers[0]);
+	if (plugins.size() == 1) {
+		plugins.front()->Process(buffers[0], buffers[1]);
+		ConvertTo16Bits(buffers[1], output);
+	}
+	else if (plugins.size() > 1) {
+		plugins.front()->Process(buffers[0], buffers[1]);
+		unsigned int i;
+		for (i = 1; i < plugins.size() - 1; i++) {
+			plugins[i]->Process(buffers[i % 2], buffers[(i + 1) % 2]);
+		}
+		plugins.back()->Process(buffers[i % 2], buffers[(i + 1) % 2]);
+		ConvertTo16Bits(buffers[(i + 1) % 2], output);
+	}
+}
+
+void Host::SetSampleRate(Steinberg::Vst::SampleRate sr) {
+	sample_rate = sr;
+}
+
+void Host::SetBlockSize(Steinberg::Vst::TSamples bs) {
+	if (bs != block_size) {
+		block_size = bs;
+		FreeBuffers();
+		AllocateBuffers();
+	}
+}
+
+void Host::SetSpeakerArrangement(Steinberg::Vst::SpeakerArrangement sa) {
+	if (sa != speaker_arrangement) {
+		FreeBuffers();
+		speaker_arrangement = sa;
+		AllocateBuffers();
+	}
+}
+
+void Host::SetActive(bool ia) {
+	is_active = ia;
+	//for (p : plugins);
+
+}
+
+Steinberg::tresult PLUGIN_API Host::getName(Steinberg::Vst::String128 name) {
+	Steinberg::String str("Host");
+	str.copyTo16(name, 0, 127);
+	return Steinberg::kResultTrue;
+}
+
+Steinberg::tresult PLUGIN_API Host::createInstance(Steinberg::TUID cid, Steinberg::TUID iid, void** obj) {
+	return 0;
+}
+
+void Host::LoadPluginList() {
+	std::string line;
+	std::ifstream paths(kPluginsPath); // jak nie ma pliku to stworzyc pusty.
+	if (paths.is_open())
+		while (getline(paths, line))
+			if (!line.empty())
+				LoadPlugin(line);
+			else 
+				std::cout << "Could not open " << kPluginsPath << '.' << std::endl;
+}
+
+Steinberg::uint32 Host::GetChannelCount() {
+	return static_cast<Steinberg::uint32>(Steinberg::Vst::SpeakerArr::getChannelCount(speaker_arrangement));
+}
+
+void Host::AllocateBuffers() {
+	for (auto &b : buffers) {
+		if (b)
+			FreeBuffers();
+		b = new Steinberg::Vst::Sample32*[GetChannelCount()]{};
+		for (unsigned i = 0; i < GetChannelCount(); ++i)
+			b[i] = new Steinberg::Vst::Sample32[block_size];
+	}
+}
+
+void Host::FreeBuffers() {
+	if (buffers[0] && buffers[1]) {
+		for (auto &b : buffers) {
+			for (unsigned i = 0; i < GetChannelCount(); ++i)
+				if (b[i])
+					delete[] b[i];
+			delete b;
+			b = nullptr;
+		}
+	}
+}
+
+// zakladam little endian? hmm
+void Host::ConvertFrom16Bits(Steinberg::int8* input, Steinberg::Vst::Sample32** output) {
+	ConvertFrom16Bits(reinterpret_cast<Steinberg::int16*>(input), output);
+}
+
+void Host::ConvertFrom16Bits(Steinberg::int16* input, Steinberg::Vst::Sample32** output) {
+
+}
+
+void Host::ConvertTo16Bits(Steinberg::Vst::Sample32** input, Steinberg::int8* output) {
+	ConvertTo16Bits(input, reinterpret_cast<Steinberg::int16*>(output));
+}
+
+void Host::ConvertTo16Bits(Steinberg::Vst::Sample32** input, Steinberg::int16* output) {
+
+}

@@ -1,0 +1,234 @@
+#include "VST3Plugin.h"
+
+#include "pluginterfaces/vst/ivstmessage.h"
+#include "public.sdk/source/common/memorystream.h"
+#include <cstring>
+
+VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::TSamples& bs, Steinberg::Vst::SampleRate& sr, Steinberg::Vst::SpeakerArrangement& sa)
+: Plugin(m, bs, sr, sa), factory(f) {
+	Steinberg::tresult res;
+	Steinberg::PClassInfo ci;
+	factory->getClassInfo(0, &ci);
+	if (factory->createInstance(ci.cid, FUnknown::iid, reinterpret_cast<void**>(&plugin)) == Steinberg::kResultOk && plugin) {
+		res = plugin->queryInterface(Steinberg::Vst::IComponent::iid, reinterpret_cast<void**>(&processorComponent));
+		if (res == Steinberg::kResultOk && processorComponent)
+			res = processorComponent->initialize(UnknownCast());
+		res = (plugin->queryInterface(Steinberg::Vst::IEditController::iid, reinterpret_cast<void**>(&editController)));
+		if (res != Steinberg::kResultOk) {
+			Steinberg::FUID controllerCID;
+			if (processorComponent->getControllerClassId(controllerCID) == Steinberg::kResultTrue && controllerCID.isValid())
+				res = factory->createInstance(controllerCID, Steinberg::Vst::IEditController::iid, (void**)&editController);
+		}
+		if (res == Steinberg::kResultOk && editController) {
+			editController->initialize(UnknownCast());
+			editController->setComponentHandler(this);
+			Steinberg::Vst::IConnectionPoint* iConnectionPointComponent = nullptr;
+			Steinberg::Vst::IConnectionPoint* iConnectionPointController = nullptr;
+			processorComponent->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&iConnectionPointComponent);
+			editController->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&iConnectionPointController);
+			if (iConnectionPointComponent && iConnectionPointController) {
+				iConnectionPointComponent->connect(iConnectionPointController);
+				iConnectionPointController->connect(iConnectionPointComponent);
+			}
+			Steinberg::MemoryStream stream;
+			if (processorComponent->getState(&stream) == Steinberg::kResultTrue) {
+				stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
+				editController->setComponentState(&stream);
+			}
+		}
+		
+		SetupAudio();
+		PrintFactory();
+	}
+}
+
+VST3Plugin::~VST3Plugin() {
+	if (audio)
+		audio->release();
+	if (processorComponent)
+		processorComponent->release();
+	if (editController)
+		editController->release();
+	if (plugin) 
+		plugin->release();
+	if (factory)
+		factory->release();
+	void* exitProc = nullptr;
+	if (module)
+		exitProc = GetProcAddress(module, "ExitDll");
+		if (exitProc)
+			static_cast<ExitModuleProc>(exitProc)();
+		FreeLibrary(module);
+}
+
+void VST3Plugin::SetupAudio() {
+	if (processorComponent) {
+		Steinberg::tresult res = processorComponent->queryInterface(Steinberg::Vst::IAudioProcessor::iid, reinterpret_cast<void**>(&audio));
+		if (res == Steinberg::kResultOk) {
+			res = processorComponent->setActive(false);
+			audio->getBusArrangement(Steinberg::Vst::kInput, 0, speaker_arrangement);
+			audio->getBusArrangement(Steinberg::Vst::kOutput, 0, speaker_arrangement);
+			// PROCESS SETUP
+			Steinberg::Vst::ProcessSetup ps;
+			if (audio->canProcessSampleSize(Steinberg::Vst::kSample32) == Steinberg::kResultOk)
+				ps.symbolicSampleSize = Steinberg::Vst::kSample32;
+			else
+				ps.symbolicSampleSize = Steinberg::Vst::kSample64; // zamienic
+			ps.processMode = Steinberg::Vst::kRealtime;
+			ps.sampleRate = sample_rate;
+			audio->setupProcessing(ps);
+
+			// PROCESS DATA
+			if (audio->canProcessSampleSize(Steinberg::Vst::kSample32) == Steinberg::kResultOk)
+				pd.symbolicSampleSize = Steinberg::Vst::kSample32;
+			else
+				pd.symbolicSampleSize = Steinberg::Vst::kSample64; // zamienic
+			pd.numSamples = block_size;
+			pd.processMode = Steinberg::Vst::kRealtime;
+			pd.numInputs = 1;
+			pd.numOutputs = 1;
+			pd.inputs = new Steinberg::Vst::AudioBusBuffers;
+			pd.inputs->numChannels = Steinberg::Vst::SpeakerArr::getChannelCount(speaker_arrangement);
+			pd.outputs = new Steinberg::Vst::AudioBusBuffers;
+			pd.outputs->numChannels = Steinberg::Vst::SpeakerArr::getChannelCount(speaker_arrangement);
+			processorComponent->setActive(true);
+		}
+	}
+	else
+		std::cout << "processor component error" << std::endl;
+}
+
+void VST3Plugin::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) {
+	pd.inputs->channelBuffers32 = input;
+	pd.outputs->channelBuffers32 = output;
+	pd.numSamples = block_size;
+	audio->process(pd);
+}
+
+bool VST3Plugin::IsValid() {
+	Steinberg::IPluginFactory2* factory2 = nullptr;
+	factory->queryInterface(Steinberg::IPluginFactory2::iid, reinterpret_cast<void**>(&factory2));
+	if (factory2) {
+		Steinberg::PClassInfo2 ci2;
+		factory2->getClassInfo2(0, &ci2);
+		factory2->release();
+		if (!std::strcmp(ci2.category, "Audio Module Class") && ci2.subCategories[0] == 'F' && ci2.subCategories[1] == 'x')
+			return true;
+	}
+	return false;
+}
+
+void VST3Plugin::PrintInfo() {
+
+}
+
+void VST3Plugin::PrintFactory() {
+	Steinberg::PFactoryInfo factoryInfo;
+	factory->getFactoryInfo(&factoryInfo);
+	std::cout << "  Factory Info:\n\tvendor = " << factoryInfo.vendor
+		<< "\n\turl = " << factoryInfo.url
+		<< "\n\temail = " << factoryInfo.email << std::endl;
+	Steinberg::IPluginFactory2* factory2 = nullptr;
+	factory->queryInterface(Steinberg::IPluginFactory2::iid, reinterpret_cast<void **>(&factory2));
+	for (Steinberg::int32 i = 0; i < factory->countClasses(); i++) {
+		Steinberg::PClassInfo ci;
+		Steinberg::PClassInfo2 ci2;
+		factory->getClassInfo(i, &ci);
+		//PrintClass(ci, i);
+		if (factory2) {
+			factory2->getClassInfo2(i, &ci2);
+			PrintClass2(ci2, i);
+		}
+	}
+	if (factory2)
+		factory2->release();
+}
+
+void VST3Plugin::PrintClass(const Steinberg::PClassInfo &ci, int i) {
+	std::cout << "  Class Info " << i << ":\n\tname = " << ci.name
+		<< "\n\tcategory = " << ci.category << std::endl;
+}
+
+void VST3Plugin::PrintClass2(const Steinberg::PClassInfo2 &ci, int i) {
+	std::cout << "  Class Info " << i << ":\n\tname = " << ci.name
+		<< "\n\tcategory = " << ci.category << std::endl
+		<< "\tsubCategory = " << ci.subCategories << std::endl;
+}
+
+void VST3Plugin::PrintBusInfo() {
+	if (processorComponent) {
+		std::cout << "-----------BUSES------------" << std::endl;
+		Steinberg::Vst::BusInfo bi;
+		for (Steinberg::int32 i = 0; i < processorComponent->getBusCount(Steinberg::Vst::kAudio, Steinberg::Vst::kInput); ++i) {
+			processorComponent->getBusInfo(Steinberg::Vst::kAudio, Steinberg::Vst::kInput, i, bi);
+			std::wcout << "Inputs:" << std::endl
+				<< "Channel count: " << bi.channelCount << std::endl
+				<< "Name: " << bi.name << std::endl
+				<< "Bus type: " << bi.busType << std::endl
+				<< "Flags: " << bi.flags << std::endl;
+			//std::wcout << bi.name << std::endl;
+		}
+		std::cout << "---------------------------" << std::endl;
+		for (Steinberg::int32 i = 0; i < processorComponent->getBusCount(Steinberg::Vst::kAudio, Steinberg::Vst::kOutput); ++i) {
+			processorComponent->getBusInfo(Steinberg::Vst::kAudio, Steinberg::Vst::kOutput, i, bi);
+			std::wcout << "Outputs:" << std::endl
+				<< "Channel count: " << bi.channelCount << std::endl
+				<< "Name: " << bi.name << std::endl
+				<< "Bus type: " << bi.busType << std::endl
+				<< "Flags: " << bi.flags << std::endl;
+		}
+	}
+}
+
+void VST3Plugin::PrintParameters() {
+	if (editController) {
+		Steinberg::Vst::ParameterInfo pi;
+		for (Steinberg::int32 i = 0; i < editController->getParameterCount() - 20; ++i) {
+			editController->getParameterInfo(i, pi);
+			std::wcout << "ParamID: " << pi.id << std::endl
+				<< "Title: " << pi.title << std::endl
+				<< "shortTitle: " << pi.shortTitle << std::endl
+				<< "units: " << pi.units << std::endl
+				<< "stepCount: " << pi.stepCount << std::endl
+				<< "defaultNormalizedValue: " << pi.defaultNormalizedValue << std::endl
+				<< "unitID: " << pi.unitId << std::endl
+				<< "flags: " << pi.flags << "\n================" << std::endl;
+		}
+	}
+}
+
+std::string VST3Plugin::GetPluginName() {
+	Steinberg::PClassInfo ci;
+	factory->getClassInfo(0, &ci);
+	return std::string(ci.name);
+}
+
+Steinberg::FUnknown* VST3Plugin::UnknownCast() {
+	return static_cast<Steinberg::FObject *>(this); 
+}
+
+void VST3Plugin::CreateEditor() {
+	ui_thread = std::thread(&VST3Plugin::InThread, this);
+	//editor->Show();
+}
+
+void VST3Plugin::InThread() {
+	editor = new EditorVST3(GetPluginName().c_str(), editController);
+	editor->Show();
+}
+
+Steinberg::tresult PLUGIN_API VST3Plugin::beginEdit(Steinberg::Vst::ParamID id) {
+	return 0;
+}
+
+Steinberg::tresult PLUGIN_API VST3Plugin::performEdit(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue valueNormalized) {
+	return 0;
+}
+
+Steinberg::tresult PLUGIN_API VST3Plugin::endEdit(Steinberg::Vst::ParamID id) {
+	return 0;
+}
+
+Steinberg::tresult PLUGIN_API VST3Plugin::restartComponent(Steinberg::int32 flags) {
+	return 0;
+}
