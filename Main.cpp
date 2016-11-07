@@ -7,8 +7,10 @@ int main() {
 	///////////////////////////	odtwarzanie ///////////////////////////////
 	WAVFile *wave = new WAVFile("./../feed/feed.wav");
 	wave->printFormat();
-	wave->convert();
-	int bf = 44100 / 8;	////////////////////// buffer size
+	//wave->convert();
+	//int bf = 44100 / 8;	////////////////////// buffer size
+	//bf += 16 - (bf % 16);
+	int bf = 5504;
 	int limit = wave->dataSize / (2 * bf);
 	char *out_char[2];
 	float **in[2], **out_float[2];
@@ -22,8 +24,9 @@ int main() {
 	host.SetBlockSize(bf / 2);
 	waveOutOpen(&hWaveOut, WAVE_MAPPER, &wave->format, 0, 0, CALLBACK_NULL);
 	while (true) {
-		host.Process(wave->dataFloat, out_float[0]);
-		wave->convertBack1(out_float[0], out_char[0], bf);
+		//host.Process(wave->dataFloat, out_float[0]);
+		//wave->convertBack1(out_float[0], out_char[0], bf);
+		host.Process(wave->data, out_char[0]);
 		WAVEHDR header[2];
 		header[0].dwBufferLength = bf * 2;
 		header[0].dwFlags = 0;
@@ -38,18 +41,21 @@ int main() {
 		while (j++ < limit - 2) {
 			//int old_i = i;	// !i
 			i = (i + 1) % 2;
-			int asdf = j * bf / 2;
-			in[i][0] = wave->dataFloat[0] + asdf;
-			in[i][1] = wave->dataFloat[1] + asdf;
-			host.Process(in[i], out_float[i]);
-			wave->convertBack1(out_float[i], out_char[i], bf);
+			//int asdf = j * bf / 2;
+			//in[i][0] = wave->dataFloat[0] + asdf;
+			//in[i][1] = wave->dataFloat[1] + asdf;
+			//host.Process(in[i], out_float[i]);
+			//wave->convertBack1(out_float[i], out_char[i], bf);
+			int asdf = j * bf * 2;
+			host.Process(wave->data + asdf, out_char[i]);
+
 			header[i].lpData = out_char[i];
 			waveOutPrepareHeader(hWaveOut, (wavehdr_tag*)&header[i], sizeof(WAVEHDR));
 			waveOutWrite(hWaveOut, (wavehdr_tag*)&header[i], sizeof(WAVEHDR));
-			do {} while (!(header[!i].dwFlags & WHDR_DONE));
+			do { Sleep(10); } while (!(header[!i].dwFlags & WHDR_DONE));
 			waveOutUnprepareHeader(hWaveOut, &header[!i], sizeof(WAVEHDR));
 		}
-		do {} while (!(header[i].dwFlags & WHDR_DONE));
+		do { Sleep(10); } while (!(header[i].dwFlags & WHDR_DONE));
 		waveOutUnprepareHeader(hWaveOut, &header[i], sizeof(WAVEHDR));
 	}
 	////////////////////////////////////////////////////////////////////

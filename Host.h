@@ -1,6 +1,9 @@
 #ifndef HOST_H
 #define HOST_H
 
+#include <cstdint>
+#define NOMINMAX // kolizja makra MAX z windows.h oraz std::numeric_limits<T>::max()
+
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -21,9 +24,10 @@ public:
 	Host(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr, Steinberg::Vst::SpeakerArrangement sa = Steinberg::Vst::SpeakerArr::kStereo);
 	~Host();
 	Steinberg::tresult LoadPlugin(std::string path);
-	void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output);
-	void Process(Steinberg::int8* input, Steinberg::int8* output);
-	void Process(Steinberg::int16* input, Steinberg::int16* output);
+	void Process(float** input, float** output);
+	void Process(char* input, char* output);
+	void Process(std::int8_t* input, std::int8_t* output);
+	void Process(std::int16_t* input, std::int16_t* output);
 	void SetSampleRate(Steinberg::Vst::SampleRate sr);
 	void SetBlockSize(Steinberg::Vst::TSamples bs);
 	void SetSpeakerArrangement(Steinberg::Vst::SpeakerArrangement sa);
@@ -44,10 +48,11 @@ private:
 	void AllocateBuffers();
 	void FreeBuffers();
 
-	void ConvertFrom16Bits(Steinberg::int8* input, Steinberg::Vst::Sample32** output);
-	void ConvertFrom16Bits(Steinberg::int16* input, Steinberg::Vst::Sample32** output);
-	void ConvertTo16Bits(Steinberg::Vst::Sample32** input, Steinberg::int8* output);
-	void ConvertTo16Bits(Steinberg::Vst::Sample32** input, Steinberg::int16* output);
+	void ConvertFrom16Bits(std::int8_t* input, float** output);
+	void ConvertFrom16Bits(std::int16_t* input, float** output);
+	void ConvertTo16Bits(float** input, std::int8_t* output);
+	void ConvertTo16Bits(float** input, std::int16_t* output);
+	void test_conv(std::int16_t* input, std::int16_t* output);
 
 	const static std::string kPluginsPath;
 	std::thread ui_thread;
