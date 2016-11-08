@@ -21,7 +21,7 @@
 
 class Host : public Steinberg::FObject, Steinberg::Vst::IHostApplication {
 public:
-	Host(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr, Steinberg::Vst::SpeakerArrangement sa = Steinberg::Vst::SpeakerArr::kStereo);
+	Host(std::int64_t block_size, double sample_rate, bool stereo = true);
 	~Host();
 	Steinberg::tresult LoadPlugin(std::string path);
 	void Process(float** input, float** output);

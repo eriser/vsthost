@@ -5,8 +5,9 @@
 
 const std::string Host::kPluginsPath{ "plugins.txt" };
 
-Host::Host(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr, Steinberg::Vst::SpeakerArrangement sa) 
-	: block_size(bs), sample_rate(sr), speaker_arrangement(sa) {
+Host::Host(std::int64_t block_size, double sample_rate, bool stereo)
+	: block_size(block_size), sample_rate(sample_rate) {
+	speaker_arrangement = stereo ? Steinberg::Vst::SpeakerArr::kStereo : Steinberg::Vst::SpeakerArr::kMono;
 	buffers[0] = nullptr;
 	buffers[1] = nullptr;
 	AllocateBuffers();
@@ -116,11 +117,11 @@ void Host::Process(std::int16_t* input, std::int16_t* output) {
 		std::memcpy(output, input, sizeof(input[0]) * block_size * GetChannelCount());
 }
 
-void Host::SetSampleRate(Steinberg::Vst::SampleRate sr) {
+void Host::SetSampleRate(double sr) {
 	sample_rate = sr;
 }
 
-void Host::SetBlockSize(Steinberg::Vst::TSamples bs) {
+void Host::SetBlockSize(std::int64_t bs) {
 	if (bs != block_size) {
 		block_size = bs;
 		FreeBuffers();
@@ -128,7 +129,7 @@ void Host::SetBlockSize(Steinberg::Vst::TSamples bs) {
 	}
 }
 
-void Host::SetSpeakerArrangement(Steinberg::Vst::SpeakerArrangement sa) {
+void Host::SetSpeakerArrangement(std::uint64_t sa) {
 	if (sa != speaker_arrangement) {
 		FreeBuffers();
 		speaker_arrangement = sa;

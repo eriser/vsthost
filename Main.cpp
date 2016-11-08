@@ -3,7 +3,7 @@
 
 int main() {
 	Host host(123, 44100.0);
-
+	cout << sizeof(long) << endl;
 	///////////////////////////	odtwarzanie ///////////////////////////////
 	WAVFile *wave = new WAVFile("./../feed/feed.wav");
 	wave->printFormat();
