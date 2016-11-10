@@ -82,7 +82,7 @@ void Host::Process(float** input, float** output) {
 			std::memcpy(output[i], input[i], sizeof(input[0][0]) * block_size);
 }
 
-void Host::Process(char* input, char* output) {
+void Host::Process(char* input, char* output) { // char != int8_t
 	if (std::numeric_limits<char>::min() < 0)
 		Process(reinterpret_cast<std::int8_t*>(input), reinterpret_cast<std::int8_t*>(output));
 }

@@ -11,12 +11,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{69D20D43-CC9E-464F-8560-EB5F51AB63CE}</ProjectGuid>
-    <RootNamespace>vsthost</RootNamespace>
+    <ProjectGuid>{73E62178-335A-4FEF-BACC-2D496CA12640}</ProjectGuid>
+    <RootNamespace>vsthost_tester</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
@@ -44,13 +44,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>./../VST3 SDK/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./../VST3 SDK</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>.\..\VST3 SDK\base\win\Win32\Debug\base.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;.\..\VST3 SDK\base\win\Win32\Debug\base.lib;./Debug/vsthost.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -60,44 +59,15 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>./../VST3 SDK/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>.\..\VST3 SDK\base\win\Win32\Debug.base_vc10\base_vc10.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\VST3 SDK\public.sdk\source\common\memorystream.cpp" />
-    <ClCompile Include="Editor.cpp" />
-    <ClCompile Include="EditorVST.cpp" />
-    <ClCompile Include="EditorVST3.cpp" />
-    <ClCompile Include="Host.cpp" />
-    <ClCompile Include="PluginLoader.cpp" />
-    <ClCompile Include="VST3Plugin.cpp" />
-    <ClCompile Include="VSTBase.cpp" />
-    <ClCompile Include="VSTPlugin.cpp" />
-    <ClCompile Include="VSTPreset.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\VST3 SDK\public.sdk\source\common\memorystream.h" />
-    <ClInclude Include="Editor.h" />
-    <ClInclude Include="EditorVST.h" />
-    <ClInclude Include="EditorVST3.h" />
-    <ClInclude Include="Host.h" />
-    <ClInclude Include="HostHeader.h" />
-    <ClInclude Include="Plugin.h" />
-    <ClInclude Include="PluginLoader.h" />
-    <ClInclude Include="Preset.h" />
-    <ClInclude Include="VST3Plugin.h" />
-    <ClInclude Include="VSTBase.h" />
-    <ClInclude Include="VSTPlugin.h" />
-    <ClInclude Include="VSTPreset.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="plugins.txt" />
+    <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

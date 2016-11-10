@@ -30,9 +30,6 @@
     <ClCompile Include="Host.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PluginLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -87,12 +84,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VSTPreset.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="wavfile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="wavplayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\VST3 SDK\public.sdk\source\common\memorystream.h">

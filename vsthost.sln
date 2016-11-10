@@ -10,6 +10,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vsthost", "vsthost.vcxproj"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base", "..\VST3 SDK\base\win\base.vcxproj", "{6F060EF8-07BE-4944-A28B-9A9D8AE7AF0E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vsthost_tester", "vsthost_tester.vcxproj", "{73E62178-335A-4FEF-BACC-2D496CA12640}"
+	ProjectSection(ProjectDependencies) = postProject
+		{69D20D43-CC9E-464F-8560-EB5F51AB63CE} = {69D20D43-CC9E-464F-8560-EB5F51AB63CE}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -32,6 +37,12 @@ Global
 		{6F060EF8-07BE-4944-A28B-9A9D8AE7AF0E}.Release|Win32.Build.0 = Release|Win32
 		{6F060EF8-07BE-4944-A28B-9A9D8AE7AF0E}.Release|x64.ActiveCfg = Release|x64
 		{6F060EF8-07BE-4944-A28B-9A9D8AE7AF0E}.Release|x64.Build.0 = Release|x64
+		{73E62178-335A-4FEF-BACC-2D496CA12640}.Debug|Win32.ActiveCfg = Debug|Win32
+		{73E62178-335A-4FEF-BACC-2D496CA12640}.Debug|Win32.Build.0 = Debug|Win32
+		{73E62178-335A-4FEF-BACC-2D496CA12640}.Debug|x64.ActiveCfg = Debug|Win32
+		{73E62178-335A-4FEF-BACC-2D496CA12640}.Release|Win32.ActiveCfg = Release|Win32
+		{73E62178-335A-4FEF-BACC-2D496CA12640}.Release|Win32.Build.0 = Release|Win32
+		{73E62178-335A-4FEF-BACC-2D496CA12640}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
