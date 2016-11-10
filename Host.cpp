@@ -1,4 +1,6 @@
 #include "Host.h"
+#include "HostGUI.h"
+
 
 #include <limits>
 #include <cstring>
@@ -12,6 +14,8 @@ Host::Host(std::int64_t block_size, double sample_rate, bool stereo)
 	buffers[1] = nullptr;
 	AllocateBuffers();
 	LoadPluginList();
+	HostGUI h;
+	h.go();
 	for (auto p : plugins)
 		p->CreateEditor();
 }
@@ -89,13 +93,6 @@ void Host::Process(char* input, char* output) { // char != int8_t
 
 void Host::Process(std::int8_t* input, std::int8_t* output) {
 	Process(reinterpret_cast<std::int16_t*>(input), reinterpret_cast<std::int16_t*>(output));
-}
-
-void Host::test_conv(std::int16_t* input, std::int16_t* output) {
-	ConvertFrom16Bits(input, buffers[0]);
-	std::memcpy(buffers[1][0], buffers[0][0], sizeof(buffers[0][0][0]) * block_size);
-	std::memcpy(buffers[1][1], buffers[0][1], sizeof(buffers[0][1][0]) * block_size);
-	ConvertTo16Bits(buffers[1], output);
 }
 
 void Host::Process(std::int16_t* input, std::int16_t* output) {

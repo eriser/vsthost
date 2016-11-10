@@ -52,7 +52,6 @@ private:
 	void ConvertFrom16Bits(std::int16_t* input, float** output);
 	void ConvertTo16Bits(float** input, std::int8_t* output);
 	void ConvertTo16Bits(float** input, std::int16_t* output);
-	void test_conv(std::int16_t* input, std::int16_t* output);
 
 	const static std::string kPluginsPath;
 	std::thread ui_thread;

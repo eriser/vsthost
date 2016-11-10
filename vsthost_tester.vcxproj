@@ -69,6 +69,12 @@
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="vsthost_tester_resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="vsthost_tester.rc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -48,6 +48,9 @@
     <ClCompile Include="..\VST3 SDK\public.sdk\source\common\memorystream.cpp">
       <Filter>VST3 SDK</Filter>
     </ClCompile>
+    <ClCompile Include="HostGUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Editor.h">
@@ -89,8 +92,19 @@
     <ClInclude Include="..\VST3 SDK\public.sdk\source\common\memorystream.h">
       <Filter>VST3 SDK</Filter>
     </ClInclude>
+    <ClInclude Include="HostGUI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vsthost_resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="plugins.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="vsthost.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
