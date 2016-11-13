@@ -75,6 +75,7 @@
     <ClCompile Include="EditorVST.cpp" />
     <ClCompile Include="EditorVST3.cpp" />
     <ClCompile Include="Host.cpp" />
+    <ClCompile Include="HostGUI.cpp" />
     <ClCompile Include="PluginLoader.cpp" />
     <ClCompile Include="VST3Plugin.cpp" />
     <ClCompile Include="VSTBase.cpp" />
@@ -87,6 +88,7 @@
     <ClInclude Include="EditorVST.h" />
     <ClInclude Include="EditorVST3.h" />
     <ClInclude Include="Host.h" />
+    <ClInclude Include="HostGUI.h" />
     <ClInclude Include="HostHeader.h" />
     <ClInclude Include="Plugin.h" />
     <ClInclude Include="PluginLoader.h" />

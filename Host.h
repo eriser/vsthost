@@ -18,6 +18,7 @@
 #include "PluginLoader.h"
 #include "VSTPlugin.h"
 #include "VST3Plugin.h"
+#include "HostGUI.h"
 
 class Host : public Steinberg::FObject, Steinberg::Vst::IHostApplication {
 public:
@@ -42,6 +43,8 @@ public:
 		DEF_INTERFACE(IHostApplication)
 	END_DEFINE_INTERFACES(FObject)
 
+	std::vector<Plugin*> plugins;
+
 private:
 	void LoadPluginList();
 	Steinberg::uint32 GetChannelCount();
@@ -55,8 +58,10 @@ private:
 	void test_conv(std::int16_t* input, std::int16_t* output);
 
 	const static std::string kPluginsPath;
+
+	HostGUI* gui = { nullptr };
 	std::thread ui_thread;
-	std::vector<Plugin*> plugins;
+
 	Steinberg::Vst::TSamples block_size;
 	Steinberg::Vst::SampleRate sample_rate;
 	Steinberg::Vst::SpeakerArrangement speaker_arrangement;

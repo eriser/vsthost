@@ -12,13 +12,18 @@ Host::Host(std::int64_t block_size, double sample_rate, bool stereo)
 	buffers[1] = nullptr;
 	AllocateBuffers();
 	LoadPluginList();
+	gui = new HostGUI(*this);
 	for (auto p : plugins)
 		p->CreateEditor();
 }
 
 Host::~Host() {
+	if (gui)
+		delete gui;
+	gui = nullptr;
 	for (auto p : plugins)
 		delete p;
+	plugins.clear();
 	FreeBuffers();
 }
 
