@@ -41,7 +41,8 @@ public:
 	DEFINE_INTERFACES
 		DEF_INTERFACE(IHostApplication)
 	END_DEFINE_INTERFACES(FObject)
-
+public:
+	std::vector<Plugin*> plugins;
 private:
 	void LoadPluginList();
 	Steinberg::uint32 GetChannelCount();
@@ -55,7 +56,7 @@ private:
 
 	const static std::string kPluginsPath;
 	std::thread ui_thread;
-	std::vector<Plugin*> plugins;
+	
 	Steinberg::Vst::TSamples block_size;
 	Steinberg::Vst::SampleRate sample_rate;
 	Steinberg::Vst::SpeakerArrangement speaker_arrangement;

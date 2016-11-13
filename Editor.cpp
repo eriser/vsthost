@@ -14,7 +14,7 @@ void Editor::RegisterWC() {
 		wc->hInstance = instance;
 		wc->hIcon = LoadIcon(NULL, IDI_APPLICATION);
 		wc->hCursor = LoadCursor(NULL, IDC_ARROW);
-		wc->hbrBackground = (HBRUSH)(COLOR_WINDOWFRAME);
+		wc->hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
 		wc->lpszMenuName = NULL;
 		wc->lpszClassName = className;
 		wc->hIconSm = LoadIcon(NULL, IDI_APPLICATION);

@@ -14,7 +14,7 @@ Host::Host(std::int64_t block_size, double sample_rate, bool stereo)
 	buffers[1] = nullptr;
 	AllocateBuffers();
 	LoadPluginList();
-	HostGUI h;
+	HostGUI h(*this);
 	h.go();
 	for (auto p : plugins)
 		p->CreateEditor();
