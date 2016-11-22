@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <process.h>
 #include <string>
+#include <vector>
 #include <iostream>
 
 #include "pluginterfaces/vst/vsttypes.h"
@@ -20,6 +21,8 @@ public:
 	virtual std::string GetPluginName() = 0;
 	virtual bool IsVST3() = 0;
 	virtual bool isVST() = 0;
+	virtual std::vector<std::string> GetPresets() = 0;
+	virtual void SetPreset(int i) = 0;
 protected:
 	HMODULE module;
 	Steinberg::Vst::TSamples &block_size;

@@ -44,11 +44,33 @@ void HostGUI::OnCreate(HWND hWnd) {
 	//SendMessage(plugin_list, LB_ADDSTRING, 0, (LPARAM)host.plugins[i]->GetPluginName().c_str());
 }
 
+void HostGUI::Go() {
+	if (wnd) {
+		MSG Msg;
+		ShowWindow(wnd, SW_SHOW);
+		UpdateWindow(wnd);
+		while (GetMessage(&Msg, NULL, 0, 0) > 0)
+		{
+			if (!IsEditorMessage(&Msg)) {
+				TranslateMessage(&Msg);
+				DispatchMessage(&Msg);
+			}
+		}
+	}
+}
+
+bool HostGUI::IsEditorMessage(MSG* msg) {
+	for (auto i = editors.begin(); i != editors.end(); ++i) {
+		//if (msg->hwnd == (*i).)
+	}
+	return false;
+}
+
 LRESULT CALLBACK HostGUI::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	
 	switch (uMsg) {
 		case WM_CREATE:
 			OnCreate(hWnd);
-			std::cout << "on create" << std::endl;
 			break;
 		case WM_COMMAND:
 			break;
@@ -66,13 +88,8 @@ LRESULT CALLBACK HostGUI::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 
 void HostGUI::AddEditor(Plugin* p) { // todo: check whether plugin supports an editor at all
 	PluginGUI* editor = nullptr;
-	if (p->isVST()) {
-		editor = new VSTPluginGUI(*dynamic_cast<VSTPlugin*>(p));
-		std::cout << "jestem tu" << std::endl;
-	}
-		
-	else if (p->IsVST3())
-		editor = new VST3PluginGUI(*dynamic_cast<VST3Plugin*>(p));
+	if (p->isVST()) editor = new VSTPluginGUI(*dynamic_cast<VSTPlugin*>(p));
+	else if (p->IsVST3()) editor = new VST3PluginGUI(*dynamic_cast<VST3Plugin*>(p));
 	if (editor && editor->Initialize(wnd)) {
 		editor->Show();
 		editors.push_back(editor);

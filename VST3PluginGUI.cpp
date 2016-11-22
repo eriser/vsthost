@@ -55,3 +55,21 @@ LRESULT CALLBACK VST3PluginGUI::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, L
 	}
 	return 0;
 }
+
+HMENU VST3PluginGUI::CreateMenu() {
+	HMENU menu = ::CreateMenu();
+	HMENU plugin = ::CreateMenu();
+	AppendMenu(plugin, MF_STRING, MenuItem::Bypass, "Bypass");
+	AppendMenu(plugin, MF_STRING, MenuItem::Hide, "Hide");
+	AppendMenu(menu, MF_POPUP, (UINT_PTR)plugin, "Plugin");
+
+	HMENU presets = ::CreateMenu();
+	HMENU load = ::CreateMenu();
+	auto v = VST3PluginGUI::plugin.GetPresets();
+	int i = 0;
+	for (auto& s : v) AppendMenu(load, MF_STRING, i++, s.c_str());
+	AppendMenu(presets, MF_POPUP, (UINT_PTR)load, "Load");
+	AppendMenu(presets, MF_STRING, MenuItem::Save, "Save");
+	AppendMenu(menu, MF_POPUP, (UINT_PTR)presets, "Presets");
+	return menu;
+}

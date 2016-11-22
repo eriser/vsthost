@@ -32,6 +32,8 @@ public:
 	int GetVSTVersion();
 	void PrintInfo();
 	std::string GetPluginName();
+	std::vector<std::string> GetPresets() ;
+	void SetPreset(int i);
 };
 
 #endif

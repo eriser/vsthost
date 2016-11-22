@@ -41,6 +41,8 @@ public:
 	Steinberg::tresult PLUGIN_API performEdit(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue valueNormalized);
 	Steinberg::tresult PLUGIN_API endEdit(Steinberg::Vst::ParamID id);
 	Steinberg::tresult PLUGIN_API restartComponent(Steinberg::int32 flags);
+	std::vector<std::string> GetPresets();
+	void SetPreset(int i);
 private:
 	Steinberg::FUnknown* UnknownCast();
 	Steinberg::IPluginFactory* factory;

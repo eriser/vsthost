@@ -226,3 +226,11 @@ Steinberg::tresult PLUGIN_API VST3Plugin::restartComponent(Steinberg::int32 flag
 Steinberg::IPlugView* VST3Plugin::CreateView() {
 	return editController->createView("editor");
 }
+
+std::vector<std::string> VST3Plugin::GetPresets() {
+	return std::vector<std::string>();
+}
+
+void VST3Plugin::SetPreset(int i) {
+
+}

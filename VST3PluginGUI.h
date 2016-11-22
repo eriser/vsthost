@@ -11,6 +11,7 @@ public:
 	VST3PluginGUI(VST3Plugin& p);
 	~VST3PluginGUI();
 	bool Initialize(HWND parent);
+	HMENU CreateMenu();
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	void Show();
 	void SetRect();

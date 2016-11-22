@@ -17,6 +17,8 @@ public:
 	HostGUI(Host& h);
 	bool Initialize(HWND parent);
 	void CreateEditors();
+	void Go();
+	bool IsEditorMessage(MSG* msg);
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	void AddEditor(Plugin* p);
 private:

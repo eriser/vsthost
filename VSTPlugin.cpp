@@ -229,3 +229,24 @@ std::string VSTPlugin::GetPluginName() {
 	}
 	return std::string(name);
 }
+
+std::vector<std::string> VSTPlugin::GetPresets() {
+	std::vector<std::string> v;
+	int currentProgram = Dispatcher(effGetProgram);
+	bool programChanged = false;
+	for (unsigned i = 0; i < GetNumPrograms(); ++i) {
+		char tmp[kVstMaxProgNameLen + 1] = { 0 };
+		if (!Dispatcher(effGetProgramNameIndexed, i, 0, tmp)) {
+			Dispatcher(effSetProgram, 0, i);
+			Dispatcher(effGetProgramName, 0, 0, tmp);
+			if (!programChanged) programChanged = true;
+		}
+		v.emplace_back(tmp);
+	}
+	if (programChanged) Dispatcher(effSetProgram, 0, currentProgram);
+	return v;
+}
+
+void VSTPlugin::SetPreset(int i) {
+
+}

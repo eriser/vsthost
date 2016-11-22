@@ -10,6 +10,7 @@ public:
 	VSTPluginGUI(VSTPlugin& p);
 	~VSTPluginGUI() {}
 	bool Initialize(HWND parent);
+	HMENU CreateMenu();
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	void Show();
 	void SetRect();
