@@ -13,8 +13,8 @@ class VSTBase {
 public:
 	VSTBase(AEffect *aeffect) : plugin(aeffect) {}
 	~VSTBase();
-protected:
 	AEffect *GetAEffect();
+protected:
 	int Dispatcher(int opcode, int index = 0, int value = 0, void* ptr = NULL, float opt = 0.);
 	void Process(float** inputs, float** outputs, int sampleFrames);
 	void ProcessReplacing(float** inputs, float** outputs, int sampleFrames);

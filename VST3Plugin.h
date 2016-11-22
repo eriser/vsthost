@@ -9,9 +9,9 @@
 //DEF_CLASS_IID(Steinberg::Vst::IComponent)
 //DEF_CLASS_IID(Steinberg::Vst::IComponentHandler)
 //DEF_CLASS_IID(Steinberg::Vst::IAudioProcessor)
+//#include <Windows.h>
 
 #include "Plugin.h"
-#include "EditorVST3.h"
 
 class VST3Plugin : public Plugin, public Steinberg::FObject, public Steinberg::Vst::IComponentHandler {
 	// extern "C" ?
@@ -34,8 +34,9 @@ public:
 	void PrintParameters();
 	std::string GetPluginName();
 	void SetupAudio();
-	void CreateEditor();
-	void InThread();
+	bool IsVST3() { return true; }
+	bool isVST() { return false; }
+	Steinberg::IPlugView * CreateView();
 	Steinberg::tresult PLUGIN_API beginEdit(Steinberg::Vst::ParamID id);
 	Steinberg::tresult PLUGIN_API performEdit(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue valueNormalized);
 	Steinberg::tresult PLUGIN_API endEdit(Steinberg::Vst::ParamID id);

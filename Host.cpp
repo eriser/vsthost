@@ -5,6 +5,11 @@
 
 const std::string Host::kPluginsPath{ "plugins.txt" };
 
+void Host::test() {
+	std::thread gui_thread(&Host::CreateGUI, this);
+	gui_thread.detach();
+}
+
 Host::Host(std::int64_t block_size, double sample_rate, bool stereo)
 	: block_size(block_size), sample_rate(sample_rate) {
 	speaker_arrangement = stereo ? Steinberg::Vst::SpeakerArr::kStereo : Steinberg::Vst::SpeakerArr::kMono;
@@ -12,9 +17,10 @@ Host::Host(std::int64_t block_size, double sample_rate, bool stereo)
 	buffers[1] = nullptr;
 	AllocateBuffers();
 	LoadPluginList();
-	gui = new HostGUI(*this);
-	for (auto p : plugins)
-		p->CreateEditor();
+	//gui = new HostGUI(*this);
+	//std::thread gui_thread(&Host::CreateGUI, this);
+	//for (auto p : plugins)
+	//	p->CreateEditor();
 }
 
 Host::~Host() {
@@ -156,6 +162,14 @@ Steinberg::tresult PLUGIN_API Host::getName(Steinberg::Vst::String128 name) {
 
 Steinberg::tresult PLUGIN_API Host::createInstance(Steinberg::TUID cid, Steinberg::TUID iid, void** obj) {
 	return 0;
+}
+
+void Host::CreateGUI() {
+	gui = new HostGUI(*this);
+	//gui->CreateEditors();
+	gui->Initialize(NULL);
+	for (auto& p : plugins) gui->AddEditor(p);
+	gui->Go();
 }
 
 void Host::LoadPluginList() {

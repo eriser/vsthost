@@ -92,7 +92,7 @@ void write_header(int i) {
 }
 
 void unprepare_header(int i) {
-	do { Sleep(10); } while (!(hdr[i].dwFlags & WHDR_DONE));
+	do { Sleep(11); } while (!(hdr[i].dwFlags & WHDR_DONE));
 	waveOutUnprepareHeader(out, &hdr[i], sizeof(WAVEHDR));
 }
 
@@ -107,7 +107,7 @@ int main() {
 	int sample_rate = wave.GetSampleRate();
 	bool stereo = wave.IsStereo();
 	Host host(block_size, sample_rate, stereo);
-
+	host.test();
 
 	// it's bad, because for small block_sizes it just doesn't work well
 	init_player(bs_all_channels_bytes);

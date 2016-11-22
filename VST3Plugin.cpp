@@ -207,16 +207,6 @@ Steinberg::FUnknown* VST3Plugin::UnknownCast() {
 	return static_cast<Steinberg::FObject *>(this); 
 }
 
-void VST3Plugin::CreateEditor() {
-	ui_thread = std::thread(&VST3Plugin::InThread, this);
-	//editor->Show();
-}
-
-void VST3Plugin::InThread() {
-	editor = new EditorVST3(GetPluginName().c_str(), editController);
-	editor->Show();
-}
-
 Steinberg::tresult PLUGIN_API VST3Plugin::beginEdit(Steinberg::Vst::ParamID id) {
 	return 0;
 }
@@ -231,4 +221,8 @@ Steinberg::tresult PLUGIN_API VST3Plugin::endEdit(Steinberg::Vst::ParamID id) {
 
 Steinberg::tresult PLUGIN_API VST3Plugin::restartComponent(Steinberg::int32 flags) {
 	return 0;
+}
+
+Steinberg::IPlugView* VST3Plugin::CreateView() {
+	return editController->createView("editor");
 }

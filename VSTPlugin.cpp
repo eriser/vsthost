@@ -6,7 +6,6 @@ VSTPlugin::VSTPlugin(HMODULE m, AEffect* plugin, Steinberg::Vst::TSamples& bs, S
 : Plugin(m, bs, sr, sa), VSTBase(plugin) {
 	//editor = new EditorVST((char *)GetPluginName().c_str(), GetAEffect());
 	//PrintInfo();
-	ShowEditor();
 }
 
 VSTPlugin::~VSTPlugin() {
@@ -23,7 +22,7 @@ VstIntPtr VSTCALLBACK VSTPlugin::hostCallback(AEffect *effect, VstInt32 opcode, 
 			return 1;
 		case 43:
 			//cout << "STARTparametr nr " << index << ", wartosc poczatkowa " << effect->getParameter(effect, index) << endl;
-			if (effect->resvd1 != 0) ((EditorVST *)effect->resvd1)->ParameterChanged();
+			//if (effect->resvd1 != 0) ((EditorVST *)effect->resvd1)->ParameterChanged();
 		
 			return 1;
 		case 44:
@@ -34,15 +33,6 @@ VstIntPtr VSTCALLBACK VSTPlugin::hostCallback(AEffect *effect, VstInt32 opcode, 
 			//cout << "Plugin requested value of opcode " << opcode << endl;
 			return 1;
 	}
-}
-
-void VSTPlugin::CreateEditor() {
-	ui_thread = std::thread(&VSTPlugin::InThread, this);
-}
-
-void VSTPlugin::InThread() {
-	editor = new EditorVST((char *)GetPluginName().c_str(), GetAEffect());
-	editor->Show();
 }
 
 void VSTPlugin::ResumePlugin() {
@@ -223,7 +213,19 @@ void VSTPlugin::PrintInfo() {
 }
 
 std::string VSTPlugin::GetPluginName() {
+	TCHAR name[kVstMaxProductStrLen + 1] = { 0 };
 	char PluginName[kVstMaxEffectNameLen + 1] = {0};
-	Dispatcher(effGetEffectName, 0, 0, (void *)PluginName);
-	return std::string(PluginName);
+	if (Dispatcher(effGetEffectName, 0, 0, (void *)name));
+	else if (Dispatcher(effGetProductString, 0, 0, (void *)name));
+	else {
+		GetModuleFileName(module, name, kVstMaxProductStrLen + 1);
+		std::string tmp(name);
+		std::string::size_type pos = 0;
+		if ((pos = tmp.find_last_of('\\')) != std::string::npos)
+			tmp = tmp.substr(pos + 1);
+		if ((pos = tmp.find_last_of('.')) != std::string::npos)
+			tmp = tmp.substr(0, pos);
+		return tmp;
+	}
+	return std::string(name);
 }

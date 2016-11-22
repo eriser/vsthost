@@ -1,26 +1,28 @@
 #ifndef HOSTGUI_H
 #define HOSTGUI_H
+#include "Window.h"
 
-#include <Windows.h>
+#include <vector>
 
 class Host;
-class HostGUI {
+class Plugin;
+class PluginGUI;
+class HostGUI : public Window {
 	static const TCHAR* kClassName;
 	static const TCHAR* kCaption;
 	static const int kWindowWidth, kWindowHeight;
 	static const int kListWidth, kListHeight;
 	void OnCreate(HWND hWnd);
-	static LRESULT CALLBACK Wrapper(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	bool RegisterWC();
 public:
 	HostGUI(Host& h);
-	void Show();
+	bool Initialize(HWND parent);
+	void CreateEditors();
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	void AddEditor(Plugin* p);
 private:
 	Host& host;
-	WNDCLASSEX wc;
-	RECT rect;	// potrzebne?
-	HWND wnd, plugin_list, button_up, button_down;
+	std::vector<PluginGUI*> editors;
+	HWND plugin_list, button_up, button_down;
 };
 
 

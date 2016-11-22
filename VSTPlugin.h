@@ -2,7 +2,6 @@
 #include "pluginterfaces\vst2.x\aeffectx.h"
 
 #include "VSTBase.h"
-#include "EditorVST.h"
 #include "Plugin.h"
 
 #ifndef VSTPLUGIN_H
@@ -14,8 +13,10 @@ public:
 	VSTPlugin(HMODULE m, AEffect* plugin, Steinberg::Vst::TSamples& bs, Steinberg::Vst::SampleRate& sr, Steinberg::Vst::SpeakerArrangement& sa);
 	~VSTPlugin();
 	static VstIntPtr VSTCALLBACK hostCallback(AEffect *effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt);
-	void CreateEditor();
+	void CreateEditor(HWND hWnd);
 	void InThread();
+	bool IsVST3() { return false; }
+	bool isVST() { return true; }
 	void ResumePlugin();
 	void SuspendPlugin();
 	void SetSampleRate(float sampleRate);

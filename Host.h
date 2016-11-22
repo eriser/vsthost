@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <thread>
 
 #include "base/source/fobject.h"
 #include "base/source/fstring.h"
@@ -44,8 +45,9 @@ public:
 	END_DEFINE_INTERFACES(FObject)
 
 	std::vector<Plugin*> plugins;
-
+	void test();
 private:
+	void CreateGUI();
 	void LoadPluginList();
 	Steinberg::uint32 GetChannelCount();
 	void AllocateBuffers();
