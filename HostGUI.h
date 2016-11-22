@@ -13,18 +13,20 @@ class HostGUI : public Window {
 	static const int kWindowWidth, kWindowHeight;
 	static const int kListWidth, kListHeight;
 	void OnCreate(HWND hWnd);
+	void SetFont();
 public:
 	HostGUI(Host& h);
+	~HostGUI();
 	bool Initialize(HWND parent);
 	void CreateEditors();
-	void Go();
-	bool IsEditorMessage(MSG* msg);
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	void AddEditor(Plugin* p);
+	void InsertPluginList(std::vector<std::string>& v);
 private:
 	Host& host;
 	std::vector<PluginGUI*> editors;
-	HWND plugin_list, button_up, button_down;
+	HWND plugin_list;
+	HWND button_add, button_up, button_down;
 };
 
 

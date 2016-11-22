@@ -12,7 +12,8 @@ void VSTPluginGUI::SetRect() {
 		rect.right = erect->right;
 		rect.top = erect->top;
 		rect.bottom = erect->bottom;
-		AdjustWindowRect(&rect, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, false);
+		AdjustWindowRect(&rect, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, false); // WS_SYSMENU
+		rect.bottom += ::GetSystemMetrics(SM_CYMENU);
 		if (rect.left < 0) {
 			rect.right -= rect.left;
 			rect.left -= rect.left;
@@ -61,7 +62,8 @@ LRESULT CALLBACK VSTPluginGUI::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LP
 			}
 			break;
 		case WM_CLOSE:
-			DestroyWindow(hWnd);
+			//DestroyWindow(hWnd);
+			Window::Hide();
 			Dispatcher(effEditClose);
 			break;
 		case WM_DESTROY:

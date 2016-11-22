@@ -168,7 +168,8 @@ void Host::CreateGUI() {
 	gui = new HostGUI(*this);
 	//gui->CreateEditors();
 	gui->Initialize(NULL);
-	for (auto& p : plugins) gui->AddEditor(p);
+	gui->InsertPluginList(GetPluginNames());
+	//for (auto& p : plugins) gui->AddEditor(p);
 	gui->Go();
 }
 
@@ -256,4 +257,10 @@ void Host::ConvertTo16Bits(float** input, std::int16_t* output) {
 				output[out_i] = std::numeric_limits<std::int16_t>::min();
 			else
 				output[out_i] = static_cast<std::int16_t>(input[j][i] * std::numeric_limits<std::int16_t>::max());
+}
+
+std::vector<std::string> Host::GetPluginNames() {
+	std::vector<std::string> v;
+	for (auto &p : plugins) v.emplace_back(p->GetPluginName());
+	return v;
 }

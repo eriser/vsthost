@@ -17,6 +17,7 @@ void VST3PluginGUI::SetRect() {
 	rect.bottom = vr.bottom;
 	rect.top = vr.top;
 	AdjustWindowRect(&rect, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, false);
+	rect.bottom += ::GetSystemMetrics(SM_CYMENU);
 	if (rect.left < 0) {
 		rect.right -= rect.left;
 		rect.left -= rect.left;
@@ -32,7 +33,7 @@ bool VST3PluginGUI::Initialize(HWND parent) {
 	if (RegisterWC(kClassName)) {
 		SetRect();
 		wnd = CreateWindow(kClassName, plugin.GetPluginName().c_str(), WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-			rect.left, rect.top, rect.right, rect.bottom, parent, NULL, GetModuleHandle(NULL), (LPVOID)this);
+			rect.left, rect.top, rect.right, rect.bottom, parent, CreateMenu(), GetModuleHandle(NULL), (LPVOID)this);
 		Show();
 		return wnd != NULL;
 	}
@@ -47,6 +48,9 @@ void VST3PluginGUI::Show() {
 
 LRESULT CALLBACK VST3PluginGUI::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 	switch (Msg) {
+		case WM_CLOSE:
+			Window::Hide();
+			break;
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			break;

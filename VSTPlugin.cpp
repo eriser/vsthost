@@ -214,7 +214,6 @@ void VSTPlugin::PrintInfo() {
 
 std::string VSTPlugin::GetPluginName() {
 	TCHAR name[kVstMaxProductStrLen + 1] = { 0 };
-	char PluginName[kVstMaxEffectNameLen + 1] = {0};
 	if (Dispatcher(effGetEffectName, 0, 0, (void *)name));
 	else if (Dispatcher(effGetProductString, 0, 0, (void *)name));
 	else {
@@ -234,7 +233,7 @@ std::vector<std::string> VSTPlugin::GetPresets() {
 	std::vector<std::string> v;
 	int currentProgram = Dispatcher(effGetProgram);
 	bool programChanged = false;
-	for (unsigned i = 0; i < GetNumPrograms(); ++i) {
+	for (int i = 0; i < GetNumPrograms(); ++i) {
 		char tmp[kVstMaxProgNameLen + 1] = { 0 };
 		if (!Dispatcher(effGetProgramNameIndexed, i, 0, tmp)) {
 			Dispatcher(effSetProgram, 0, i);

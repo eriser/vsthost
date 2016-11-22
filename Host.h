@@ -10,16 +10,17 @@
 #include <string>
 #include <thread>
 
+#include "Host.h"
+#include "HostGUI.h"
+#include "PluginLoader.h"
+#include "VSTPlugin.h"
+#include "VST3Plugin.h"
+
 #include "base/source/fobject.h"
 #include "base/source/fstring.h"
 #include "pluginterfaces/base/ipluginbase.h"
 #include "pluginterfaces/vst/ivsthostapplication.h"
 //DEF_CLASS_IID(Steinberg::Vst::IHostApplication)
-
-#include "PluginLoader.h"
-#include "VSTPlugin.h"
-#include "VST3Plugin.h"
-#include "HostGUI.h"
 
 class Host : public Steinberg::FObject, Steinberg::Vst::IHostApplication {
 public:
@@ -44,9 +45,9 @@ public:
 		DEF_INTERFACE(IHostApplication)
 	END_DEFINE_INTERFACES(FObject)
 
-	std::vector<Plugin*> plugins;
 	void test();
 private:
+	std::vector<std::string> GetPluginNames();
 	void CreateGUI();
 	void LoadPluginList();
 	Steinberg::uint32 GetChannelCount();
@@ -61,6 +62,7 @@ private:
 
 	const static std::string kPluginsPath;
 
+	std::vector<Plugin*> plugins;
 	HostGUI* gui = { nullptr };
 	std::thread ui_thread;
 

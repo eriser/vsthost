@@ -70,23 +70,23 @@ bool VSTBase::HasEditor() {
 }
 
 bool VSTBase::CanReplacing() {
-	return (GetFlags() & effFlagsCanReplacing);
+	return 0 != (GetFlags() & effFlagsCanReplacing);
 }
 
 bool VSTBase::CanDoubleReplacing(){
-	return (GetFlags() & effFlagsCanDoubleReplacing);
+	return 0 != (GetFlags() & effFlagsCanDoubleReplacing);
 }
 
 bool VSTBase::ProgramChunks(){
-	return (GetFlags() & effFlagsProgramChunks);
+	return 0 != (GetFlags() & effFlagsProgramChunks);
 }
 
 bool VSTBase::IsSynth(){
-	return (GetFlags() & effFlagsIsSynth);
+	return 0 != (GetFlags() & effFlagsIsSynth);
 }
 
 bool VSTBase::NoSoundInStop(){
-	return (GetFlags() & effFlagsNoSoundInStop);
+	return 0 != (GetFlags() & effFlagsNoSoundInStop);
 }
 
 void VSTBase::PrintFlags() {

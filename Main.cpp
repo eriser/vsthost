@@ -109,6 +109,8 @@ int main() {
 	Host host(block_size, sample_rate, stereo);
 	host.test();
 
+	std::cin.get();
+
 	// it's bad, because for small block_sizes it just doesn't work well
 	init_player(bs_all_channels_bytes);
 	unsigned i = 0, pos = 0;

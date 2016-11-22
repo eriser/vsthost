@@ -29,7 +29,7 @@ bool PluginGUI::RegisterWC(const TCHAR* class_name) {
 		wc_static->lpszMenuName = NULL;
 		wc_static->lpszClassName = class_name;
 		wc_static->hIconSm = LoadIcon(NULL, IDI_APPLICATION);
-		return RegisterClassEx(wc_static);
+		return 0 != RegisterClassEx(wc_static);
 	}
 	else return true;
 }

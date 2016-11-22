@@ -2,16 +2,12 @@
 #define PLUGINGUI_H
 #include "Window.h"
 
-#define MENUITEM_BYPASS 20001
-#define MENUITEM_HIDE	
-
 class PluginGUI : public Window {
 public:
 	PluginGUI(int width, int height);
 	virtual ~PluginGUI() {}
 	virtual bool Initialize(HWND parent) = 0;
 	virtual void SetRect() = 0;
-	HWND GetHWND();
 protected:
 	enum MenuItem {
 		Bypass = 10000, Hide, Load, Save

@@ -6,7 +6,7 @@
 class Window {
 public:
 	Window(int width, int height);
-	virtual ~Window() {}
+	virtual ~Window() {} // todo: chyba sporo tego bedzie w destruktorze
 	virtual bool Initialize(HWND parent) = 0;
 	static LRESULT CALLBACK Wrapper(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	virtual void Go();

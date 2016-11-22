@@ -55,9 +55,10 @@ bool Window::RegisterWC(const TCHAR* class_name) {
 		wc->lpszMenuName = NULL;
 		wc->lpszClassName = class_name;
 		wc->hIconSm = LoadIcon(NULL, IDI_APPLICATION);
-		return RegisterClassEx(wc);
+		return 0 != RegisterClassEx(wc);
 	}
 	else return true;
 }
 
 void Window::OnCreate(HWND hWnd) {}
+
