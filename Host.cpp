@@ -33,7 +33,7 @@ Host::~Host() {
 	FreeBuffers();
 }
 
-Steinberg::tresult Host::LoadPlugin(std::string path) {
+bool Host::LoadPlugin(std::string path) {
 	std::string name(path);
 	std::string::size_type pos = 0;
 	if ((pos = name.find_last_of('\\')) != std::string::npos)
@@ -60,20 +60,20 @@ Steinberg::tresult Host::LoadPlugin(std::string path) {
 		if (plugin->IsValid()) {
 			std::cout << "Loaded " << name << "." << std::endl;
 			plugins.push_back(plugin);
-			return Steinberg::kResultTrue;
+			return true;
 		}
 		else {
 			std::cout << name << " is not a supported VST plugin." << std::endl;
 			if (plugin)
 				delete plugin;
-			return Steinberg::kResultFalse;
+			return false;
 		}
 	}
 	else {
 		std::cout << name << " is not a VST plugin." << std::endl;
 		if (loader.GetModule())
 			FreeLibrary(loader.GetModule());
-		return Steinberg::kResultFalse;
+		return false;
 	}
 }
 
@@ -168,7 +168,7 @@ void Host::CreateGUI() {
 	gui = new HostGUI(*this);
 	//gui->CreateEditors();
 	gui->Initialize(NULL);
-	gui->InsertPluginList(GetPluginNames());
+	//gui->InsertPluginList();
 	//for (auto& p : plugins) gui->AddEditor(p);
 	gui->Go();
 }
@@ -263,4 +263,17 @@ std::vector<std::string> Host::GetPluginNames() {
 	std::vector<std::string> v;
 	for (auto &p : plugins) v.emplace_back(p->GetPluginName());
 	return v;
+}
+
+void Host::SwapPlugins(unsigned i, unsigned j) {
+	if (i < plugins.size() && j < plugins.size()) {
+		std::swap(plugins[i], plugins[j]);
+	}
+}
+
+void Host::DeletePlugin(unsigned i) {
+	if (i < plugins.size()) {
+		delete plugins[i];
+		plugins.erase(plugins.begin() + i);
+	}
 }

@@ -23,10 +23,11 @@
 //DEF_CLASS_IID(Steinberg::Vst::IHostApplication)
 
 class Host : public Steinberg::FObject, Steinberg::Vst::IHostApplication {
+	friend class HostGUI;
 public:
 	Host(std::int64_t block_size, double sample_rate, bool stereo = true);
 	~Host();
-	Steinberg::tresult LoadPlugin(std::string path);
+	bool LoadPlugin(std::string path);
 	void Process(float** input, float** output);
 	void Process(char* input, char* output);
 	void Process(std::int8_t* input, std::int8_t* output);
@@ -48,6 +49,8 @@ public:
 	void test();
 private:
 	std::vector<std::string> GetPluginNames();
+	void SwapPlugins(unsigned i, unsigned j);
+	void DeletePlugin(unsigned i);
 	void CreateGUI();
 	void LoadPluginList();
 	Steinberg::uint32 GetChannelCount();
