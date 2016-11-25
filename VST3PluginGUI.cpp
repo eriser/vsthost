@@ -33,17 +33,27 @@ bool VST3PluginGUI::Initialize(HWND parent) {
 	if (RegisterWC(kClassName)) {
 		SetRect();
 		wnd = CreateWindow(kClassName, plugin.GetPluginName().c_str(), WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-			rect.left, rect.top, rect.right, rect.bottom, parent, CreateMenu(), GetModuleHandle(NULL), (LPVOID)this);
-		Show();
+			rect.left, rect.top, rect.right, rect.bottom, NULL/*parent*/, CreateMenu(), GetModuleHandle(NULL), (LPVOID)this);
+		plugin_view = plugin.CreateView();	// i'm setting parent hwnd to null, because child window are displayed in front of parend window
+		if (wnd && plugin_view)				// and it doesn't look right
+			plugin_view->attached((void*)wnd, Steinberg::kPlatformTypeHWND);
 		return wnd != NULL;
 	}
 	else return false;
 }
 
 void VST3PluginGUI::Show() {
-	if (wnd && plugin_view)
-		plugin_view->attached((void*)wnd, Steinberg::kPlatformTypeHWND);
-	Window::Show();
+	if (wnd) {
+		is_active = true;
+		Window::Show();
+	}
+}
+
+void VST3PluginGUI::Hide() {
+	if (wnd) {
+		is_active = false;
+		Window::Hide();
+	}
 }
 
 LRESULT CALLBACK VST3PluginGUI::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
@@ -64,7 +74,7 @@ HMENU VST3PluginGUI::CreateMenu() {
 	HMENU menu = ::CreateMenu();
 	HMENU plugin = ::CreateMenu();
 	AppendMenu(plugin, MF_STRING, MenuItem::Bypass, "Bypass");
-	AppendMenu(plugin, MF_STRING, MenuItem::Hide, "Hide");
+	AppendMenu(plugin, MF_STRING, MenuItem::Close, "Close");
 	AppendMenu(menu, MF_POPUP, (UINT_PTR)plugin, "Plugin");
 
 	HMENU presets = ::CreateMenu();

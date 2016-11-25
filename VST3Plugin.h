@@ -43,7 +43,9 @@ public:
 	Steinberg::tresult PLUGIN_API restartComponent(Steinberg::int32 flags);
 	std::vector<std::string> GetPresets();
 	void SetPreset(int i);
+	bool HasEditor();
 private:
+	bool has_editor{ false };
 	Steinberg::FUnknown* UnknownCast();
 	Steinberg::IPluginFactory* factory;
 	Steinberg::FObject* plugin;

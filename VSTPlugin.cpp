@@ -249,3 +249,7 @@ std::vector<std::string> VSTPlugin::GetPresets() {
 void VSTPlugin::SetPreset(int i) {
 
 }
+
+bool VSTPlugin::HasEditor() {
+	return VSTBase::HasEditor();
+}

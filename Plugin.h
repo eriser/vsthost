@@ -23,6 +23,7 @@ public:
 	virtual bool isVST() = 0;
 	virtual std::vector<std::string> GetPresets() = 0;
 	virtual void SetPreset(int i) = 0;
+	virtual bool HasEditor() = 0;
 protected:
 	HMODULE module;
 	Steinberg::Vst::TSamples &block_size;

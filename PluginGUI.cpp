@@ -33,3 +33,7 @@ bool PluginGUI::RegisterWC(const TCHAR* class_name) {
 	}
 	else return true;
 }
+
+bool PluginGUI::IsActive() {
+	return is_active;
+}

@@ -98,20 +98,18 @@ void unprepare_header(int i) {
 
 
 int main() {
-	wave.Load("./../feed/feed.wav");
+	wave.Load("./../feed/feed0.wav");
 	wave.Print();
 
 	int block_size = 4096;	
 	int bs_all_channels = block_size * wave.GetChannelCount();
 	int bs_all_channels_bytes = bs_all_channels * (wave.GetBitDepth() / 8);
-	int sample_rate = wave.GetSampleRate();
+	double sample_rate = static_cast<double>(wave.GetSampleRate());
 	bool stereo = wave.IsStereo();
 	Host host(block_size, sample_rate, stereo);
 	host.test();
 
-	std::cin.get();
-
-	// it's bad, because for small block_sizes it just doesn't work well
+	// this player is bad, because for small block_sizes it just doesn't work well
 	init_player(bs_all_channels_bytes);
 	unsigned i = 0, pos = 0;
 

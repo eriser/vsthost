@@ -36,21 +36,29 @@ bool VSTPluginGUI::Initialize(HWND parent) {
 	if (RegisterWC(kClassName)) {
 		SetRect();
 		wnd = CreateWindow(kClassName, plugin.GetPluginName().c_str(), WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-			rect.left, rect.top, rect.right, rect.bottom, parent, CreateMenu(), GetModuleHandle(NULL), (LPVOID)this);
-		Show();
-		return wnd != NULL;
-	}
+			rect.left, rect.top, rect.right, rect.bottom, NULL/*parent*/, CreateMenu(), GetModuleHandle(NULL), (LPVOID)this);
+		return wnd != NULL; // i'm setting parent hwnd to null, because child window are displayed in front of parend window
+	}						// and it doesn't look right
 	else return false;
 }
 
 void VSTPluginGUI::Show() {
-	if (wnd)
-		Dispatcher(effEditOpen, 0, 0, wnd);
-	Window::Show();
+	if (wnd) {
+		is_active = true;
+		Dispatcher(effEditOpen, 0, 0, wnd); // call this every time?
+		Window::Show();
+	}
+}
+
+void VSTPluginGUI::Hide() {
+	if (wnd) {
+		is_active = false;
+		Dispatcher(effEditClose, 0, 0, wnd); // this too?
+		Window::Hide();
+	}
 }
 
 LRESULT CALLBACK VSTPluginGUI::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
-	std::cout << Msg << std::endl;
 	switch (Msg) {
 		case WM_CREATE:
 			OnCreate(hWnd);
@@ -79,7 +87,7 @@ HMENU VSTPluginGUI::CreateMenu() {
 	HMENU menu = ::CreateMenu();
 	HMENU plugin = ::CreateMenu();
 	AppendMenu(plugin, MF_STRING, MenuItem::Bypass, "Bypass");
-	AppendMenu(plugin, MF_STRING, MenuItem::Hide, "Hide");
+	AppendMenu(plugin, MF_STRING, MenuItem::Close, "Close");
 	AppendMenu(menu, MF_POPUP, (UINT_PTR)plugin, "Plugin");
 
 	HMENU presets = ::CreateMenu();

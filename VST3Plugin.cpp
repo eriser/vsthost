@@ -2,6 +2,7 @@
 
 #include "pluginterfaces/vst/ivstmessage.h"
 #include "public.sdk/source/common/memorystream.h"
+#include "pluginterfaces/gui/iplugview.h"
 #include <cstring>
 
 VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::TSamples& bs, Steinberg::Vst::SampleRate& sr, Steinberg::Vst::SpeakerArrangement& sa)
@@ -22,6 +23,13 @@ VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::
 		if (res == Steinberg::kResultOk && editController) {
 			editController->initialize(UnknownCast());
 			editController->setComponentHandler(this);
+
+			// check if plugin has editor and remember it
+			auto tmp = editController->createView(Steinberg::Vst::ViewType::kEditor);
+			has_editor = tmp != nullptr;
+			if (tmp)
+				tmp->release();
+
 			Steinberg::Vst::IConnectionPoint* iConnectionPointComponent = nullptr;
 			Steinberg::Vst::IConnectionPoint* iConnectionPointController = nullptr;
 			processorComponent->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&iConnectionPointComponent);
@@ -38,7 +46,7 @@ VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::
 		}
 		
 		SetupAudio();
-		PrintFactory();
+		//PrintFactory();
 	}
 }
 
@@ -233,4 +241,8 @@ std::vector<std::string> VST3Plugin::GetPresets() {
 
 void VST3Plugin::SetPreset(int i) {
 
+}
+
+bool VST3Plugin::HasEditor() {
+	return has_editor;
 }

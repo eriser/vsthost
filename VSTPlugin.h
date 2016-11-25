@@ -34,6 +34,7 @@ public:
 	std::string GetPluginName();
 	std::vector<std::string> GetPresets() ;
 	void SetPreset(int i);
+	bool HasEditor();
 };
 
 #endif

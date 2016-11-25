@@ -9,7 +9,7 @@ class Plugin;
 class PluginGUI;
 class HostGUI : public Window {
 	enum Items {
-		Add = 0, Delete, Up, Down, BUTTON_COUNT, PluginList
+		Add = 0, Delete, Up, Down, Show, Hide, BUTTON_COUNT, PluginList
 	};
 	static const TCHAR* button_labels[Items::BUTTON_COUNT];
 	static const TCHAR* kClassName;

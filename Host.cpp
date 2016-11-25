@@ -169,7 +169,7 @@ void Host::CreateGUI() {
 	//gui->CreateEditors();
 	gui->Initialize(NULL);
 	//gui->InsertPluginList();
-	//for (auto& p : plugins) gui->AddEditor(p);
+	//
 	gui->Go();
 }
 
@@ -273,7 +273,7 @@ void Host::SwapPlugins(unsigned i, unsigned j) {
 
 void Host::DeletePlugin(unsigned i) {
 	if (i < plugins.size()) {
-		delete plugins[i];
+		//delete plugins[i]; //todo: deleting a plugin and clicking the console window = crash
 		plugins.erase(plugins.begin() + i);
 	}
 }

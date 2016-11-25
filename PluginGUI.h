@@ -8,9 +8,10 @@ public:
 	virtual ~PluginGUI() {}
 	virtual bool Initialize(HWND parent) = 0;
 	virtual void SetRect() = 0;
+	bool IsActive();
 protected:
 	enum MenuItem {
-		Bypass = 10000, Hide, Load, Save
+		Bypass = 10000, Close, Load, Save
 	};
 	void ApplyOffset();
 	void OnCreate(HWND hWnd);
@@ -21,6 +22,8 @@ protected:
 	bool RegisterWC(const TCHAR* class_name);
 	static WNDCLASSEX* wc_static;
 	static int offset;
+	bool is_active{ false };
+
 };
 
 #endif
