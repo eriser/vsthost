@@ -18,15 +18,21 @@ public:
 		if (file.is_open()) {
 			char tmp[4 * 5] = { 0 };
 			file.read(tmp, 4 * 5);
-			DWORD cbSize = *reinterpret_cast<DWORD*>(tmp + 4 * 4);
-			if (!std::string(tmp, 4u).compare("RIFF") && !std::string(tmp + 8, 4u).compare("WAVE") && !std::string(tmp + 12, 4u).compare("fmt ") && cbSize == 16 && file.good()) {
+			DWORD Subchunk1Size = *reinterpret_cast<DWORD*>(tmp + 4 * 4);
+			if (!std::string(tmp, 4u).compare("RIFF") && !std::string(tmp + 8, 4u).compare("WAVE") && !std::string(tmp + 12, 4u).compare("fmt ") && Subchunk1Size == 16 && file.good()) {
 				file.read(reinterpret_cast<char *>(&fmt), sizeof(fmt));
-				fmt.cbSize = 0; // read two bytes too many
-				file.unget(); 
+				fmt.cbSize = 0; 
+				file.unget(); // read two bytes too many
 				file.unget();
 				if (file.good())
 					file.read(tmp, 4 * 2);
-				if (file.good() && !std::string(tmp, 4u).compare("data")) {
+				while (std::string(tmp, 4u).compare("data") != 0) {
+					DWORD chunk_size = *reinterpret_cast<WORD*>(tmp + 4);
+					file.ignore(chunk_size);
+					if (file.good())
+						file.read(tmp, 4 * 2);
+				}
+				if (file.good()) { // tmp == "data"
 					size = *reinterpret_cast<unsigned*>(tmp + 4);
 					if (data)
 						delete data;
@@ -98,7 +104,8 @@ void unprepare_header(int i) {
 
 
 int main() {
-	wave.Load("./../feed/feed0.wav");
+	wave.Load("feed/Amen-break.wav");
+	if (wave.data == nullptr) return 1;
 	wave.Print();
 
 	int block_size = 4096;	
