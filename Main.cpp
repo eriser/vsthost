@@ -27,7 +27,7 @@ public:
 				if (file.good())
 					file.read(tmp, 4 * 2);
 				while (std::string(tmp, 4u).compare("data") != 0) {
-					DWORD chunk_size = *reinterpret_cast<WORD*>(tmp + 4);
+					DWORD chunk_size = *reinterpret_cast<DWORD*>(tmp + 4);
 					file.ignore(chunk_size);
 					if (file.good())
 						file.read(tmp, 4 * 2);

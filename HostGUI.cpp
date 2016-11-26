@@ -67,7 +67,8 @@ LRESULT CALLBACK HostGUI::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 					break;
 				case Items::Delete:
 					if (HIWORD(wParam) == BN_CLICKED) {
-						auto sel = GetPluginSelection(), count = GetPluginCount();
+						auto sel = GetPluginSelection();
+						auto count = GetPluginCount();
 						host.DeletePlugin(sel);
 						// todo: need to call destructor here and free stuff regarding editor
 						editors.erase(editors.begin() + sel);
@@ -211,42 +212,29 @@ void HostGUI::SelectPlugin(unsigned i) {
 	if (plugin_list) {
 		SendMessage(plugin_list, LB_SETCURSEL, i, 0);
 		SetFocus(plugin_list);
-		unsigned count = static_cast<unsigned>(GetPluginCount());
-		if (count <= 1) {
-			EnableWindow(buttons[Items::Up], false);
-			EnableWindow(buttons[Items::Down], false);
-			return;
-		}
-		if (i > 0)
-			EnableWindow(buttons[Items::Up], true);
-		else
-			EnableWindow(buttons[Items::Up], false);
-		if (i < count - 1)
-			EnableWindow(buttons[Items::Down], true);
-		else
-			EnableWindow(buttons[Items::Down], false);
-		if (editors.size() > 0) {
-			if (editors[i] && !editors[i]->IsActive()) {
-				EnableWindow(buttons[Items::Show], true);
-				EnableWindow(buttons[Items::Hide], false);
-			}
-			else {
-				EnableWindow(buttons[Items::Show], false);
-				EnableWindow(buttons[Items::Hide], true);
-			}
+		auto count = GetPluginCount();
+		if (count > 2) {
+			EnableWindow(buttons[Items::Up], i > 0);
+			EnableWindow(buttons[Items::Down], i < count - 1);
 		}
 		else {
+			EnableWindow(buttons[Items::Up], false);
+			EnableWindow(buttons[Items::Down], false);
+		}
+		if (count == 0) {
 			EnableWindow(buttons[Items::Show], false);
 			EnableWindow(buttons[Items::Hide], false);
 		}
+		else {
+			EnableWindow(buttons[Items::Show], editors[i] && !editors[i]->IsActive());
+			EnableWindow(buttons[Items::Hide], !(editors[i] && !editors[i]->IsActive()));
+		}
+
 	}
 }
 
-LRESULT HostGUI::GetPluginCount() {
-	if (plugin_list)
-		return SendMessage(plugin_list, LB_GETCOUNT, NULL, NULL);
-	else
-		return 0;
+unsigned HostGUI::GetPluginCount() {
+	return host.plugins.size();
 }
 
 LRESULT HostGUI::GetPluginSelection() {

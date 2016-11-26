@@ -20,7 +20,7 @@ class HostGUI : public Window {
 	void OnCreate(HWND hWnd);
 	void SetFont();
 	void SelectPlugin(unsigned i);
-	LRESULT GetPluginCount();
+	unsigned GetPluginCount();
 	LRESULT GetPluginSelection();
 public:
 	HostGUI(Host& h);
