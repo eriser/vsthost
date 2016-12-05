@@ -35,6 +35,8 @@ public:
 	std::vector<std::string> GetPresets() ;
 	void SetPreset(int i);
 	bool HasEditor();
+	void SaveState();
+	void LoadState();
 };
 
 #endif

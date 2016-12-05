@@ -3,6 +3,8 @@
 #include "pluginterfaces/vst/ivstmessage.h"
 #include "public.sdk/source/common/memorystream.h"
 #include "pluginterfaces/gui/iplugview.h"
+
+#include "VST3Preset.h"
 #include <cstring>
 
 VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::TSamples& bs, Steinberg::Vst::SampleRate& sr, Steinberg::Vst::SpeakerArrangement& sa)
@@ -37,7 +39,7 @@ VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::
 			if (iConnectionPointComponent && iConnectionPointController) {
 				iConnectionPointComponent->connect(iConnectionPointController);
 				iConnectionPointController->connect(iConnectionPointComponent);
-			}
+			} 
 			Steinberg::MemoryStream stream;
 			if (processorComponent->getState(&stream) == Steinberg::kResultTrue) {
 				stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
@@ -48,6 +50,7 @@ VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::
 		SetupAudio();
 		//PrintFactory();
 	}
+	state = new VST3Preset(processorComponent, editController, GetPluginName());
 }
 
 VST3Plugin::~VST3Plugin() {
@@ -245,4 +248,12 @@ void VST3Plugin::SetPreset(int i) {
 
 bool VST3Plugin::HasEditor() {
 	return has_editor;
+}
+
+void VST3Plugin::SaveState() {
+	Plugin::SaveState();
+}
+
+void VST3Plugin::LoadState() {
+	Plugin::LoadState();
 }

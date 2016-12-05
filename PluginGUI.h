@@ -11,7 +11,7 @@ public:
 	bool IsActive();
 protected:
 	enum MenuItem {
-		Bypass = 10000, Close, Load, Save
+		Bypass = 10000, Close, LoadPreset, Load, Save, LoadFromFile, SaveToFile
 	};
 	void ApplyOffset();
 	void OnCreate(HWND hWnd);

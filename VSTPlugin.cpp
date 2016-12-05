@@ -1,11 +1,14 @@
 #include "VSTPlugin.h"
 
+#include "VSTPreset.h"
+
 using namespace std;
 
 VSTPlugin::VSTPlugin(HMODULE m, AEffect* plugin, Steinberg::Vst::TSamples& bs, Steinberg::Vst::SampleRate& sr, Steinberg::Vst::SpeakerArrangement& sa)
 : Plugin(m, bs, sr, sa), VSTBase(plugin) {
 	//editor = new EditorVST((char *)GetPluginName().c_str(), GetAEffect());
 	//PrintInfo();
+	state = new VSTPreset(GetAEffect());
 }
 
 VSTPlugin::~VSTPlugin() {
@@ -252,4 +255,12 @@ void VSTPlugin::SetPreset(int i) {
 
 bool VSTPlugin::HasEditor() {
 	return VSTBase::HasEditor();
+}
+
+void VSTPlugin::SaveState() {
+	Plugin::SaveState();
+}
+
+void VSTPlugin::LoadState() {
+	Plugin::LoadState();
 }

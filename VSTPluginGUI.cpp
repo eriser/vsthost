@@ -65,8 +65,25 @@ LRESULT CALLBACK VSTPluginGUI::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LP
 			break;
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
-			case 100:
-				MessageBox(wnd, TEXT("dupa"), TEXT("dupa"), 1);
+				case MenuItem::Bypass:
+					MessageBox(wnd, TEXT("dupa"), TEXT("dupa"), 1);
+					break;
+				case MenuItem::Load:
+					plugin.LoadState();
+					InvalidateRect(hWnd, NULL, false);
+					break;
+				case MenuItem::Save:
+					plugin.SaveState();
+					break;
+				case MenuItem::LoadFromFile:
+					plugin.LoadStateFromFile();
+					InvalidateRect(hWnd, NULL, false);
+					break;
+				case MenuItem::SaveToFile:
+					plugin.SaveStateToFile();
+					break;
+				default:
+					break;
 			}
 			break;
 		case WM_CLOSE:
@@ -95,8 +112,11 @@ HMENU VSTPluginGUI::CreateMenu() {
 	auto v = VSTPluginGUI::plugin.GetPresets();
 	int i = 0;
 	for (auto& s : v) AppendMenu(load, MF_STRING | MF_GRAYED, i++, s.c_str());
-	AppendMenu(presets, MF_POPUP, (UINT_PTR)load, "Load");
+	AppendMenu(presets, MF_POPUP, (UINT_PTR)load, "Load Preset");
 	AppendMenu(presets, MF_STRING, MenuItem::Save, "Save");
+	AppendMenu(presets, MF_STRING, MenuItem::Load, "Load");
+	AppendMenu(presets, MF_STRING, MenuItem::SaveToFile, "Save To File");
+	AppendMenu(presets, MF_STRING, MenuItem::LoadFromFile, "Load From File");
 	AppendMenu(menu, MF_POPUP, (UINT_PTR)presets, "Presets");
 	return menu;
 }

@@ -61,6 +61,29 @@ LRESULT CALLBACK VST3PluginGUI::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, L
 		case WM_CLOSE:
 			Window::Hide();
 			break;
+		case WM_COMMAND:
+			switch (LOWORD(wParam)) {
+				case MenuItem::Bypass:
+					MessageBox(wnd, TEXT("dupa"), TEXT("dupa"), 1);
+					break;
+				case MenuItem::Load:
+					plugin.LoadState();
+					InvalidateRect(hWnd, NULL, false);
+					break;
+				case MenuItem::Save:
+					plugin.SaveState();
+					break;
+				case MenuItem::LoadFromFile:
+					plugin.LoadStateFromFile();
+					InvalidateRect(hWnd, NULL, false);
+					break;
+				case MenuItem::SaveToFile:
+					plugin.SaveStateToFile();
+					break;
+				default:
+					break;
+			}
+			break;
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			break;
@@ -82,8 +105,11 @@ HMENU VST3PluginGUI::CreateMenu() {
 	auto v = VST3PluginGUI::plugin.GetPresets();
 	int i = 0;
 	for (auto& s : v) AppendMenu(load, MF_STRING, i++, s.c_str());
-	AppendMenu(presets, MF_POPUP, (UINT_PTR)load, "Load");
+	AppendMenu(presets, MF_POPUP, (UINT_PTR)load, "Load Preset");
 	AppendMenu(presets, MF_STRING, MenuItem::Save, "Save");
+	AppendMenu(presets, MF_STRING, MenuItem::Load, "Load");
+	AppendMenu(presets, MF_STRING, MenuItem::SaveToFile, "Save To File");
+	AppendMenu(presets, MF_STRING, MenuItem::LoadFromFile, "Load From File");
 	AppendMenu(menu, MF_POPUP, (UINT_PTR)presets, "Presets");
 	return menu;
 }

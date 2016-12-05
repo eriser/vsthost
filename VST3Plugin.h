@@ -44,6 +44,8 @@ public:
 	std::vector<std::string> GetPresets();
 	void SetPreset(int i);
 	bool HasEditor();
+	void SaveState();
+	void LoadState();
 private:
 	bool has_editor{ false };
 	Steinberg::FUnknown* UnknownCast();

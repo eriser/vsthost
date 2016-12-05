@@ -1,3 +1,6 @@
+#ifndef VSTPRESET_H
+#define VSTPRESET_H
+
 #include <iostream>
 #include <string.h>
 
@@ -6,9 +9,6 @@
 
 #include "VSTBase.h"
 #include "Preset.h"
-
-#ifndef VSTPRESET_H
-#define VSTPRESET_H
 
 class VSTPreset : public Preset, public VSTBase {
 private:
@@ -23,9 +23,9 @@ private:
 public:
 	VSTPreset(AEffect *plugin);
 	~VSTPreset();
-	bool Load();
+	bool SetState();
 	void LoadFromFile();
-	void Save();
+	void GetState();
 	void SaveToFile();
 	void AddExtension();
 };

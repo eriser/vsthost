@@ -34,7 +34,7 @@ VSTPreset::~VSTPreset() {
 	if (program) free(program);
 }
 
-bool VSTPreset::Load() {
+bool VSTPreset::SetState() {
 	if (isSaved) {	// wczytuje wszystkie parametry w zaleznosci czy w postaci chunk czy tablicy
 		if (ProgramChunks()) {
 			Dispatcher(effSetChunk, 1, chunkSize, &chunk);
@@ -73,10 +73,10 @@ void VSTPreset::LoadFromFile() {
 	}
 	fclose(file);
 	isSaved = true;
-	Load();
+	SetState();
 }
 
-void VSTPreset::Save() {
+void VSTPreset::GetState() {
 	if (ProgramChunks()) {
 		if (chunk) free(chunk);
 		chunkSize = Dispatcher(effGetChunk, 1, 0, &chunk);

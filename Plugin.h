@@ -8,8 +8,7 @@
 #include <iostream>
 
 #include "pluginterfaces/vst/vsttypes.h"
-
-
+#include "Preset.h"
 class Plugin {
 public:
 	Plugin(HMODULE m, Steinberg::Vst::TSamples &bs, Steinberg::Vst::SampleRate &sr, Steinberg::Vst::SpeakerArrangement &sa)
@@ -24,11 +23,16 @@ public:
 	virtual std::vector<std::string> GetPresets() = 0;
 	virtual void SetPreset(int i) = 0;
 	virtual bool HasEditor() = 0;
+	virtual void SaveState() { if (state) state->GetState(); }
+	virtual void LoadState() { if (state) state->SetState(); }
+	virtual void SaveStateToFile() { if (state) state->SaveToFile(); }
+	virtual void LoadStateFromFile() { if (state) state->LoadFromFile(); }
 protected:
 	HMODULE module;
-	Steinberg::Vst::TSamples &block_size;
-	Steinberg::Vst::SampleRate &sample_rate;
-	Steinberg::Vst::SpeakerArrangement &speaker_arrangement;
+	Steinberg::Vst::TSamples& block_size;
+	Steinberg::Vst::SampleRate& sample_rate;
+	Steinberg::Vst::SpeakerArrangement& speaker_arrangement;
+	Preset* state;
 };
 
 #endif
