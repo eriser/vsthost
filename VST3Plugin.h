@@ -22,7 +22,7 @@ public:
 	DEFINE_INTERFACES
 		DEF_INTERFACE(IComponentHandler)
 	END_DEFINE_INTERFACES(FObject)
-	VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::TSamples& bs, Steinberg::Vst::SampleRate& sr, Steinberg::Vst::SpeakerArrangement& sa);
+	VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f);
 	~VST3Plugin();
 	void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output);
 	bool IsValid();

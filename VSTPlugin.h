@@ -10,9 +10,10 @@
 class VSTPlugin : public Plugin, public VSTBase {
 	//interfejs
 public:
-	VSTPlugin(HMODULE m, AEffect* plugin, Steinberg::Vst::TSamples& bs, Steinberg::Vst::SampleRate& sr, Steinberg::Vst::SpeakerArrangement& sa);
+	VSTPlugin(HMODULE m, AEffect* plugin);
 	~VSTPlugin();
-	static VstIntPtr VSTCALLBACK hostCallback(AEffect *effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt);
+	VstIntPtr VSTCALLBACK HostCallback(AEffect *effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt);
+	static VstIntPtr VSTCALLBACK HostCallbackWrapper(AEffect *effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt);
 	void CreateEditor(HWND hWnd);
 	void InThread();
 	bool IsVST3() { return false; }

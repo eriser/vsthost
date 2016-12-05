@@ -7,8 +7,7 @@
 #include "VST3Preset.h"
 #include <cstring>
 
-VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::TSamples& bs, Steinberg::Vst::SampleRate& sr, Steinberg::Vst::SpeakerArrangement& sa)
-: Plugin(m, bs, sr, sa), factory(f) {
+VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), factory(f) {
 	Steinberg::tresult res;
 	Steinberg::PClassInfo ci;
 	factory->getClassInfo(0, &ci);

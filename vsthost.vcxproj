@@ -73,6 +73,7 @@
     <ClCompile Include="..\VST3 SDK\public.sdk\source\common\memorystream.cpp" />
     <ClCompile Include="Host.cpp" />
     <ClCompile Include="HostGUI.cpp" />
+    <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="PluginGUI.cpp" />
     <ClCompile Include="PluginLoader.cpp" />
     <ClCompile Include="VST3Plugin.cpp" />

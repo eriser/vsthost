@@ -57,6 +57,9 @@
     <ClCompile Include="VST3Preset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Plugin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Host.h">

@@ -11,8 +11,7 @@
 #include "Preset.h"
 class Plugin {
 public:
-	Plugin(HMODULE m, Steinberg::Vst::TSamples &bs, Steinberg::Vst::SampleRate &sr, Steinberg::Vst::SpeakerArrangement &sa)
-		: module(m), block_size(bs), sample_rate(sr), speaker_arrangement(sa) {}
+	Plugin(HMODULE m) : module(m) {}
 	virtual ~Plugin() {   }
 	virtual void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) = 0;
 	virtual bool IsValid() = 0;
@@ -27,11 +26,14 @@ public:
 	virtual void LoadState() { if (state) state->SetState(); }
 	virtual void SaveStateToFile() { if (state) state->SaveToFile(); }
 	virtual void LoadStateFromFile() { if (state) state->LoadFromFile(); }
+	static void SetBlockSize(Steinberg::Vst::TSamples bs) { block_size = bs; }
+	static void SetSampleRate(Steinberg::Vst::SampleRate sr) { sample_rate = sr; }
+	static void SetSpeakerArrangement(Steinberg::Vst::SpeakerArrangement sa) { speaker_arrangement = sa; }
 protected:
 	HMODULE module;
-	Steinberg::Vst::TSamples& block_size;
-	Steinberg::Vst::SampleRate& sample_rate;
-	Steinberg::Vst::SpeakerArrangement& speaker_arrangement;
+	static Steinberg::Vst::TSamples block_size;
+	static Steinberg::Vst::SampleRate sample_rate;
+	static Steinberg::Vst::SpeakerArrangement speaker_arrangement;
 	Preset* state;
 };
 

@@ -4,11 +4,11 @@
 
 using namespace std;
 
-VSTPlugin::VSTPlugin(HMODULE m, AEffect* plugin, Steinberg::Vst::TSamples& bs, Steinberg::Vst::SampleRate& sr, Steinberg::Vst::SpeakerArrangement& sa)
-: Plugin(m, bs, sr, sa), VSTBase(plugin) {
+VSTPlugin::VSTPlugin(HMODULE m, AEffect* plugin) : Plugin(m), VSTBase(plugin) {
 	//editor = new EditorVST((char *)GetPluginName().c_str(), GetAEffect());
 	//PrintInfo();
 	state = new VSTPreset(GetAEffect());
+	GetAEffect()->resvd1 = reinterpret_cast<VstIntPtr>(this);
 }
 
 VSTPlugin::~VSTPlugin() {
@@ -16,26 +16,114 @@ VSTPlugin::~VSTPlugin() {
 		FreeLibrary(module);
 }
 
-VstIntPtr VSTCALLBACK VSTPlugin::hostCallback(AEffect *effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt) {
+VstIntPtr VSTCALLBACK VSTPlugin::HostCallback(AEffect *effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt) {
 	switch (opcode) {
-		case audioMasterVersion:
+		case AudioMasterOpcodes::audioMasterVersion:
 			return 2400;
-		case audioMasterIdle:
-			//effect->dispatcher(effect, effEditIdle, 0, 0, 0, 0);
+		case AudioMasterOpcodes::audioMasterIdle:
+			return 0; // plugin gives idle time to host
+		case AudioMasterOpcodesX::audioMasterGetTime:
+		case AudioMasterOpcodesX::audioMasterProcessEvents:
+			return 0; // unsupported
+		case AudioMasterOpcodesX::audioMasterIOChanged:
+			//SuspendPlugin();
+			// numInputs and/or numOutputs and/or initialDelay (and/or numParameters: to be avoid) have changed
+			// 
+			//ResumePlugin();
 			return 1;
-		case 43:
-			//cout << "STARTparametr nr " << index << ", wartosc poczatkowa " << effect->getParameter(effect, index) << endl;
-			//if (effect->resvd1 != 0) ((EditorVST *)effect->resvd1)->ParameterChanged();
-		
+		case AudioMasterOpcodesX::audioMasterSizeWindow:
+			return 0; // unsupported
+		case AudioMasterOpcodesX::audioMasterGetSampleRate:
+			return static_cast<VstIntPtr>(sample_rate);
+		case AudioMasterOpcodesX::audioMasterGetBlockSize:
+			return static_cast<VstIntPtr>(block_size);
+		case AudioMasterOpcodesX::audioMasterGetInputLatency:
+		case AudioMasterOpcodesX::audioMasterGetOutputLatency:
+		case AudioMasterOpcodesX::audioMasterGetCurrentProcessLevel:
+		case AudioMasterOpcodesX::audioMasterGetAutomationState:
+		case AudioMasterOpcodesX::audioMasterOfflineStart:
+		case AudioMasterOpcodesX::audioMasterOfflineRead:
+		case AudioMasterOpcodesX::audioMasterOfflineWrite:
+		case AudioMasterOpcodesX::audioMasterOfflineGetCurrentPass:
+		case AudioMasterOpcodesX::audioMasterOfflineGetCurrentMetaPass:
+			return 0; // unsupported
+		case AudioMasterOpcodesX::audioMasterGetVendorString:
+			memcpy(ptr, "jperek", 7); // kVstMaxVendorStrLen
 			return 1;
-		case 44:
-			//cout << "STOPparametr nr " << index << ", wartosc koncowa " << effect->getParameter(effect, index) << endl;
-			//
+		case AudioMasterOpcodesX::audioMasterGetProductString:
+			memcpy(ptr, "VSTHost", 8); // kVstMaxProductStrLen
 			return 1;
+		case AudioMasterOpcodesX::audioMasterGetVendorVersion:
+			return 1000;
+		case AudioMasterOpcodesX::audioMasterVendorSpecific:
+			return 0;
+		case AudioMasterOpcodesX::audioMasterCanDo:
+			if (strcmp(static_cast<char*>(ptr), "sendVstEvents") == 0)
+				return -1;
+			else if (strcmp(static_cast<char*>(ptr), "sendVstMidiEvent") == 0)
+				return -1;
+			else if (strcmp(static_cast<char*>(ptr), "sendVstTimeInfo") == 0)
+				return -1;
+			else if (strcmp(static_cast<char*>(ptr), "receiveVstEvents") == 0)
+				return -1;
+			else if (strcmp(static_cast<char*>(ptr), "receiveVstMidiEvent") == 0)
+				return -1;
+			else if (strcmp(static_cast<char*>(ptr), "reportConnectionChanges") == 0)
+				return -1;
+			else if (strcmp(static_cast<char*>(ptr), "acceptIOChanges") == 0)
+				return 1;
+			else if (strcmp(static_cast<char*>(ptr), "sizeWindow") == 0)
+				return -1;
+			else if (strcmp(static_cast<char*>(ptr), "offline") == 0)
+				return -1;
+			else if (strcmp(static_cast<char*>(ptr), "openFileSelector") == 0)
+				return -1;
+			else if (strcmp(static_cast<char*>(ptr), "closeFileSelector") == 0)
+				return -1;
+			else if (strcmp(static_cast<char*>(ptr), "startStopProcess") == 0)
+				return -1;
+			else if (strcmp(static_cast<char*>(ptr), "shellCategory") == 0)
+				return -1;
+			else if (strcmp(static_cast<char*>(ptr), "sendVstMidiEventFlagIsRealtime") == 0)
+				return -1;
+			return 0;
+		case AudioMasterOpcodesX::audioMasterGetLanguage:
+			return VstHostLanguage::kVstLangEnglish;
+		case AudioMasterOpcodesX::audioMasterGetDirectory: {
+			char buf[128]{};
+			auto length = GetModuleFileName(module, buf, 128);
+			std::string tmp(buf, length);
+			std::string::size_type pos = 0;
+			if ((pos = tmp.find_last_of('\\')) != std::string::npos) {
+				memcpy(ptr, tmp.c_str(), tmp.size());
+				return 1;
+			}
+			else 
+				return 0;
+		}
+		case AudioMasterOpcodesX::audioMasterUpdateDisplay:
+			//if (gui)  // dont have acces to editors hwnd
+			return 0;
+		case AudioMasterOpcodesX::audioMasterBeginEdit:
+			//index
+			return 1;
+		case AudioMasterOpcodesX::audioMasterEndEdit:
+			//index
+			return 1;
+		case AudioMasterOpcodesX::audioMasterOpenFileSelector:
+		case AudioMasterOpcodesX::audioMasterCloseFileSelector:
 		default:
-			//cout << "Plugin requested value of opcode " << opcode << endl;
-			return 1;
+			return 0;
 	}
+}
+
+VstIntPtr VSTCALLBACK VSTPlugin::HostCallbackWrapper(AEffect *effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt) {
+	if (opcode == AudioMasterOpcodes::audioMasterVersion)
+		return 2400;
+	VSTPlugin* plugin = reinterpret_cast<VSTPlugin*>(effect->resvd1);
+	if (plugin)
+		return plugin->HostCallback(effect, opcode, index, value, ptr, opt);
+	return 0;
 }
 
 void VSTPlugin::ResumePlugin() {

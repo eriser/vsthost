@@ -12,6 +12,9 @@ void Host::test() {
 
 Host::Host(std::int64_t block_size, double sample_rate, bool stereo)
 	: block_size(block_size), sample_rate(sample_rate) {
+	Plugin::SetBlockSize(block_size);
+	Plugin::SetSampleRate(sample_rate);
+	Plugin::SetSpeakerArrangement(speaker_arrangement);
 	speaker_arrangement = stereo ? Steinberg::Vst::SpeakerArr::kStereo : Steinberg::Vst::SpeakerArr::kMono;
 	buffers[0] = nullptr;
 	buffers[1] = nullptr;
@@ -46,15 +49,15 @@ bool Host::LoadPlugin(std::string path) {
 		if (loader.IsVST()) {
 			AEffect* effect = nullptr;
 			auto init = static_cast<PluginLoader::VSTInitProc>(loader.GetInitProc());
-			effect = init(VSTPlugin::hostCallback);
-			plugin = new VSTPlugin(loader.GetModule(), effect, block_size, sample_rate, speaker_arrangement);
+			effect = init(VSTPlugin::HostCallbackWrapper);
+			plugin = new VSTPlugin(loader.GetModule(), effect);
 		}
 		else if (loader.IsVST3()) {
 			Steinberg::IPluginFactory* factory = nullptr;
 			GetFactoryProc getFactory = static_cast<GetFactoryProc>(loader.GetInitProc());
 			if (getFactory) {
 				factory = getFactory();
-				plugin = new VST3Plugin(loader.GetModule(), factory, block_size, sample_rate, speaker_arrangement);
+				plugin = new VST3Plugin(loader.GetModule(), factory);
 			}
 		}
 		if (plugin->IsValid()) {
@@ -130,6 +133,7 @@ void Host::Process(std::int16_t* input, std::int16_t* output) {
 
 void Host::SetSampleRate(double sr) {
 	sample_rate = sr;
+	Plugin::SetSampleRate(sample_rate);
 }
 
 void Host::SetBlockSize(std::int64_t bs) {
@@ -138,6 +142,7 @@ void Host::SetBlockSize(std::int64_t bs) {
 		FreeBuffers();
 		AllocateBuffers();
 	}
+	Plugin::SetBlockSize(block_size);
 }
 
 void Host::SetSpeakerArrangement(std::uint64_t sa) {
@@ -146,6 +151,7 @@ void Host::SetSpeakerArrangement(std::uint64_t sa) {
 		speaker_arrangement = sa;
 		AllocateBuffers();
 	}
+	Plugin::SetSpeakerArrangement(speaker_arrangement);
 }
 
 void Host::SetActive(bool ia) {
