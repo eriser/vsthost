@@ -17,9 +17,9 @@ bool VST3Preset::SetState() {
 		processor->setState(&processor_stream);
 		processor_stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
 		if (edit) { // todo: examine why again example is being weird about this
-			edit->setComponentState(&processor_stream);
 			if (edit_stream.getSize() > 0)
 				edit->setState(&edit_stream);
+			edit->setComponentState(&processor_stream);
 		}
 	}
 	edit_stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);

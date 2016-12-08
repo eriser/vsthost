@@ -2,6 +2,7 @@
 
 #include "pluginterfaces/vst/ivstmessage.h"
 #include "public.sdk/source/common/memorystream.h"
+
 #include "pluginterfaces/gui/iplugview.h"
 
 #include "VST3Preset.h"
@@ -101,6 +102,14 @@ void VST3Plugin::SetupAudio() {
 			pd.inputs->numChannels = Steinberg::Vst::SpeakerArr::getChannelCount(speaker_arrangement);
 			pd.outputs = new Steinberg::Vst::AudioBusBuffers;
 			pd.outputs->numChannels = Steinberg::Vst::SpeakerArr::getChannelCount(speaker_arrangement);
+
+			if (editController) {
+				auto param_count = editController->getParameterCount();
+				pd.inputParameterChanges = new Steinberg::Vst::ParameterChanges(param_count);
+				pd.outputParameterChanges = new Steinberg::Vst::ParameterChanges(param_count);
+			}
+
+
 			processorComponent->setActive(true);
 		}
 	}
@@ -113,6 +122,9 @@ void VST3Plugin::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sampl
 	pd.outputs->channelBuffers32 = output;
 	pd.numSamples = block_size;
 	audio->process(pd);
+	dynamic_cast<Steinberg::Vst::ParameterChanges*>(pd.inputParameterChanges)->clearQueue();
+	current_queue = nullptr;
+	current_param_idx = -1;
 }
 
 bool VST3Plugin::IsValid() {
@@ -218,19 +230,26 @@ Steinberg::FUnknown* VST3Plugin::UnknownCast() {
 }
 
 Steinberg::tresult PLUGIN_API VST3Plugin::beginEdit(Steinberg::Vst::ParamID id) {
-	return 0;
+	current_queue = pd.inputParameterChanges->addParameterData(id, current_param_idx);
+	offset = 0;
+	return Steinberg::kResultTrue;
 }
 
 Steinberg::tresult PLUGIN_API VST3Plugin::performEdit(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue valueNormalized) {
-	return 0;
+	Steinberg::int32 index;
+	if (!current_queue)
+		current_queue = pd.inputParameterChanges->addParameterData(id, current_param_idx);
+	current_queue->addPoint(offset++, valueNormalized, index);
+	return Steinberg::kResultTrue;
 }
 
 Steinberg::tresult PLUGIN_API VST3Plugin::endEdit(Steinberg::Vst::ParamID id) {
-	return 0;
+	
+	return Steinberg::kResultTrue;
 }
 
 Steinberg::tresult PLUGIN_API VST3Plugin::restartComponent(Steinberg::int32 flags) {
-	return 0;
+	return Steinberg::kResultFalse;
 }
 
 Steinberg::IPlugView* VST3Plugin::CreateView() {

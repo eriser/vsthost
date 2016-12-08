@@ -6,6 +6,8 @@
 #include "pluginterfaces/vst/ivstcomponent.h"
 #include "pluginterfaces/vst/ivsteditcontroller.h"
 #include "pluginterfaces/vst/ivstaudioprocessor.h"
+
+#include "public.sdk/source/vst/hosting/parameterchanges.h"
 //DEF_CLASS_IID(Steinberg::Vst::IComponent)
 //DEF_CLASS_IID(Steinberg::Vst::IComponentHandler)
 //DEF_CLASS_IID(Steinberg::Vst::IAudioProcessor)
@@ -57,6 +59,9 @@ private:
 	Steinberg::Vst::ProcessData pd;
 	Steinberg::Vst::AudioBusBuffers* abb_in{ nullptr };
 	Steinberg::Vst::AudioBusBuffers* abb_out{ nullptr };
+
+	Steinberg::int32 current_param_idx, offset;
+	Steinberg::Vst::IParamValueQueue* current_queue;
 };
 
 #endif

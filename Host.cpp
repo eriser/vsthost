@@ -161,13 +161,14 @@ void Host::SetActive(bool ia) {
 }
 
 Steinberg::tresult PLUGIN_API Host::getName(Steinberg::Vst::String128 name) {
-	Steinberg::String str("Host");
-	str.copyTo16(name, 0, 127);
+	Steinberg::String str("VSTHost");
+	str.copyTo16(name, 0, 7);
 	return Steinberg::kResultTrue;
 }
 
 Steinberg::tresult PLUGIN_API Host::createInstance(Steinberg::TUID cid, Steinberg::TUID iid, void** obj) {
-	return 0;
+	*obj = nullptr;
+	return Steinberg::kResultFalse;
 }
 
 void Host::CreateGUI() {

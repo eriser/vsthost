@@ -71,6 +71,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\VST3 SDK\public.sdk\source\common\memorystream.cpp" />
+    <ClCompile Include="..\VST3 SDK\public.sdk\source\vst\hosting\parameterchanges.cpp" />
     <ClCompile Include="Host.cpp" />
     <ClCompile Include="HostGUI.cpp" />
     <ClCompile Include="Plugin.cpp" />
@@ -87,6 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\VST3 SDK\public.sdk\source\common\memorystream.h" />
+    <ClInclude Include="..\VST3 SDK\public.sdk\source\vst\hosting\parameterchanges.h" />
     <ClInclude Include="Host.h" />
     <ClInclude Include="HostGUI.h" />
     <ClInclude Include="HostHeader.h" />

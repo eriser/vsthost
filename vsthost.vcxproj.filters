@@ -60,6 +60,9 @@
     <ClCompile Include="Plugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\VST3 SDK\public.sdk\source\vst\hosting\parameterchanges.cpp">
+      <Filter>VST3 SDK</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Host.h">
@@ -109,6 +112,9 @@
     </ClInclude>
     <ClInclude Include="VST3Preset.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VST3 SDK\public.sdk\source\vst\hosting\parameterchanges.h">
+      <Filter>VST3 SDK</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
