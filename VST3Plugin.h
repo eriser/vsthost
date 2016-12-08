@@ -27,6 +27,7 @@ public:
 	VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f);
 	~VST3Plugin();
 	void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output);
+	void ProcessOutputParameterChanges();
 	bool IsValid();
 	void PrintInfo();
 	void PrintFactory();

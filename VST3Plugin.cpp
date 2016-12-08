@@ -122,9 +122,20 @@ void VST3Plugin::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sampl
 	pd.outputs->channelBuffers32 = output;
 	pd.numSamples = block_size;
 	audio->process(pd);
+	ProcessOutputParameterChanges();
 	dynamic_cast<Steinberg::Vst::ParameterChanges*>(pd.inputParameterChanges)->clearQueue();
 	current_queue = nullptr;
 	current_param_idx = -1;
+}
+
+void VST3Plugin::ProcessOutputParameterChanges() {
+	for (unsigned i = 0; i < pd.outputParameterChanges->getParameterCount(); ++i) {
+		auto q = pd.outputParameterChanges->getParameterData(i);
+		Steinberg::Vst::ParamValue value;
+		Steinberg::int32 offset;
+		q->getPoint(q->getPointCount() - 1, offset, value);
+		editController->setParamNormalized(q->getParameterId(), value);
+	}
 }
 
 bool VST3Plugin::IsValid() {
