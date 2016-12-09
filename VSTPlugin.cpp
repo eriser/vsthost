@@ -9,6 +9,8 @@ VSTPlugin::VSTPlugin(HMODULE m, AEffect* plugin) : Plugin(m), VSTBase(plugin) {
 	//PrintInfo();
 	state = new VSTPreset(GetAEffect());
 	GetAEffect()->resvd1 = reinterpret_cast<VstIntPtr>(this);
+	soft_bypass = CanDo("bypass");
+	StartPlugin();
 }
 
 VSTPlugin::~VSTPlugin() {
@@ -24,13 +26,7 @@ VstIntPtr VSTCALLBACK VSTPlugin::HostCallback(AEffect *effect, VstInt32 opcode, 
 			return 0; // plugin gives idle time to host
 		case AudioMasterOpcodesX::audioMasterGetTime:
 		case AudioMasterOpcodesX::audioMasterProcessEvents:
-			return 0; // unsupported
 		case AudioMasterOpcodesX::audioMasterIOChanged:
-			//SuspendPlugin();
-			// numInputs and/or numOutputs and/or initialDelay (and/or numParameters: to be avoid) have changed
-			// 
-			//ResumePlugin();
-			return 1;
 		case AudioMasterOpcodesX::audioMasterSizeWindow:
 			return 0; // unsupported
 		case AudioMasterOpcodesX::audioMasterGetSampleRate:
@@ -81,7 +77,7 @@ VstIntPtr VSTCALLBACK VSTPlugin::HostCallback(AEffect *effect, VstInt32 opcode, 
 			else if (strcmp(static_cast<char*>(ptr), "closeFileSelector") == 0)
 				return -1;
 			else if (strcmp(static_cast<char*>(ptr), "startStopProcess") == 0)
-				return -1;
+				return 1;
 			else if (strcmp(static_cast<char*>(ptr), "shellCategory") == 0)
 				return -1;
 			else if (strcmp(static_cast<char*>(ptr), "sendVstMidiEventFlagIsRealtime") == 0)
@@ -126,36 +122,30 @@ VstIntPtr VSTCALLBACK VSTPlugin::HostCallbackWrapper(AEffect *effect, VstInt32 o
 	return 0;
 }
 
-void VSTPlugin::ResumePlugin() {
-	Dispatcher(effMainsChanged, 0, 1);
-}
-
-void VSTPlugin::SuspendPlugin() {
-	Dispatcher(effMainsChanged, 0, 0);
-}
-
-void VSTPlugin::SetSampleRate(float sampleRate) {
-	Dispatcher(effSetSampleRate, 0, 0, NULL, sampleRate);
-}
-
-void VSTPlugin::SetBlockSize(int blockSize) {
-	Dispatcher(effSetBlockSize, 0, blockSize);
-}
-
 void VSTPlugin::StartPlugin() {
 	Dispatcher(effOpen);
-	float sampleRate = 44100.0f;
-	SetSampleRate(sampleRate);
-	int blockSize = 512;
-	SetBlockSize(blockSize);
-	ResumePlugin();
+	//float sampleRate = 44100.0f;
+	//SetSampleRate(sampleRate);
+	//int blockSize = 512;
+	//SetBlockSize(blockSize);
+	UpdateSpeakerArrangement();
+	SetActive(true);
 }
 
 void VSTPlugin::Process(float **input, float **output) {
-	if (CanReplacing())
-		ProcessReplacing(input, output, block_size);
-	else 
-		VSTBase::Process(input, output, block_size);
+	if (IsActive()) {
+		if (BypassProcess()) // hard bypass
+			for (unsigned i = 0; i < GetChannelCount(); ++i)
+				std::memcpy(static_cast<void*>(output[i]), static_cast<void*>(input[i]), sizeof(input[0][0]));
+		else {
+			StartProcessing();
+			if (CanReplacing())
+				ProcessReplacing(input, output, block_size);
+			else
+				VSTBase::Process(input, output, block_size);
+			StopProcessing();
+		}
+	}
 }
 
 bool VSTPlugin::IsValid() {
@@ -253,7 +243,7 @@ void VSTPlugin::PrintParameters() {	// + 1, bo wyjatki wyrzucalo
 	}
 }
 
-bool VSTPlugin::CanDo(char *canDo) {
+bool VSTPlugin::CanDo(const char *canDo) {
 	return (Dispatcher(effCanDo, 0, 0, (void *)canDo) != 0);
 }
 
@@ -351,4 +341,97 @@ void VSTPlugin::SaveState() {
 
 void VSTPlugin::LoadState() {
 	Plugin::LoadState();
+}
+
+void VSTPlugin::UpdateBlockSize() {
+	bool was_active;
+	if (was_active = IsActive())
+		SetActive(false);
+	Dispatcher(AEffectOpcodes::effSetBlockSize, 0, static_cast<int>(block_size));
+	if (was_active)
+		SetActive(true);
+}
+
+void VSTPlugin::UpdateSampleRate() {
+	bool was_active;
+	if (was_active = IsActive())
+		SetActive(false);
+	Dispatcher(AEffectOpcodes::effSetSampleRate, 0, static_cast<float>(sample_rate));
+	if (was_active)
+		SetActive(true);
+}
+
+void VSTPlugin::UpdateSpeakerArrangement() {
+	if (GetVSTVersion() < 2300)
+		return;
+	bool was_active;
+	if (was_active = IsActive())
+		SetActive(false);
+	VstSpeakerArrangement in{}, out{};
+	if (speaker_arrangement == Steinberg::Vst::SpeakerArr::kMono) {
+		in.numChannels = 1;
+		in.type = VstSpeakerArrangementType::kSpeakerArrMono;
+		in.speakers[0].type = VstSpeakerType::kSpeakerM;
+		in.speakers[0].name[0] = 'M';
+		in.speakers[0].name[1] = '\0';
+		out.numChannels = 1;
+		out.type = VstSpeakerArrangementType::kSpeakerArrMono;
+		out.speakers[0].type = VstSpeakerType::kSpeakerM;
+		out.speakers[0].name[0] = 'M';
+		out.speakers[0].name[1] = '\0';
+	}
+	else {
+		in.numChannels = 2;
+		in.type = VstSpeakerArrangementType::kSpeakerArrStereo;
+		in.speakers[0].type = VstSpeakerType::kSpeakerL;
+		in.speakers[0].name[0] = 'L';
+		in.speakers[0].name[1] = '\0';
+		in.speakers[1].type = VstSpeakerType::kSpeakerR;
+		in.speakers[1].name[0] = 'R';
+		in.speakers[1].name[1] = '\0';
+		out.numChannels = 2;
+		out.type = VstSpeakerArrangementType::kSpeakerArrStereo;
+		out.speakers[0].type = VstSpeakerType::kSpeakerL;
+		out.speakers[0].name[0] = 'L';
+		out.speakers[0].name[1] = '\0';
+		out.speakers[1].type = VstSpeakerType::kSpeakerR;
+		out.speakers[1].name[0] = 'R';
+		out.speakers[1].name[1] = '\0';
+		
+	}
+	Dispatcher(AEffectXOpcodes::effSetSpeakerArrangement, 0, reinterpret_cast<Steinberg::int32>(&in), &out);
+	if (was_active)
+		SetActive(true);
+}
+
+void VSTPlugin::SetBypass(bool bypass_) {
+	if (bypass != bypass_) {
+		bypass = bypass_;
+		if (soft_bypass)
+			Dispatcher(AEffectXOpcodes::effSetBypass, 0, bypass);
+	}
+}
+
+void VSTPlugin::Resume() {
+	Dispatcher(AEffectOpcodes::effMainsChanged, 0, true);
+	StopProcessing();
+	active = true;
+}
+
+void VSTPlugin::Suspend() {
+	StopProcessing();
+	Dispatcher(AEffectOpcodes::effMainsChanged, 0, false);
+	active = false;
+}
+
+void VSTPlugin::StartProcessing() {
+	Dispatcher(AEffectXOpcodes::effStartProcess);
+}
+
+void VSTPlugin::StopProcessing() {
+	Dispatcher(AEffectXOpcodes::effStopProcess);
+}
+
+bool VSTPlugin::BypassProcess() {	// wywolanie process omijaj tylko wtedy, jak
+	return bypass && !soft_bypass;	// bypass == true i wtyczka nie obsluguje soft bypass
 }

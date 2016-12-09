@@ -49,7 +49,17 @@ public:
 	bool HasEditor();
 	void SaveState();
 	void LoadState();
+	void UpdateBlockSize();
+	void UpdateSampleRate();
+	void UpdateSpeakerArrangement();
+	void SetBypass(bool bypass_);
+	void Resume();
+	void Suspend();
 private:
+	Steinberg::Vst::ParamID bypass_param_id{ -1 };
+	void StartProcessing();
+	void StopProcessing();
+	bool BypassProcess();
 	bool has_editor{ false };
 	Steinberg::FUnknown* UnknownCast();
 	Steinberg::IPluginFactory* factory;

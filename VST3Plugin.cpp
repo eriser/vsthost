@@ -7,6 +7,7 @@
 
 #include "VST3Preset.h"
 #include <cstring>
+#include "base\source\fstring.h"
 
 VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), factory(f) {
 	Steinberg::tresult res;
@@ -31,6 +32,18 @@ VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), fac
 			has_editor = tmp != nullptr;
 			if (tmp)
 				tmp->release();
+
+			// check for bypass parameter (soft bypass)
+			Steinberg::Vst::ParameterInfo pi;
+			for (Steinberg::int32 i = 0; i < editController->getParameterCount(); ++i) {
+				editController->getParameterInfo(i, pi);
+				Steinberg::ConstString s0("bypass"), s1(pi.title), s2(pi.shortTitle);
+				if (!s0.compare(s1, Steinberg::ConstString::CompareMode::kCaseInsensitive) ||
+					!s0.compare(s2, Steinberg::ConstString::CompareMode::kCaseInsensitive)) {
+					bypass_param_id = i;
+					break;
+				}
+			}
 
 			Steinberg::Vst::IConnectionPoint* iConnectionPointComponent = nullptr;
 			Steinberg::Vst::IConnectionPoint* iConnectionPointController = nullptr;
@@ -76,9 +89,7 @@ void VST3Plugin::SetupAudio() {
 	if (processorComponent) {
 		Steinberg::tresult res = processorComponent->queryInterface(Steinberg::Vst::IAudioProcessor::iid, reinterpret_cast<void**>(&audio));
 		if (res == Steinberg::kResultOk) {
-			res = processorComponent->setActive(false);
-			audio->getBusArrangement(Steinberg::Vst::kInput, 0, speaker_arrangement);
-			audio->getBusArrangement(Steinberg::Vst::kOutput, 0, speaker_arrangement);
+			SetActive(false);
 			// PROCESS SETUP
 			Steinberg::Vst::ProcessSetup ps;
 			if (audio->canProcessSampleSize(Steinberg::Vst::kSample32) == Steinberg::kResultOk)
@@ -110,7 +121,7 @@ void VST3Plugin::SetupAudio() {
 			}
 
 
-			processorComponent->setActive(true);
+			SetActive(true);
 		}
 	}
 	else
@@ -118,18 +129,25 @@ void VST3Plugin::SetupAudio() {
 }
 
 void VST3Plugin::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) {
-	pd.inputs->channelBuffers32 = input;
-	pd.outputs->channelBuffers32 = output;
-	pd.numSamples = block_size;
-	audio->process(pd);
-	ProcessOutputParameterChanges();
-	dynamic_cast<Steinberg::Vst::ParameterChanges*>(pd.inputParameterChanges)->clearQueue();
-	current_queue = nullptr;
-	current_param_idx = -1;
+	if (IsActive()) {
+		if (BypassProcess()) // hard bypass
+			for (unsigned i = 0; i < GetChannelCount(); ++i)
+				std::memcpy(static_cast<void*>(output[i]), static_cast<void*>(input[i]), sizeof(input[0][0]));
+		else {
+			pd.inputs->channelBuffers32 = input;
+			pd.outputs->channelBuffers32 = output;
+			pd.numSamples = block_size;
+			audio->process(pd);
+			ProcessOutputParameterChanges();
+			dynamic_cast<Steinberg::Vst::ParameterChanges*>(pd.inputParameterChanges)->clearQueue();
+			current_queue = nullptr;
+			current_param_idx = -1;
+		}
+	}
 }
 
 void VST3Plugin::ProcessOutputParameterChanges() {
-	for (unsigned i = 0; i < pd.outputParameterChanges->getParameterCount(); ++i) {
+	for (unsigned i = 0; i < static_cast<unsigned>(pd.outputParameterChanges->getParameterCount()); ++i) {
 		auto q = pd.outputParameterChanges->getParameterData(i);
 		Steinberg::Vst::ParamValue value;
 		Steinberg::int32 offset;
@@ -255,7 +273,6 @@ Steinberg::tresult PLUGIN_API VST3Plugin::performEdit(Steinberg::Vst::ParamID id
 }
 
 Steinberg::tresult PLUGIN_API VST3Plugin::endEdit(Steinberg::Vst::ParamID id) {
-	
 	return Steinberg::kResultTrue;
 }
 
@@ -285,4 +302,67 @@ void VST3Plugin::SaveState() {
 
 void VST3Plugin::LoadState() {
 	Plugin::LoadState();
+}
+
+void VST3Plugin::UpdateBlockSize() {
+	bool was_active;
+	if (was_active = IsActive())
+		SetActive(false);
+	pd.numSamples = block_size;
+	if (was_active)
+		SetActive(true);
+}
+
+void VST3Plugin::UpdateSampleRate() {
+	bool was_active;
+	if (was_active = IsActive())
+		SetActive(false);
+	Steinberg::Vst::ProcessSetup ps;
+	ps.symbolicSampleSize = Steinberg::Vst::kSample32;
+	ps.processMode = Steinberg::Vst::kRealtime;
+	ps.sampleRate = sample_rate;
+	audio->setupProcessing(ps);
+	if (was_active)
+		SetActive(true);
+}
+
+void VST3Plugin::UpdateSpeakerArrangement() {
+	bool was_active;
+	if (was_active = IsActive())
+		SetActive(false);
+	audio->setBusArrangements(&speaker_arrangement, 1, &speaker_arrangement, 1);
+	if (was_active)
+		SetActive(true);
+}
+
+void VST3Plugin::SetBypass(bool bypass_) {
+	if (bypass != bypass_) {
+		bypass = bypass_;
+		if (bypass_param_id != -1)
+			editController->setParamNormalized(bypass_param_id, static_cast<Steinberg::Vst::ParamValue>(bypass));
+	}
+}
+
+void VST3Plugin::Resume() {
+	processorComponent->setActive(true);
+	StartProcessing();
+	active = true;
+}
+
+void VST3Plugin::Suspend() {
+	StopProcessing();
+	processorComponent->setActive(false);
+	active = false;
+}
+
+void VST3Plugin::StartProcessing() {
+	audio->setProcessing(true);
+}
+
+void VST3Plugin::StopProcessing() {
+	audio->setProcessing(false);
+}
+
+bool VST3Plugin::BypassProcess() {			// wywolanie process omijaj tylko wtedy, jak
+	return bypass && bypass_param_id == -1;	// bypass == true i nie znaleziono parametru "bypass"
 }

@@ -12,10 +12,10 @@ void Host::test() {
 
 Host::Host(std::int64_t block_size, double sample_rate, bool stereo)
 	: block_size(block_size), sample_rate(sample_rate) {
+	speaker_arrangement = stereo ? Steinberg::Vst::SpeakerArr::kStereo : Steinberg::Vst::SpeakerArr::kMono;
 	Plugin::SetBlockSize(block_size);
 	Plugin::SetSampleRate(sample_rate);
 	Plugin::SetSpeakerArrangement(speaker_arrangement);
-	speaker_arrangement = stereo ? Steinberg::Vst::SpeakerArr::kStereo : Steinberg::Vst::SpeakerArr::kMono;
 	buffers[0] = nullptr;
 	buffers[1] = nullptr;
 	AllocateBuffers();

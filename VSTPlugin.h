@@ -18,16 +18,12 @@ public:
 	void InThread();
 	bool IsVST3() { return false; }
 	bool isVST() { return true; }
-	void ResumePlugin();
-	void SuspendPlugin();
-	void SetSampleRate(float sampleRate);
-	void SetBlockSize(int blockSize);
 	void StartPlugin();
 	void Process(float **input, float **output);
 	bool IsValid();
 	void PrintPrograms();
 	void PrintParameters();
-	bool CanDo(char *canDo);
+	bool CanDo(const char *canDo);
 	void PrintCanDos();
 	int GetVendorVersion();
 	int GetVSTVersion();
@@ -38,6 +34,17 @@ public:
 	bool HasEditor();
 	void SaveState();
 	void LoadState();
+	void UpdateBlockSize();
+	void UpdateSampleRate();
+	void UpdateSpeakerArrangement();
+	void SetBypass(bool bypass_);
+	void Resume();
+	void Suspend();
+protected:
+	bool soft_bypass{ false };
+	void StartProcessing();
+	void StopProcessing();
+	bool BypassProcess();
 };
 
 #endif
