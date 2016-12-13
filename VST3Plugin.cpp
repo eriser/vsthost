@@ -37,12 +37,18 @@ VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), fac
 			Steinberg::Vst::ParameterInfo pi;
 			for (Steinberg::int32 i = 0; i < editController->getParameterCount(); ++i) {
 				editController->getParameterInfo(i, pi);
+				if (pi.flags & Steinberg::Vst::ParameterInfo::ParameterFlags::kIsBypass) {
+					bypass_param_id = i;
+					break;
+				}
+				/*
 				Steinberg::ConstString s0("bypass"), s1(pi.title), s2(pi.shortTitle);
 				if (!s0.compare(s1, Steinberg::ConstString::CompareMode::kCaseInsensitive) ||
 					!s0.compare(s2, Steinberg::ConstString::CompareMode::kCaseInsensitive)) {
 					bypass_param_id = i;
 					break;
 				}
+				*/
 			}
 
 			Steinberg::Vst::IConnectionPoint* iConnectionPointComponent = nullptr;
@@ -338,8 +344,14 @@ void VST3Plugin::UpdateSpeakerArrangement() {
 void VST3Plugin::SetBypass(bool bypass_) {
 	if (bypass != bypass_) {
 		bypass = bypass_;
-		if (bypass_param_id != -1)
+		if (bypass_param_id != -1) {
+			beginEdit(bypass_param_id);
+			Steinberg::Vst::ParamValue value = static_cast<Steinberg::Vst::ParamValue>(bypass);
 			editController->setParamNormalized(bypass_param_id, static_cast<Steinberg::Vst::ParamValue>(bypass));
+			performEdit(bypass_param_id, value);
+			endEdit(bypass_param_id);
+		}
+
 	}
 }
 

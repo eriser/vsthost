@@ -23,6 +23,7 @@ protected:
 	static WNDCLASSEX* wc_static;
 	static int offset;
 	bool is_active{ false };
+	bool bypass{ false };
 
 };
 

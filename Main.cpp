@@ -105,7 +105,8 @@ void unprepare_header(int i) {
 
 int main() {
 	wave.Load("feed/Amen-break.wav");
-	if (wave.data == nullptr) return 1;
+	if (wave.data == nullptr)
+		return 1;
 	wave.Print();
 
 	int block_size = 4096;	

@@ -66,7 +66,12 @@ LRESULT CALLBACK VSTPluginGUI::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LP
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
 				case MenuItem::Bypass:
-					MessageBox(wnd, TEXT("dupa"), TEXT("dupa"), 1);
+					HMENU menu;
+					if (menu = GetMenu(hWnd)) {
+						CheckMenuItem(menu, MenuItem::Bypass, bypass ? MF_UNCHECKED : MF_CHECKED);
+						bypass = !bypass;
+						plugin.SetBypass(bypass);
+					}
 					break;
 				case MenuItem::Load:
 					plugin.LoadState();
