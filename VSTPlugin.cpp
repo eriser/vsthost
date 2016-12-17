@@ -327,12 +327,28 @@ std::vector<std::string> VSTPlugin::GetPresets() {
 	return v;
 }
 
-void VSTPlugin::SetPreset(int i) {
+bool VSTPlugin::HasEditor() {
+	return VSTBase::HasEditor();
+}
+
+Steinberg::uint32 VSTPlugin::GetProgramCount() {
+	return 0;
+}
+
+void VSTPlugin::SetProgram(Steinberg::int32 id) {
 
 }
 
-bool VSTPlugin::HasEditor() {
-	return VSTBase::HasEditor();
+Steinberg::uint32 VSTPlugin::GetParameterCount() {
+	return 0;
+}
+
+Steinberg::Vst::ParamValue VSTPlugin::GetParameter(Steinberg::Vst::ParamID id) {
+	return 0;
+}
+
+void VSTPlugin::SetParameter(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value) {
+
 }
 
 void VSTPlugin::SaveState() {

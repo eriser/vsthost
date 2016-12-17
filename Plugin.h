@@ -20,8 +20,12 @@ public:
 	virtual bool IsVST3() = 0;
 	virtual bool isVST() = 0;
 	virtual std::vector<std::string> GetPresets() = 0;
-	virtual void SetPreset(int i) = 0;
 	virtual bool HasEditor() = 0;
+	virtual Steinberg::uint32 GetProgramCount() = 0;
+	virtual void SetProgram(Steinberg::int32 id) = 0;
+	virtual Steinberg::uint32 GetParameterCount() = 0;
+	virtual Steinberg::Vst::ParamValue GetParameter(Steinberg::Vst::ParamID id) = 0;
+	virtual void SetParameter(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value) = 0;
 	virtual void SaveState() { if (state) state->GetState(); }
 	virtual void LoadState() { if (state) state->SetState(); }
 	virtual void SaveStateToFile() { if (state) state->SaveToFile(); }

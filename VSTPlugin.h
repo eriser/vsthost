@@ -30,8 +30,12 @@ public:
 	void PrintInfo();
 	std::string GetPluginName();
 	std::vector<std::string> GetPresets() ;
-	void SetPreset(int i);
 	bool HasEditor();
+	Steinberg::uint32 GetProgramCount();
+	void SetProgram(Steinberg::int32 id);
+	Steinberg::uint32 GetParameterCount();
+	Steinberg::Vst::ParamValue GetParameter(Steinberg::Vst::ParamID id);
+	void SetParameter(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value);
 	void SaveState();
 	void LoadState();
 	void UpdateBlockSize();

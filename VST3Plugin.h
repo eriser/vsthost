@@ -7,6 +7,8 @@
 #include "pluginterfaces/vst/ivsteditcontroller.h"
 #include "pluginterfaces/vst/ivstaudioprocessor.h"
 
+#include "pluginterfaces/vst/ivstunits.h"
+
 #include "public.sdk/source/vst/hosting/parameterchanges.h"
 //DEF_CLASS_IID(Steinberg::Vst::IComponent)
 //DEF_CLASS_IID(Steinberg::Vst::IComponentHandler)
@@ -45,8 +47,12 @@ public:
 	Steinberg::tresult PLUGIN_API endEdit(Steinberg::Vst::ParamID id);
 	Steinberg::tresult PLUGIN_API restartComponent(Steinberg::int32 flags);
 	std::vector<std::string> GetPresets();
-	void SetPreset(int i);
 	bool HasEditor();
+	Steinberg::uint32 GetProgramCount();
+	void SetProgram(Steinberg::int32 id);
+	Steinberg::uint32 GetParameterCount();
+	Steinberg::Vst::ParamValue GetParameter(Steinberg::Vst::ParamID id);
+	void SetParameter(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value);
 	void SaveState();
 	void LoadState();
 	void UpdateBlockSize();
@@ -57,6 +63,8 @@ public:
 	void Suspend();
 private:
 	Steinberg::Vst::ParamID bypass_param_id{ -1 };
+	Steinberg::Vst::ParamID program_change_param_id{ -1 };
+	Steinberg::int32 program_change_param_idx{ -1 };
 	void StartProcessing();
 	void StopProcessing();
 	bool BypassProcess();
@@ -73,6 +81,11 @@ private:
 
 	Steinberg::int32 current_param_idx, offset;
 	Steinberg::Vst::IParamValueQueue* current_queue;
+
+	Steinberg::Vst::IUnitInfo* unit_info{ nullptr };
+	Steinberg::uint32 program_count{ 0 };
+	Steinberg::Vst::ProgramListID program_list_root{ Steinberg::Vst::kNoProgramListId };
+
 };
 
 #endif

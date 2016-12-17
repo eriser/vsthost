@@ -1,6 +1,7 @@
 #include "VST3Plugin.h"
 
 #include "pluginterfaces/vst/ivstmessage.h"
+
 #include "public.sdk/source/common/memorystream.h"
 
 #include "pluginterfaces/gui/iplugview.h"
@@ -33,22 +34,42 @@ VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), fac
 			if (tmp)
 				tmp->release();
 
-			// check for bypass parameter (soft bypass)
+			// check for bypass parameter (soft bypass) and for preset change parameter
+			Steinberg::Vst::UnitID program_change_unitid;
 			Steinberg::Vst::ParameterInfo pi;
-			for (Steinberg::int32 i = 0; i < editController->getParameterCount(); ++i) {
+			static Steinberg::Vst::ParamID kNoParamId = -1;
+			for (Steinberg::int32 i = 0; i < editController->getParameterCount() && (bypass_param_id == -1 || program_change_param_id == -1); ++i) {
 				editController->getParameterInfo(i, pi);
 				if (pi.flags & Steinberg::Vst::ParameterInfo::ParameterFlags::kIsBypass) {
-					bypass_param_id = i;
-					break;
+					bypass_param_id = pi.id;
 				}
-				/*
-				Steinberg::ConstString s0("bypass"), s1(pi.title), s2(pi.shortTitle);
-				if (!s0.compare(s1, Steinberg::ConstString::CompareMode::kCaseInsensitive) ||
-					!s0.compare(s2, Steinberg::ConstString::CompareMode::kCaseInsensitive)) {
-					bypass_param_id = i;
-					break;
+				else if (pi.flags & Steinberg::Vst::ParameterInfo::ParameterFlags::kIsProgramChange) {
+					program_change_param_id = pi.id;
+					program_change_param_idx = i;
+					program_change_unitid = pi.unitId;
 				}
-				*/
+			}
+			
+			// establish program count
+			editController->queryInterface(Steinberg::Vst::IUnitInfo::iid, reinterpret_cast<void**>(&unit_info));
+			if (unit_info) {
+				auto program_list_count = unit_info->getProgramListCount();
+				if (program_list_count > 0) {
+					Steinberg::int32 i = 0;
+					Steinberg::Vst::UnitInfo unit{};
+					while (i < unit_info->getUnitCount() && unit_info->getUnitInfo(i, unit) == Steinberg::kResultTrue && unit.id != Steinberg::Vst::kRootUnitId)
+						++i; // there has got to be a root unit id if getUnitCount returns more than zero
+					program_list_root = unit.programListId;
+					Steinberg::Vst::ProgramListInfo prog_list{};
+					i = 0;
+					while (i < program_list_count && unit_info->getProgramListInfo(i, prog_list) == Steinberg::kResultTrue) {
+						if (prog_list.id == program_list_root) {
+							program_count = prog_list.programCount;
+							break;
+						}
+						++i;
+					}
+				}
 			}
 
 			Steinberg::Vst::IConnectionPoint* iConnectionPointComponent = nullptr;
@@ -291,15 +312,52 @@ Steinberg::IPlugView* VST3Plugin::CreateView() {
 }
 
 std::vector<std::string> VST3Plugin::GetPresets() {
-	return std::vector<std::string>();
-}
-
-void VST3Plugin::SetPreset(int i) {
-
+	std::vector<std::string> ret;
+	Steinberg::Vst::ProgramListInfo list_info{};
+	for (Steinberg::uint32 i = 0; i < program_count; ++i) {
+		if (unit_info->getProgramListInfo(0, list_info) == Steinberg::kResultTrue) {
+			Steinberg::Vst::String128 tmp = { 0 };
+			if (unit_info->getProgramName(list_info.id, i, tmp) == Steinberg::kResultTrue)
+				//	ret.emplace_back(tmp);
+				std::wcout << tmp << std::endl;
+		}
+	}
+	return ret;
 }
 
 bool VST3Plugin::HasEditor() {
 	return has_editor;
+}
+
+Steinberg::uint32 VST3Plugin::GetProgramCount() {
+	return program_count;
+}
+
+void VST3Plugin::SetProgram(Steinberg::int32 id) {
+	if (id < program_count && program_change_param_id != -1) {
+		Steinberg::Vst::ParameterInfo param_info{};
+		if (editController->getParameterInfo(program_change_param_idx, param_info) == Steinberg::kResultTrue) {
+			if (param_info.stepCount > 0 && id <= param_info.stepCount) {
+				auto value = static_cast<Steinberg::Vst::ParamValue>(id) / static_cast<Steinberg::Vst::ParamValue>(param_info.stepCount);
+				SetParameter(program_change_param_id, value);
+			}
+		}
+	}
+}
+
+Steinberg::uint32 VST3Plugin::GetParameterCount() {
+	return editController->getParameterCount();
+}
+
+Steinberg::Vst::ParamValue VST3Plugin::GetParameter(Steinberg::Vst::ParamID id) {
+	return 0;
+}
+
+void VST3Plugin::SetParameter(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value) {
+	beginEdit(id);
+	editController->setParamNormalized(id, value);
+	performEdit(id, value);
+	endEdit(id);
 }
 
 void VST3Plugin::SaveState() {
@@ -345,11 +403,8 @@ void VST3Plugin::SetBypass(bool bypass_) {
 	if (bypass != bypass_) {
 		bypass = bypass_;
 		if (bypass_param_id != -1) {
-			beginEdit(bypass_param_id);
 			Steinberg::Vst::ParamValue value = static_cast<Steinberg::Vst::ParamValue>(bypass);
-			editController->setParamNormalized(bypass_param_id, static_cast<Steinberg::Vst::ParamValue>(bypass));
-			performEdit(bypass_param_id, value);
-			endEdit(bypass_param_id);
+			SetParameter(bypass_param_id, value);
 		}
 
 	}
