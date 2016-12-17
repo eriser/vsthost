@@ -35,18 +35,15 @@ VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), fac
 				tmp->release();
 
 			// check for bypass parameter (soft bypass) and for preset change parameter
-			Steinberg::Vst::UnitID program_change_unitid;
 			Steinberg::Vst::ParameterInfo pi;
 			static Steinberg::Vst::ParamID kNoParamId = -1;
 			for (Steinberg::int32 i = 0; i < editController->getParameterCount() && (bypass_param_id == -1 || program_change_param_id == -1); ++i) {
 				editController->getParameterInfo(i, pi);
-				if (pi.flags & Steinberg::Vst::ParameterInfo::ParameterFlags::kIsBypass) {
+				if (pi.flags & Steinberg::Vst::ParameterInfo::ParameterFlags::kIsBypass)
 					bypass_param_id = pi.id;
-				}
 				else if (pi.flags & Steinberg::Vst::ParameterInfo::ParameterFlags::kIsProgramChange) {
 					program_change_param_id = pi.id;
 					program_change_param_idx = i;
-					program_change_unitid = pi.unitId;
 				}
 			}
 			

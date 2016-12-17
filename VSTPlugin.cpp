@@ -4,11 +4,11 @@
 
 using namespace std;
 
-VSTPlugin::VSTPlugin(HMODULE m, AEffect* plugin) : Plugin(m), VSTBase(plugin) {
+VSTPlugin::VSTPlugin(HMODULE m, AEffect* p) : Plugin(m), plugin(p) {
 	//editor = new EditorVST((char *)GetPluginName().c_str(), GetAEffect());
 	//PrintInfo();
-	state = new VSTPreset(GetAEffect());
-	GetAEffect()->resvd1 = reinterpret_cast<VstIntPtr>(this);
+	state = new VSTPreset(plugin);
+	plugin->resvd1 = reinterpret_cast<VstIntPtr>(this);
 	soft_bypass = CanDo("bypass");
 	StartPlugin();
 }
@@ -122,6 +122,10 @@ VstIntPtr VSTCALLBACK VSTPlugin::HostCallbackWrapper(AEffect *effect, VstInt32 o
 	return 0;
 }
 
+VstIntPtr VSTCALLBACK VSTPlugin::Dispatcher(VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt) {
+	return plugin->dispatcher(plugin, opcode, index, value, ptr, opt);
+}
+
 void VSTPlugin::StartPlugin() {
 	Dispatcher(effOpen);
 	//float sampleRate = 44100.0f;
@@ -132,17 +136,17 @@ void VSTPlugin::StartPlugin() {
 	SetActive(true);
 }
 
-void VSTPlugin::Process(float **input, float **output) {
+void VSTPlugin::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) {
 	if (IsActive()) {
 		if (BypassProcess()) // hard bypass
 			for (unsigned i = 0; i < GetChannelCount(); ++i)
 				std::memcpy(static_cast<void*>(output[i]), static_cast<void*>(input[i]), sizeof(input[0][0]));
 		else {
 			StartProcessing();
-			if (CanReplacing())
-				ProcessReplacing(input, output, block_size);
+			if (0 != (plugin->flags & VstAEffectFlags::effFlagsCanReplacing))
+				plugin->processReplacing(plugin, input, output, block_size);
 			else
-				VSTBase::Process(input, output, block_size);
+				plugin->process(plugin, input, output, block_size);
 			StopProcessing();
 		}
 	}
@@ -150,14 +154,14 @@ void VSTPlugin::Process(float **input, float **output) {
 
 bool VSTPlugin::IsValid() {
 	VstPlugCategory c = static_cast<VstPlugCategory>(Dispatcher(effGetPlugCategory));
-	return GetMagic() == kEffectMagic && c != kPlugCategSynth && c >= kPlugCategUnknown && c <= kPlugCategRestoration;
+	return plugin->magic == kEffectMagic && c != kPlugCategSynth && c >= kPlugCategUnknown && c <= kPlugCategRestoration;
 }
 
 void VSTPlugin::PrintPrograms() {
 	char ProgramName[kVstMaxProgNameLen + 1] = {0};
 	int currentProgram = Dispatcher(effGetProgram);
 	bool programChanged = false;
-	for (int i = 0; i < GetNumPrograms(); i++) {
+	for (decltype(GetProgramCount()) i = 0; i < GetProgramCount(); i++) {
 		if (Dispatcher(effGetProgramNameIndexed, i, 0, ProgramName)) std::cout << ProgramName << std::endl;
 		else {
 			Dispatcher(effSetProgram, 0, i);
@@ -173,7 +177,7 @@ void VSTPlugin::PrintParameters() {	// + 1, bo wyjatki wyrzucalo
 	char ParamDisplay[kVstMaxParamStrLen + 1] = {0};
 	char ParamName[kVstMaxParamStrLen + 1] = {0};
 	VstParameterProperties properties;
-	for (int i = 0; i < GetNumParams(); i++) {
+	for (decltype(GetParameterCount()) i = 0; i < GetParameterCount(); i++) {
 		Dispatcher(effGetParamLabel, i, 0, ParamLabel);
 		Dispatcher(effGetParamDisplay, i, 0, ParamDisplay);
 		Dispatcher(effGetParamName, i, 0, ParamName);
@@ -278,16 +282,54 @@ void VSTPlugin::PrintInfo() {
 		<< "Vendor: " << VendorString << endl
 		<< "Product: " << ProductString << endl
 		<< "Vendor Version: " << VendorVersion << endl
-		<< "UniqueID: " << GetUniqueID() << endl
+		<< "UniqueID: " << plugin->uniqueID << endl
 		<< "VST Version: " << VSTVersion << endl
 		<< separator << "Flags: " << endl;
-	PrintFlags();
-	cout << separator << "Presets(" << GetNumPrograms() << "):" << endl;
+	for (int i = 0; i < 13; i++) {
+		if (i == 6 || i == 7) continue;
+		switch (1 << i) {
+		case effFlagsHasEditor:
+			std::cout << "effFlagsHasEditor: ";
+			break;
+		case effFlagsCanReplacing:
+			std::cout << "effFlagsCanReplacing: ";
+			break;
+		case effFlagsProgramChunks:
+			std::cout << "effFlagsProgramChunks: ";
+			break;
+		case effFlagsIsSynth:
+			std::cout << "effFlagsIsSynth: ";
+			break;
+		case effFlagsNoSoundInStop:
+			std::cout << "effFlagsNoSoundInStop: ";
+			break;
+		case effFlagsCanDoubleReplacing:
+			std::cout << "effFlagsCanDoubleReplacing (VST 2.4): ";
+			break;
+		case effFlagsHasClip:
+			std::cout << "effFlagsHasClip (Deprecated): ";
+			break;
+		case effFlagsHasVu:
+			std::cout << "effFlagsHasVu (Deprecated): ";
+			break;
+		case effFlagsCanMono:
+			std::cout << "effFlagsCanMono (Deprecated): ";
+			break;
+		case effFlagsExtIsAsync:
+			std::cout << "effFlagsExtIsAsync (Deprecated): ";
+			break;
+		case effFlagsExtHasBuffer:
+			std::cout << "effFlagsExtHasBuffer (Deprecated): ";
+			break;
+		}
+		std::cout << (plugin->flags & (1 << i) ? "Yes" : "No") << std::endl;
+	}
+	cout << separator << "Presets(" << GetProgramCount() << "):" << endl;
 	PrintPrograms();
-	cout << separator << "Parameters(" << GetNumParams() << "):" << endl;
+	cout << separator << "Parameters(" << GetParameterCount() << "):" << endl;
 	//PrintParameters();
-	cout << separator << "Inputs: " << GetNumInputs() << endl
-		<< "Outputs: " << GetNumOutputs() << endl
+	cout << separator << "Inputs: " << plugin->numInputs << endl
+		<< "Outputs: " << plugin->numOutputs << endl
 		<< separator << "CanDo:" << endl;
 	PrintCanDos();
 	cout << separator;
@@ -314,7 +356,7 @@ std::vector<std::string> VSTPlugin::GetPresets() {
 	std::vector<std::string> v;
 	int currentProgram = Dispatcher(effGetProgram);
 	bool programChanged = false;
-	for (int i = 0; i < GetNumPrograms(); ++i) {
+	for (decltype(GetProgramCount()) i = 0; i < GetProgramCount(); ++i) {
 		char tmp[kVstMaxProgNameLen + 1] = { 0 };
 		if (!Dispatcher(effGetProgramNameIndexed, i, 0, tmp)) {
 			Dispatcher(effSetProgram, 0, i);
@@ -328,27 +370,29 @@ std::vector<std::string> VSTPlugin::GetPresets() {
 }
 
 bool VSTPlugin::HasEditor() {
-	return VSTBase::HasEditor();
+	return static_cast<bool>(plugin->flags & effFlagsHasEditor);
 }
 
 Steinberg::uint32 VSTPlugin::GetProgramCount() {
-	return 0;
+	return plugin->numPrograms;
 }
 
 void VSTPlugin::SetProgram(Steinberg::int32 id) {
-
+	Dispatcher(AEffectXOpcodes::effBeginSetProgram);
+	Dispatcher(AEffectOpcodes::effSetProgram, 0, id);
+	Dispatcher(AEffectXOpcodes::effEndSetProgram);
 }
 
 Steinberg::uint32 VSTPlugin::GetParameterCount() {
-	return 0;
+	return plugin->numParams;
 }
 
 Steinberg::Vst::ParamValue VSTPlugin::GetParameter(Steinberg::Vst::ParamID id) {
-	return 0;
+	return plugin->getParameter(plugin, id);
 }
 
 void VSTPlugin::SetParameter(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value) {
-
+	plugin->setParameter(plugin, id, static_cast<float>(value));
 }
 
 void VSTPlugin::SaveState() {
