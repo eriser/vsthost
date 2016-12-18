@@ -326,20 +326,6 @@ Steinberg::IPlugView* VST3Plugin::CreateView() {
 	return editController->createView("editor");
 }
 
-std::vector<std::string> VST3Plugin::GetPresets() {
-	std::vector<std::string> ret;
-	Steinberg::Vst::ProgramListInfo list_info{};
-	for (Steinberg::uint32 i = 0; i < program_count; ++i) {
-		if (unit_info->getProgramListInfo(0, list_info) == Steinberg::kResultTrue) {
-			Steinberg::Vst::String128 tmp = { 0 };
-			if (unit_info->getProgramName(list_info.id, i, tmp) == Steinberg::kResultTrue)
-				Steinberg::String str(tmp);
-
-		}
-	}
-	return ret;
-}
-
 bool VST3Plugin::HasEditor() {
 	return has_editor;
 }

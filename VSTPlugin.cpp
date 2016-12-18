@@ -357,28 +357,11 @@ std::string VSTPlugin::GetPluginName() {
 	return std::string(name);
 }
 
-std::vector<std::string> VSTPlugin::GetPresets() {
-	std::vector<std::string> v;
-	int currentProgram = Dispatcher(effGetProgram);
-	bool programChanged = false;
-	for (decltype(GetProgramCount()) i = 0; i < GetProgramCount(); ++i) {
-		char tmp[kVstMaxProgNameLen + 1] = { 0 };
-		if (!Dispatcher(effGetProgramNameIndexed, i, 0, tmp)) {
-			Dispatcher(effSetProgram, 0, i);
-			Dispatcher(effGetProgramName, 0, 0, tmp);
-			if (!programChanged) programChanged = true;
-		}
-		v.emplace_back(tmp);
-	}
-	if (programChanged) Dispatcher(effSetProgram, 0, currentProgram);
-	return v;
-}
-
 bool VSTPlugin::HasEditor() {
 	return static_cast<bool>(plugin->flags & effFlagsHasEditor);
 }
 
-Steinberg::uint32 VSTPlugin::GetProgramCount() {
+Steinberg::int32 VSTPlugin::GetProgramCount() {
 	return plugin->numPrograms;
 }
 
@@ -388,7 +371,7 @@ void VSTPlugin::SetProgram(Steinberg::int32 id) {
 	Dispatcher(AEffectXOpcodes::effEndSetProgram);
 }
 
-Steinberg::uint32 VSTPlugin::GetParameterCount() {
+Steinberg::int32 VSTPlugin::GetParameterCount() {
 	return plugin->numParams;
 }
 
