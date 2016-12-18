@@ -6,17 +6,12 @@
 using namespace std;
 
 VSTPlugin::VSTPlugin(HMODULE m, AEffect* p) : Plugin(m), plugin(p) {
-	//editor = new EditorVST((char *)GetPluginName().c_str(), GetAEffect());
-	//PrintInfo();
-	state = new VSTPreset(plugin);
-	plugin->resvd1 = reinterpret_cast<VstIntPtr>(this);
-	soft_bypass = CanDo("bypass");
-	StartPlugin();
+
 }
 
 VSTPlugin::~VSTPlugin() {
 	if (module) 
-		FreeLibrary(module);
+		::FreeLibrary(module);
 }
 
 VstIntPtr VSTCALLBACK VSTPlugin::HostCallback(AEffect *effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt) {
@@ -45,43 +40,43 @@ VstIntPtr VSTCALLBACK VSTPlugin::HostCallback(AEffect *effect, VstInt32 opcode, 
 		case AudioMasterOpcodesX::audioMasterOfflineGetCurrentMetaPass:
 			return 0; // unsupported
 		case AudioMasterOpcodesX::audioMasterGetVendorString:
-			memcpy(ptr, "jperek", 7); // kVstMaxVendorStrLen
+			std::memcpy(ptr, "jperek", 7); // kVstMaxVendorStrLen
 			return 1;
 		case AudioMasterOpcodesX::audioMasterGetProductString:
-			memcpy(ptr, "VSTHost", 8); // kVstMaxProductStrLen
+			std::memcpy(ptr, "VSTHost", 8); // kVstMaxProductStrLen
 			return 1;
 		case AudioMasterOpcodesX::audioMasterGetVendorVersion:
 			return 1000;
 		case AudioMasterOpcodesX::audioMasterVendorSpecific:
 			return 0;
 		case AudioMasterOpcodesX::audioMasterCanDo:
-			if (strcmp(static_cast<char*>(ptr), "sendVstEvents") == 0)
+			if (std::strcmp(static_cast<char*>(ptr), "sendVstEvents") == 0)
 				return -1;
-			else if (strcmp(static_cast<char*>(ptr), "sendVstMidiEvent") == 0)
+			else if (std::strcmp(static_cast<char*>(ptr), "sendVstMidiEvent") == 0)
 				return -1;
-			else if (strcmp(static_cast<char*>(ptr), "sendVstTimeInfo") == 0)
+			else if (std::strcmp(static_cast<char*>(ptr), "sendVstTimeInfo") == 0)
 				return -1;
-			else if (strcmp(static_cast<char*>(ptr), "receiveVstEvents") == 0)
+			else if (std::strcmp(static_cast<char*>(ptr), "receiveVstEvents") == 0)
 				return -1;
-			else if (strcmp(static_cast<char*>(ptr), "receiveVstMidiEvent") == 0)
+			else if (std::strcmp(static_cast<char*>(ptr), "receiveVstMidiEvent") == 0)
 				return -1;
-			else if (strcmp(static_cast<char*>(ptr), "reportConnectionChanges") == 0)
+			else if (std::strcmp(static_cast<char*>(ptr), "reportConnectionChanges") == 0)
 				return -1;
-			else if (strcmp(static_cast<char*>(ptr), "acceptIOChanges") == 0)
+			else if (std::strcmp(static_cast<char*>(ptr), "acceptIOChanges") == 0)
 				return 1;
-			else if (strcmp(static_cast<char*>(ptr), "sizeWindow") == 0)
+			else if (std::strcmp(static_cast<char*>(ptr), "sizeWindow") == 0)
 				return -1;
-			else if (strcmp(static_cast<char*>(ptr), "offline") == 0)
+			else if (std::strcmp(static_cast<char*>(ptr), "offline") == 0)
 				return -1;
-			else if (strcmp(static_cast<char*>(ptr), "openFileSelector") == 0)
+			else if (std::strcmp(static_cast<char*>(ptr), "openFileSelector") == 0)
 				return -1;
-			else if (strcmp(static_cast<char*>(ptr), "closeFileSelector") == 0)
+			else if (std::strcmp(static_cast<char*>(ptr), "closeFileSelector") == 0)
 				return -1;
-			else if (strcmp(static_cast<char*>(ptr), "startStopProcess") == 0)
+			else if (std::strcmp(static_cast<char*>(ptr), "startStopProcess") == 0)
 				return 1;
-			else if (strcmp(static_cast<char*>(ptr), "shellCategory") == 0)
+			else if (std::strcmp(static_cast<char*>(ptr), "shellCategory") == 0)
 				return -1;
-			else if (strcmp(static_cast<char*>(ptr), "sendVstMidiEventFlagIsRealtime") == 0)
+			else if (std::strcmp(static_cast<char*>(ptr), "sendVstMidiEventFlagIsRealtime") == 0)
 				return -1;
 			return 0;
 		case AudioMasterOpcodesX::audioMasterGetLanguage:
@@ -92,15 +87,16 @@ VstIntPtr VSTCALLBACK VSTPlugin::HostCallback(AEffect *effect, VstInt32 opcode, 
 			std::string tmp(buf, length);
 			std::string::size_type pos = 0;
 			if ((pos = tmp.find_last_of('\\')) != std::string::npos) {
-				memcpy(ptr, tmp.c_str(), tmp.size());
+				std::memcpy(ptr, tmp.c_str(), tmp.size());
 				return 1;
 			}
 			else 
 				return 0;
 		}
 		case AudioMasterOpcodesX::audioMasterUpdateDisplay:
-			//if (gui)  // dont have acces to editors hwnd
-			return 0;
+			if (gui)
+				;//gui->Update();
+			return 1;
 		case AudioMasterOpcodesX::audioMasterBeginEdit:
 			//index
 			return 1;
@@ -134,14 +130,14 @@ void VSTPlugin::CreateEditor(HWND hWnd) {
 	}
 }
 
-void VSTPlugin::StartPlugin() {
-	Dispatcher(effOpen);
-	//float sampleRate = 44100.0f;
-	//SetSampleRate(sampleRate);
-	//int blockSize = 512;
-	//SetBlockSize(blockSize);
-	//PrintParameters();
+void VSTPlugin::Initialize() {
+	Dispatcher(AEffectOpcodes::effOpen);
+	SetSampleRate(sample_rate);
+	SetBlockSize(block_size);
 	UpdateSpeakerArrangement();
+	state = new VSTPreset(plugin);
+	plugin->resvd1 = reinterpret_cast<VstIntPtr>(this);
+	soft_bypass = CanDo("bypass");
 	SetActive(true);
 }
 

@@ -15,16 +15,15 @@ class Plugin {
 public:
 	Plugin(HMODULE m) : module(m) {}
 	virtual ~Plugin() {   }
-	virtual void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) = 0;
 	virtual bool IsValid() = 0;
+	virtual void Initialize() = 0;
+	virtual void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) = 0;
 	virtual void CreateEditor(HWND hWnd) = 0;
 	bool IsGUIActive();
 	void ShowEditor();
 	void HideEditor();
 	virtual void PrintInfo() = 0;
 	virtual std::string GetPluginName() = 0;
-	virtual bool IsVST3() = 0;
-	virtual bool isVST() = 0;
 	virtual std::vector<std::string> GetPresets() = 0;
 	virtual bool HasEditor() = 0;
 	virtual Steinberg::uint32 GetProgramCount() = 0;

@@ -63,6 +63,7 @@ bool Host::LoadPlugin(std::string path) {
 		if (plugin->IsValid()) {
 			std::cout << "Loaded " << name << "." << std::endl;
 			plugins.push_back(plugin);
+			plugin->Initialize();
 			return true;
 		}
 		else {

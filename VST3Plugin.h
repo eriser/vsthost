@@ -30,9 +30,10 @@ public:
 	END_DEFINE_INTERFACES(FObject)
 	VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f);
 	~VST3Plugin();
+	bool IsValid();
+	void Initialize();
 	void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output);
 	void ProcessOutputParameterChanges();
-	bool IsValid();
 	void CreateEditor(HWND hWnd);
 	void PrintInfo();
 	void PrintFactory();
@@ -41,9 +42,6 @@ public:
 	void PrintBusInfo();
 	void PrintParameters();
 	std::string GetPluginName();
-	void SetupAudio();
-	bool IsVST3() { return true; }
-	bool isVST() { return false; }
 	Steinberg::IPlugView * CreateView();
 	Steinberg::tresult PLUGIN_API beginEdit(Steinberg::Vst::ParamID id);
 	Steinberg::tresult PLUGIN_API performEdit(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue valueNormalized);

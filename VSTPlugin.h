@@ -17,16 +17,13 @@ class VSTPlugin : public Plugin {
 public:
 	VSTPlugin(HMODULE m, AEffect* p);
 	~VSTPlugin();
+	bool IsValid();
+	void Initialize();
 	VstIntPtr VSTCALLBACK HostCallback(AEffect* effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt);
 	static VstIntPtr VSTCALLBACK HostCallbackWrapper(AEffect *effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt);
 	VstIntPtr VSTCALLBACK Dispatcher(VstInt32 opcode, VstInt32 index = 0, VstIntPtr value = 0, void* ptr = nullptr, float opt = 0.);
 	void CreateEditor(HWND hWnd);
-	void InThread();
-	bool IsVST3() { return false; }
-	bool isVST() { return true; }
-	void StartPlugin();
 	void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output);
-	bool IsValid();
 	void PrintPrograms();
 	void PrintParameters();
 	bool CanDo(const char *canDo);

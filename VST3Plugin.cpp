@@ -12,83 +12,38 @@
 #include "base\source\fstring.h"
 
 VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), factory(f) {
-	Steinberg::tresult res;
 	Steinberg::PClassInfo ci;
-	factory->getClassInfo(0, &ci);
-	if (factory->createInstance(ci.cid, FUnknown::iid, reinterpret_cast<void**>(&plugin)) == Steinberg::kResultOk && plugin) {
-		res = plugin->queryInterface(Steinberg::Vst::IComponent::iid, reinterpret_cast<void**>(&processorComponent));
-		if (res == Steinberg::kResultOk && processorComponent)
-			res = processorComponent->initialize(UnknownCast());
-		res = (plugin->queryInterface(Steinberg::Vst::IEditController::iid, reinterpret_cast<void**>(&editController)));
-		if (res != Steinberg::kResultOk) {
-			Steinberg::FUID controllerCID;
-			if (processorComponent->getControllerClassId(controllerCID) == Steinberg::kResultTrue && controllerCID.isValid())
-				res = factory->createInstance(controllerCID, Steinberg::Vst::IEditController::iid, (void**)&editController);
-		}
-		if (res == Steinberg::kResultOk && editController) {
-			editController->initialize(UnknownCast());
-			editController->setComponentHandler(this);
-
-			// check if plugin has editor and remember it
-			auto tmp = editController->createView(Steinberg::Vst::ViewType::kEditor);
-			has_editor = tmp != nullptr;
-			if (tmp)
-				tmp->release();
-
-			// check for bypass parameter (soft bypass) and for preset change parameter
-			Steinberg::Vst::ParameterInfo pi;
-			static Steinberg::Vst::ParamID kNoParamId = -1;
-			for (Steinberg::int32 i = 0; i < editController->getParameterCount() && (bypass_param_id == -1 || program_change_param_id == -1); ++i) {
-				editController->getParameterInfo(i, pi);
-				if (pi.flags & Steinberg::Vst::ParameterInfo::ParameterFlags::kIsBypass)
-					bypass_param_id = pi.id;
-				else if (pi.flags & Steinberg::Vst::ParameterInfo::ParameterFlags::kIsProgramChange) {
-					program_change_param_id = pi.id;
-					program_change_param_idx = i;
+	Steinberg::tresult result;
+	bool initialized = false;
+	decltype(factory->countClasses()) i = 0;
+	for (decltype(factory->countClasses()) i = 0; i < factory->countClasses(); ++i) {
+		factory->getClassInfo(i, &ci);
+		result = factory->createInstance(ci.cid, FUnknown::iid, reinterpret_cast<void**>(&plugin));
+		if (result == Steinberg::kResultOk && plugin) {
+			result = plugin->queryInterface(Steinberg::Vst::IComponent::iid, reinterpret_cast<void**>(&processorComponent));
+			if (result == Steinberg::kResultOk && processorComponent) {
+				
+				result = plugin->queryInterface(Steinberg::Vst::IEditController::iid, reinterpret_cast<void**>(&editController));
+				if (result != Steinberg::kResultOk && processorComponent) {
+					Steinberg::FUID controllerCID;
+					if (processorComponent->getControllerClassId(controllerCID) == Steinberg::kResultTrue && controllerCID.isValid())
+						result = factory->createInstance(controllerCID, Steinberg::Vst::IEditController::iid, (void**)&editController);
+				}
+				if (result == Steinberg::kResultOk) {
+					if (initialized = (processorComponent->initialize(UnknownCast()) == Steinberg::kResultOk))
+						result = processorComponent->queryInterface(Steinberg::Vst::IAudioProcessor::iid, reinterpret_cast<void**>(&audio));
 				}
 			}
-			
-			// establish program count
-			editController->queryInterface(Steinberg::Vst::IUnitInfo::iid, reinterpret_cast<void**>(&unit_info));
-			if (unit_info) {
-				auto program_list_count = unit_info->getProgramListCount();
-				if (program_list_count > 0) {
-					Steinberg::int32 i = 0;
-					Steinberg::Vst::UnitInfo unit{};
-					while (i < unit_info->getUnitCount() && unit_info->getUnitInfo(i, unit) == Steinberg::kResultTrue && unit.id != Steinberg::Vst::kRootUnitId)
-						++i; // there has got to be a root unit id if getUnitCount returns more than zero
-					program_list_root = unit.programListId;
-					Steinberg::Vst::ProgramListInfo prog_list{};
-					i = 0;
-					while (i < program_list_count && unit_info->getProgramListInfo(i, prog_list) == Steinberg::kResultTrue) {
-						if (prog_list.id == program_list_root) {
-							program_count = prog_list.programCount;
-							break;
-						}
-						++i;
-					}
-				}
-			}
-
-			Steinberg::Vst::IConnectionPoint* iConnectionPointComponent = nullptr;
-			Steinberg::Vst::IConnectionPoint* iConnectionPointController = nullptr;
-			processorComponent->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&iConnectionPointComponent);
-			editController->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&iConnectionPointController);
-			if (iConnectionPointComponent && iConnectionPointController) {
-				iConnectionPointComponent->connect(iConnectionPointController);
-				iConnectionPointController->connect(iConnectionPointComponent);
-			} 
-			Steinberg::MemoryStream stream;
-			if (processorComponent->getState(&stream) == Steinberg::kResultTrue) {
-				stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
-				editController->setComponentState(&stream);
-			}
 		}
-		
-		SetupAudio();
-		//PrintFactory();
+		if (IsValid() && result == Steinberg::kResultOk)
+			break;
+		if (initialized)
+			processorComponent->terminate();
+		processorComponent = nullptr;
+		editController = nullptr;
+		audio = nullptr;
+		initialized = false;
 	}
-	state = new VST3Preset(processorComponent, editController, GetPluginName());
 }
 
 VST3Plugin::~VST3Plugin() {
@@ -98,59 +53,114 @@ VST3Plugin::~VST3Plugin() {
 		processorComponent->release();
 	if (editController)
 		editController->release();
-	if (plugin) 
+	if (plugin)
 		plugin->release();
 	if (factory)
 		factory->release();
 	void* exitProc = nullptr;
-	if (module)
-		exitProc = GetProcAddress(module, "ExitDll");
+	if (module) {
+		exitProc = ::GetProcAddress(module, "ExitDll");
 		if (exitProc)
 			static_cast<ExitModuleProc>(exitProc)();
-		FreeLibrary(module);
+		::FreeLibrary(module);
+	}
 }
 
-void VST3Plugin::SetupAudio() {
-	if (processorComponent) {
-		Steinberg::tresult res = processorComponent->queryInterface(Steinberg::Vst::IAudioProcessor::iid, reinterpret_cast<void**>(&audio));
-		if (res == Steinberg::kResultOk) {
-			SetActive(false);
-			// PROCESS SETUP
-			Steinberg::Vst::ProcessSetup ps;
-			if (audio->canProcessSampleSize(Steinberg::Vst::kSample32) == Steinberg::kResultOk)
-				ps.symbolicSampleSize = Steinberg::Vst::kSample32;
-			else
-				ps.symbolicSampleSize = Steinberg::Vst::kSample64; // zamienic
-			ps.processMode = Steinberg::Vst::kRealtime;
-			ps.sampleRate = sample_rate;
-			audio->setupProcessing(ps);
+void VST3Plugin::Initialize() {
+	// initialize edit controller (processor component is already initialized)
+	editController->initialize(UnknownCast());
+	editController->setComponentHandler(this);
 
-			// PROCESS DATA
-			if (audio->canProcessSampleSize(Steinberg::Vst::kSample32) == Steinberg::kResultOk)
-				pd.symbolicSampleSize = Steinberg::Vst::kSample32;
-			else
-				pd.symbolicSampleSize = Steinberg::Vst::kSample64; // zamienic
-			pd.numSamples = block_size;
-			pd.processMode = Steinberg::Vst::kRealtime;
-			pd.numInputs = 1;
-			pd.numOutputs = 1;
-			pd.inputs = new Steinberg::Vst::AudioBusBuffers;
-			pd.inputs->numChannels = Steinberg::Vst::SpeakerArr::getChannelCount(speaker_arrangement);
-			pd.outputs = new Steinberg::Vst::AudioBusBuffers;
-			pd.outputs->numChannels = Steinberg::Vst::SpeakerArr::getChannelCount(speaker_arrangement);
+	// synchronize controller and processor
+	Steinberg::Vst::IConnectionPoint* iConnectionPointComponent = nullptr;
+	Steinberg::Vst::IConnectionPoint* iConnectionPointController = nullptr;
+	processorComponent->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&iConnectionPointComponent);
+	editController->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&iConnectionPointController);
+	if (iConnectionPointComponent && iConnectionPointController) {
+		iConnectionPointComponent->connect(iConnectionPointController);
+		iConnectionPointController->connect(iConnectionPointComponent);
+	}
+	Steinberg::MemoryStream stream;
+	if (processorComponent->getState(&stream) == Steinberg::kResultTrue) {
+		stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
+		editController->setComponentState(&stream);
+	}
 
-			if (editController) {
-				auto param_count = editController->getParameterCount();
-				pd.inputParameterChanges = new Steinberg::Vst::ParameterChanges(param_count);
-				pd.outputParameterChanges = new Steinberg::Vst::ParameterChanges(param_count);
-			}
+	// check if plugin has editor and remember it
+	auto tmp = editController->createView(Steinberg::Vst::ViewType::kEditor);
+	has_editor = tmp != nullptr;
+	if (tmp)
+		tmp->release();
 
-
-			SetActive(true);
+	// check for bypass parameter (soft bypass) and for preset change parameter
+	Steinberg::Vst::ParameterInfo pi;
+	static Steinberg::Vst::ParamID kNoParamId = -1;
+	for (Steinberg::int32 i = 0; i < editController->getParameterCount() && (bypass_param_id == -1 || program_change_param_id == -1); ++i) {
+		editController->getParameterInfo(i, pi);
+		if (pi.flags & Steinberg::Vst::ParameterInfo::ParameterFlags::kIsBypass)
+			bypass_param_id = pi.id;
+		else if (pi.flags & Steinberg::Vst::ParameterInfo::ParameterFlags::kIsProgramChange) {
+			program_change_param_id = pi.id;
+			program_change_param_idx = i;
 		}
 	}
+
+	// establish program count
+	editController->queryInterface(Steinberg::Vst::IUnitInfo::iid, reinterpret_cast<void**>(&unit_info));
+	if (unit_info) {
+		auto program_list_count = unit_info->getProgramListCount();
+		if (program_list_count > 0) {
+			Steinberg::int32 i = 0;
+			Steinberg::Vst::UnitInfo unit{};
+			while (i < unit_info->getUnitCount() && unit_info->getUnitInfo(i, unit) == Steinberg::kResultTrue && unit.id != Steinberg::Vst::kRootUnitId)
+				++i; // there has got to be a root unit id if getUnitCount returns more than zero
+			program_list_root = unit.programListId;
+			Steinberg::Vst::ProgramListInfo prog_list{};
+			i = 0;
+			while (i < program_list_count && unit_info->getProgramListInfo(i, prog_list) == Steinberg::kResultTrue) {
+				if (prog_list.id == program_list_root) {
+					program_count = prog_list.programCount;
+					break;
+				}
+				++i;
+			}
+		}
+	}
+
+	// setup audio stuff
+	Steinberg::Vst::ProcessSetup ps{};
+	if (audio->canProcessSampleSize(Steinberg::Vst::kSample32) == Steinberg::kResultOk)
+		ps.symbolicSampleSize = Steinberg::Vst::kSample32;
 	else
-		std::cout << "processor component error" << std::endl;
+		ps.symbolicSampleSize = Steinberg::Vst::kSample64;
+	ps.processMode = Steinberg::Vst::kRealtime;
+	ps.sampleRate = sample_rate;
+	audio->setupProcessing(ps);
+
+	// setup process data
+	if (audio->canProcessSampleSize(Steinberg::Vst::kSample32) == Steinberg::kResultOk)
+		pd.symbolicSampleSize = Steinberg::Vst::kSample32;
+	else
+		pd.symbolicSampleSize = Steinberg::Vst::kSample64;
+	pd.numSamples = block_size;
+	pd.processMode = Steinberg::Vst::kRealtime;
+	pd.numInputs = 1;
+	pd.numOutputs = 1;
+	pd.inputs = new Steinberg::Vst::AudioBusBuffers;
+	pd.inputs->numChannels = Steinberg::Vst::SpeakerArr::getChannelCount(speaker_arrangement);
+	pd.outputs = new Steinberg::Vst::AudioBusBuffers;
+	pd.outputs->numChannels = Steinberg::Vst::SpeakerArr::getChannelCount(speaker_arrangement);
+
+	// create parameter changes
+	if (editController) {
+		auto param_count = editController->getParameterCount();
+		pd.inputParameterChanges = new Steinberg::Vst::ParameterChanges(param_count);
+		pd.outputParameterChanges = new Steinberg::Vst::ParameterChanges(param_count);
+	}
+	SetActive(true);
+
+	// create plugin state module
+	state = new VST3Preset(processorComponent, editController, GetPluginName());
 }
 
 void VST3Plugin::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) {
@@ -188,7 +198,8 @@ bool VST3Plugin::IsValid() {
 		Steinberg::PClassInfo2 ci2;
 		factory2->getClassInfo2(0, &ci2);
 		factory2->release();
-		if (!std::strcmp(ci2.category, "Audio Module Class") && ci2.subCategories[0] == 'F' && ci2.subCategories[1] == 'x')
+		if (!std::strcmp(ci2.category, "Audio Module Class") && ci2.subCategories[0] == 'F' && ci2.subCategories[1] == 'x'
+			&& editController && audio && processorComponent)
 			return true;
 	}
 	return false;
