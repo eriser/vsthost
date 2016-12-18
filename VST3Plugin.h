@@ -17,7 +17,9 @@
 
 #include "Plugin.h"
 
+class VST3PluginGUI;
 class VST3Plugin : public Plugin, public Steinberg::FObject, public Steinberg::Vst::IComponentHandler {
+	friend class VST3PluginGUI;
 	// extern "C" ?
 	typedef bool (PLUGIN_API *ExitModuleProc)();
 public:
@@ -31,6 +33,7 @@ public:
 	void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output);
 	void ProcessOutputParameterChanges();
 	bool IsValid();
+	void CreateEditor(HWND hWnd);
 	void PrintInfo();
 	void PrintFactory();
 	void PrintClass(const Steinberg::PClassInfo& ci, int i);

@@ -64,6 +64,10 @@ LRESULT CALLBACK VSTPluginGUI::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LP
 			OnCreate(hWnd);
 			break;
 		case WM_COMMAND:
+			if (LOWORD(wParam) >= MenuItem::Preset) {
+				plugin.SetProgram(LOWORD(wParam) - MenuItem::Preset);
+				break;
+			}
 			switch (LOWORD(wParam)) {
 				case MenuItem::Bypass:
 					HMENU menu;
@@ -106,22 +110,34 @@ LRESULT CALLBACK VSTPluginGUI::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LP
 }
 
 HMENU VSTPluginGUI::CreateMenu() {
-	HMENU menu = ::CreateMenu();
-	HMENU plugin = ::CreateMenu();
-	AppendMenu(plugin, MF_STRING, MenuItem::Bypass, "Bypass");
-	AppendMenu(plugin, MF_STRING, MenuItem::Close, "Close");
-	AppendMenu(menu, MF_POPUP, (UINT_PTR)plugin, "Plugin");
+	HMENU hmenu = ::CreateMenu();
+	HMENU hplugin = ::CreateMenu();
+	AppendMenu(hplugin, MF_STRING, MenuItem::Bypass, "Bypass");
+	AppendMenu(hplugin, MF_STRING, MenuItem::Close, "Close");
+	AppendMenu(hmenu, MF_POPUP, (UINT_PTR)hplugin, "Plugin");
 
-	HMENU presets = ::CreateMenu();
-	HMENU load = ::CreateMenu();
-	auto v = VSTPluginGUI::plugin.GetPresets();
-	int i = 0;
-	for (auto& s : v) AppendMenu(load, MF_STRING | MF_GRAYED, i++, s.c_str());
-	AppendMenu(presets, MF_POPUP, (UINT_PTR)load, "Load Preset");
-	AppendMenu(presets, MF_STRING, MenuItem::Save, "Save");
-	AppendMenu(presets, MF_STRING, MenuItem::Load, "Load");
-	AppendMenu(presets, MF_STRING, MenuItem::SaveToFile, "Save To File");
-	AppendMenu(presets, MF_STRING, MenuItem::LoadFromFile, "Load From File");
-	AppendMenu(menu, MF_POPUP, (UINT_PTR)presets, "Presets");
-	return menu;
+	HMENU hpresets = ::CreateMenu();
+	HMENU hload = ::CreateMenu();
+	auto currentProgram = Dispatcher(AEffectOpcodes::effGetProgram);
+	bool programChanged = false;
+	for (decltype(plugin.GetProgramCount()) i = 0; i < plugin.GetProgramCount(); ++i) {
+		char tmp[kVstMaxProgNameLen + 1] = { 0 };
+		plugin.Dispatcher(AEffectXOpcodes::effBeginSetProgram);
+		if (!Dispatcher(AEffectXOpcodes::effGetProgramNameIndexed, i, 0, tmp)) {
+			Dispatcher(AEffectOpcodes::effSetProgram, 0, i);
+			Dispatcher(AEffectOpcodes::effGetProgramName, 0, 0, tmp);
+			if (!programChanged) programChanged = true;
+		}
+		plugin.Dispatcher(AEffectXOpcodes::effEndSetProgram);
+		AppendMenu(hload, MF_STRING, MenuItem::Preset + i, tmp);
+	}
+	if (programChanged) Dispatcher(AEffectOpcodes::effSetProgram, 0, currentProgram);
+	
+	AppendMenu(hpresets, plugin.GetProgramCount() > 0 ? MF_POPUP : MF_POPUP | MF_GRAYED, (UINT_PTR)hload, "Load Preset");
+	AppendMenu(hpresets, MF_STRING, MenuItem::Save, "Save");
+	AppendMenu(hpresets, MF_STRING, MenuItem::Load, "Load");
+	AppendMenu(hpresets, MF_STRING, MenuItem::SaveToFile, "Save To File");
+	AppendMenu(hpresets, MF_STRING, MenuItem::LoadFromFile, "Load From File");
+	AppendMenu(hmenu, MF_POPUP, (UINT_PTR)hpresets, "Presets");
+	return hmenu;
 }

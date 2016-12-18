@@ -9,12 +9,18 @@
 
 #include "pluginterfaces/vst/vsttypes.h"
 #include "Preset.h"
+
+class PluginGUI;
 class Plugin {
 public:
 	Plugin(HMODULE m) : module(m) {}
 	virtual ~Plugin() {   }
 	virtual void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) = 0;
 	virtual bool IsValid() = 0;
+	virtual void CreateEditor(HWND hWnd) = 0;
+	bool IsGUIActive();
+	void ShowEditor();
+	void HideEditor();
 	virtual void PrintInfo() = 0;
 	virtual std::string GetPluginName() = 0;
 	virtual bool IsVST3() = 0;
@@ -63,6 +69,7 @@ protected:
 	static Steinberg::uint32 GetChannelCount() {
 		return static_cast<Steinberg::uint32>(Steinberg::Vst::SpeakerArr::getChannelCount(speaker_arrangement));
 	}
+	PluginGUI* gui{ nullptr };
 };
 
 #endif

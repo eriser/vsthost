@@ -11,7 +11,9 @@
 #include "VSTBase.h"
 #include "Plugin.h"
 
+class VSTPluginGUI;
 class VSTPlugin : public Plugin {
+	friend class VSTPluginGUI;
 public:
 	VSTPlugin(HMODULE m, AEffect* p);
 	~VSTPlugin();

@@ -33,7 +33,6 @@ public:
 	void OpenDialog();
 private:
 	Host& host;
-	std::vector<PluginGUI*> editors;
 	OPENFILENAME *ofn = { nullptr };
 	HWND plugin_list;
 	HWND buttons[Items::BUTTON_COUNT];

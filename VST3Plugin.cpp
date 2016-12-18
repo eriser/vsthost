@@ -6,6 +6,7 @@
 
 #include "pluginterfaces/gui/iplugview.h"
 
+#include "VST3PluginGUI.h"
 #include "VST3Preset.h"
 #include <cstring>
 #include "base\source\fstring.h"
@@ -193,6 +194,13 @@ bool VST3Plugin::IsValid() {
 	return false;
 }
 
+void VST3Plugin::CreateEditor(HWND hWnd) {
+	if (!gui && HasEditor()) {
+		gui = new VST3PluginGUI(*this);
+		gui->Initialize(hWnd);
+	}
+}
+
 void VST3Plugin::PrintInfo() {
 
 }
@@ -315,8 +323,8 @@ std::vector<std::string> VST3Plugin::GetPresets() {
 		if (unit_info->getProgramListInfo(0, list_info) == Steinberg::kResultTrue) {
 			Steinberg::Vst::String128 tmp = { 0 };
 			if (unit_info->getProgramName(list_info.id, i, tmp) == Steinberg::kResultTrue)
-				//	ret.emplace_back(tmp);
-				std::wcout << tmp << std::endl;
+				Steinberg::String str(tmp);
+
 		}
 	}
 	return ret;

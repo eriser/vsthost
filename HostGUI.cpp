@@ -17,7 +17,7 @@ const int HostGUI::kWindowHeight = 500;
 const int HostGUI::kListWidth = 150;
 const int HostGUI::kListHeight = 250;
 const int HostGUI::kButtonWidth = 30;
-const int HostGUI::kButtonHeight = 120;
+const int HostGUI::kButtonHeight = 120; // move to enum?
 
 HostGUI::HostGUI(Host& h) : Window(kWindowWidth, kWindowHeight), host(h) { }
 
@@ -37,7 +37,6 @@ bool HostGUI::Initialize(HWND parent) {
 			PopulatePluginList();
 			SelectPlugin(0);
 		}
-		
 		return 0 != wnd;
 	}
 	else return false;
@@ -71,7 +70,6 @@ LRESULT CALLBACK HostGUI::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 						auto count = GetPluginCount();
 						host.DeletePlugin(sel);
 						// todo: need to call destructor here and free stuff regarding editor
-						editors.erase(editors.begin() + sel);
 						PopulatePluginList();
 						if (sel == count - 1)
 							SelectPlugin(sel - 1);
@@ -114,8 +112,8 @@ LRESULT CALLBACK HostGUI::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 				case Items::Show:
 					if (HIWORD(wParam) == BN_CLICKED) {
 						auto sel = GetPluginSelection();
-						if (editors[sel]) {
-							editors[sel]->Show();
+						if (host.plugins[sel]->HasEditor()) {
+							host.plugins[sel]->ShowEditor();
 							EnableWindow(buttons[Items::Show], false);
 							EnableWindow(buttons[Items::Hide], true);
 						}
@@ -124,8 +122,8 @@ LRESULT CALLBACK HostGUI::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 				case Items::Hide:
 					if (HIWORD(wParam) == BN_CLICKED) {
 						auto sel = GetPluginSelection();
-						if (editors[sel]) {
-							editors[sel]->Hide();
+						if (host.plugins[sel]->HasEditor()) {
+							host.plugins[sel]->HideEditor();
 							EnableWindow(buttons[Items::Show], true);
 							EnableWindow(buttons[Items::Hide], false);
 						}
@@ -148,6 +146,8 @@ LRESULT CALLBACK HostGUI::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 }
 
 void HostGUI::AddEditor(Plugin* p) {
+	p->CreateEditor(wnd);
+	/*
 	PluginGUI* editor = nullptr;
 	if (p->HasEditor()) {
 		if (p->isVST()) editor = new VSTPluginGUI(*dynamic_cast<VSTPlugin*>(p));
@@ -158,6 +158,7 @@ void HostGUI::AddEditor(Plugin* p) {
 		}
 	}
 	editors.push_back(editor);
+	*/
 }
 
 void HostGUI::PopulatePluginList() {
@@ -203,7 +204,6 @@ void HostGUI::OpenDialog() {
 			AddEditor(host.plugins.back());
 			PopulatePluginList();
 			SelectPlugin(count);
-			
 		}
 	}
 }
@@ -226,8 +226,8 @@ void HostGUI::SelectPlugin(unsigned i) {
 			EnableWindow(buttons[Items::Hide], false);
 		}
 		else {
-			EnableWindow(buttons[Items::Show], editors[i] && !editors[i]->IsActive());
-			EnableWindow(buttons[Items::Hide], !(editors[i] && !editors[i]->IsActive()));
+			EnableWindow(buttons[Items::Show], !host.plugins[i]->IsGUIActive());
+			EnableWindow(buttons[Items::Hide], host.plugins[i]->IsGUIActive());
 		}
 
 	}

@@ -1,6 +1,7 @@
 #include "VSTPlugin.h"
 
 #include "VSTPreset.h"
+#include "VSTPluginGUI.h"
 
 using namespace std;
 
@@ -126,12 +127,20 @@ VstIntPtr VSTCALLBACK VSTPlugin::Dispatcher(VstInt32 opcode, VstInt32 index, Vst
 	return plugin->dispatcher(plugin, opcode, index, value, ptr, opt);
 }
 
+void VSTPlugin::CreateEditor(HWND hWnd) {
+	if (!gui && HasEditor()) {
+		gui = new VSTPluginGUI(*this);
+		gui->Initialize(hWnd);
+	}
+}
+
 void VSTPlugin::StartPlugin() {
 	Dispatcher(effOpen);
 	//float sampleRate = 44100.0f;
 	//SetSampleRate(sampleRate);
 	//int blockSize = 512;
 	//SetBlockSize(blockSize);
+	//PrintParameters();
 	UpdateSpeakerArrangement();
 	SetActive(true);
 }
