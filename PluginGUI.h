@@ -11,7 +11,9 @@ public:
 	bool IsActive();
 protected:
 	enum MenuItem {
-		Bypass = 10000, Close, LoadPreset, Load, Save, LoadFromFile, SaveToFile, Preset = 20000
+		Bypass = 10000, Active, Close, 
+		State, Load, Save, LoadFromFile, SaveToFile, 
+		Presets, Preset = 20000
 	};
 	void ApplyOffset();
 	void OnCreate(HWND hWnd);
@@ -23,7 +25,6 @@ protected:
 	static WNDCLASSEX* wc_static;
 	static int offset;
 	bool is_active{ false };
-	bool bypass{ false };
 
 };
 

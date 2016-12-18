@@ -66,16 +66,28 @@ LRESULT CALLBACK VSTPluginGUI::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LP
 		case WM_COMMAND:
 			if (LOWORD(wParam) >= MenuItem::Preset) {
 				plugin.SetProgram(LOWORD(wParam) - MenuItem::Preset);
+				InvalidateRect(hWnd, NULL, false);
 				break;
 			}
 			switch (LOWORD(wParam)) {
-				case MenuItem::Bypass:
+				case MenuItem::Bypass: {
+					HMENU menu; 
+					if (menu = GetMenu(hWnd)) {
+						CheckMenuItem(menu, MenuItem::Bypass, plugin.IsBypassed() ? MF_UNCHECKED : MF_CHECKED);
+						plugin.SetBypass(!plugin.IsBypassed());
+					}
+					break;
+				}
+				case MenuItem::Active: {
 					HMENU menu;
 					if (menu = GetMenu(hWnd)) {
-						CheckMenuItem(menu, MenuItem::Bypass, bypass ? MF_UNCHECKED : MF_CHECKED);
-						bypass = !bypass;
-						plugin.SetBypass(bypass);
+						CheckMenuItem(menu, MenuItem::Active, plugin.IsActive() ? MF_UNCHECKED : MF_CHECKED);
+						plugin.SetActive(!plugin.IsActive());
 					}
+					break;
+				}
+				case MenuItem::Close:
+					Window::Hide();
 					break;
 				case MenuItem::Load:
 					plugin.LoadState();
@@ -111,13 +123,24 @@ LRESULT CALLBACK VSTPluginGUI::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LP
 
 HMENU VSTPluginGUI::CreateMenu() {
 	HMENU hmenu = ::CreateMenu();
+	// plugin submenu
 	HMENU hplugin = ::CreateMenu();
 	AppendMenu(hplugin, MF_STRING, MenuItem::Bypass, "Bypass");
+	auto flag = MF_STRING;
+	if (plugin.IsActive())
+		flag |= MF_CHECKED;
+	AppendMenu(hplugin, flag, MenuItem::Active, "Active");
 	AppendMenu(hplugin, MF_STRING, MenuItem::Close, "Close");
 	AppendMenu(hmenu, MF_POPUP, (UINT_PTR)hplugin, "Plugin");
-
+	// state submenu
+	HMENU hstate = ::CreateMenu();
+	AppendMenu(hstate, MF_STRING, MenuItem::Save, "Save");
+	AppendMenu(hstate, MF_STRING, MenuItem::Load, "Load");
+	AppendMenu(hstate, MF_STRING, MenuItem::SaveToFile, "Save To File");
+	AppendMenu(hstate, MF_STRING, MenuItem::LoadFromFile, "Load From File");
+	AppendMenu(hmenu, MF_POPUP, (UINT_PTR)hstate, "State");
+	// preset submenu
 	HMENU hpresets = ::CreateMenu();
-	HMENU hload = ::CreateMenu();
 	auto currentProgram = Dispatcher(AEffectOpcodes::effGetProgram);
 	bool programChanged = false;
 	for (decltype(plugin.GetProgramCount()) i = 0; i < plugin.GetProgramCount(); ++i) {
@@ -129,15 +152,9 @@ HMENU VSTPluginGUI::CreateMenu() {
 			if (!programChanged) programChanged = true;
 		}
 		plugin.Dispatcher(AEffectXOpcodes::effEndSetProgram);
-		AppendMenu(hload, MF_STRING, MenuItem::Preset + i, tmp);
+		AppendMenu(hpresets, MF_STRING, MenuItem::Preset + i, tmp);
 	}
 	if (programChanged) Dispatcher(AEffectOpcodes::effSetProgram, 0, currentProgram);
-	
-	AppendMenu(hpresets, plugin.GetProgramCount() > 0 ? MF_POPUP : MF_POPUP | MF_GRAYED, (UINT_PTR)hload, "Load Preset");
-	AppendMenu(hpresets, MF_STRING, MenuItem::Save, "Save");
-	AppendMenu(hpresets, MF_STRING, MenuItem::Load, "Load");
-	AppendMenu(hpresets, MF_STRING, MenuItem::SaveToFile, "Save To File");
-	AppendMenu(hpresets, MF_STRING, MenuItem::LoadFromFile, "Load From File");
-	AppendMenu(hmenu, MF_POPUP, (UINT_PTR)hpresets, "Presets");
+	AppendMenu(hmenu, plugin.GetProgramCount() > 0 ? MF_POPUP : MF_POPUP | MF_GRAYED, (UINT_PTR)hpresets, "Plugin");
 	return hmenu;
 }

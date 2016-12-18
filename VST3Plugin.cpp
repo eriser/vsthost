@@ -15,7 +15,6 @@ VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), fac
 	Steinberg::PClassInfo ci;
 	Steinberg::tresult result;
 	bool initialized = false;
-	decltype(factory->countClasses()) i = 0;
 	for (decltype(factory->countClasses()) i = 0; i < factory->countClasses(); ++i) {
 		factory->getClassInfo(i, &ci);
 		result = factory->createInstance(ci.cid, FUnknown::iid, reinterpret_cast<void**>(&plugin));
@@ -70,21 +69,6 @@ void VST3Plugin::Initialize() {
 	// initialize edit controller (processor component is already initialized)
 	editController->initialize(UnknownCast());
 	editController->setComponentHandler(this);
-
-	// synchronize controller and processor
-	Steinberg::Vst::IConnectionPoint* iConnectionPointComponent = nullptr;
-	Steinberg::Vst::IConnectionPoint* iConnectionPointController = nullptr;
-	processorComponent->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&iConnectionPointComponent);
-	editController->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&iConnectionPointController);
-	if (iConnectionPointComponent && iConnectionPointController) {
-		iConnectionPointComponent->connect(iConnectionPointController);
-		iConnectionPointController->connect(iConnectionPointComponent);
-	}
-	Steinberg::MemoryStream stream;
-	if (processorComponent->getState(&stream) == Steinberg::kResultTrue) {
-		stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
-		editController->setComponentState(&stream);
-	}
 
 	// check if plugin has editor and remember it
 	auto tmp = editController->createView(Steinberg::Vst::ViewType::kEditor);
@@ -158,6 +142,21 @@ void VST3Plugin::Initialize() {
 		pd.outputParameterChanges = new Steinberg::Vst::ParameterChanges(param_count);
 	}
 	SetActive(true);
+
+	// synchronize controller and processor
+	Steinberg::Vst::IConnectionPoint* iConnectionPointComponent = nullptr;
+	Steinberg::Vst::IConnectionPoint* iConnectionPointController = nullptr;
+	processorComponent->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&iConnectionPointComponent);
+	editController->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&iConnectionPointController);
+	if (iConnectionPointComponent && iConnectionPointController) {
+		iConnectionPointComponent->connect(iConnectionPointController);
+		iConnectionPointController->connect(iConnectionPointComponent);
+	}
+	Steinberg::MemoryStream stream;
+	if (processorComponent->getState(&stream) == Steinberg::kResultTrue) {
+		stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
+		editController->setComponentState(&stream);
+	}
 
 	// create plugin state module
 	state = new VST3Preset(processorComponent, editController, GetPluginName());
