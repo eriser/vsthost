@@ -330,7 +330,7 @@ bool VST3Plugin::HasEditor() {
 	return has_editor;
 }
 
-Steinberg::uint32 VST3Plugin::GetProgramCount() {
+Steinberg::int32 VST3Plugin::GetProgramCount() {
 	return program_count;
 }
 
@@ -346,7 +346,7 @@ void VST3Plugin::SetProgram(Steinberg::int32 id) {
 	}
 }
 
-Steinberg::uint32 VST3Plugin::GetParameterCount() {
+Steinberg::int32 VST3Plugin::GetParameterCount() {
 	return editController->getParameterCount();
 }
 

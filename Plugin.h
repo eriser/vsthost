@@ -24,11 +24,10 @@ public:
 	void HideEditor();
 	virtual void PrintInfo() = 0;
 	virtual std::string GetPluginName() = 0;
-	virtual std::vector<std::string> GetPresets() = 0;
 	virtual bool HasEditor() = 0;
-	virtual Steinberg::uint32 GetProgramCount() = 0;
+	virtual Steinberg::int32 GetProgramCount() = 0;
 	virtual void SetProgram(Steinberg::int32 id) = 0;
-	virtual Steinberg::uint32 GetParameterCount() = 0;
+	virtual Steinberg::int32 GetParameterCount() = 0;
 	virtual Steinberg::Vst::ParamValue GetParameter(Steinberg::Vst::ParamID id) = 0;
 	virtual void SetParameter(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value) = 0;
 	virtual void SaveState() { if (state) state->GetState(); }
