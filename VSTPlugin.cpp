@@ -164,7 +164,7 @@ bool VSTPlugin::HasEditor() {
 
 void VSTPlugin::CreateEditor(HWND hWnd) {
 	if (!gui && HasEditor()) {
-		gui = new VSTPluginGUI(*this);
+		gui = new VSTPluginGUI(*this, plugin);
 		gui->Initialize(hWnd);
 	}
 }

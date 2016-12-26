@@ -8,7 +8,7 @@ class VST3Plugin;
 class VST3PluginGUI : public PluginGUI {
 	bool Initialize();
 public:
-	VST3PluginGUI(VST3Plugin& p);
+	VST3PluginGUI(VST3Plugin& p, Steinberg::IPlugView* pv);
 	~VST3PluginGUI();
 	bool Initialize(HWND parent);
 	HMENU CreateMenu();
@@ -18,7 +18,7 @@ public:
 	void SetRect();
 private:
 	VST3Plugin& plugin;
-	Steinberg::IPlugView *plugin_view = { nullptr };
+	Steinberg::IPlugView* plugin_view = { nullptr };
 };
 
 #endif

@@ -55,7 +55,6 @@ public:
 	void PrintInfo();
 
 	// vst3 specific
-	Steinberg::IPlugView* CreateView();
 	Steinberg::tresult PLUGIN_API beginEdit(Steinberg::Vst::ParamID id);
 	Steinberg::tresult PLUGIN_API performEdit(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue valueNormalized);
 	Steinberg::tresult PLUGIN_API endEdit(Steinberg::Vst::ParamID id);

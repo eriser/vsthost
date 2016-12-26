@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-VSTPluginGUI::VSTPluginGUI(VSTPlugin& p) : PluginGUI(100, 100), VSTBase(p.GetAEffect()), plugin(p) {  }
+VSTPluginGUI::VSTPluginGUI(VSTPlugin& p, AEffect* aeffect) : PluginGUI(100, 100), VSTBase(aeffect), plugin(p) {  }
 
 void VSTPluginGUI::SetRect() {
 	ERect *erect = new ERect;

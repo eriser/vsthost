@@ -7,7 +7,7 @@ class VSTPlugin;
 class VSTPluginGUI : public PluginGUI, public VSTBase {
 	bool Initialize();
 public:
-	VSTPluginGUI(VSTPlugin& p);
+	VSTPluginGUI(VSTPlugin& p, AEffect* aeffect);
 	~VSTPluginGUI() {}
 	bool Initialize(HWND parent);
 	HMENU CreateMenu();

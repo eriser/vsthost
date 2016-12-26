@@ -2,7 +2,7 @@
 #include "VST3Plugin.h"
 
 #include "base/source/fstring.h"
-VST3PluginGUI::VST3PluginGUI(VST3Plugin& p) : PluginGUI(100, 100), plugin(p), plugin_view(plugin.CreateView()) {}
+VST3PluginGUI::VST3PluginGUI(VST3Plugin& p, Steinberg::IPlugView* pv) : PluginGUI(100, 100), plugin(p), plugin_view(pv) {}
 
 VST3PluginGUI::~VST3PluginGUI() {
 	if (plugin_view)
@@ -30,16 +30,17 @@ void VST3PluginGUI::SetRect() {
 }
 
 bool VST3PluginGUI::Initialize(HWND parent) {
-	if (RegisterWC(kClassName)) {
+	if (plugin_view && RegisterWC(kClassName)) {
 		SetRect();
 		wnd = CreateWindow(kClassName, plugin.GetPluginName().c_str(), WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-			rect.left, rect.top, rect.right, rect.bottom, NULL/*parent*/, CreateMenu(), GetModuleHandle(NULL), (LPVOID)this);
-		plugin_view = plugin.CreateView();	// i'm setting parent hwnd to null, because child window are displayed in front of parend window
-		if (wnd && plugin_view)				// and it doesn't look right
-			plugin_view->attached((void*)wnd, Steinberg::kPlatformTypeHWND);
+			rect.left, rect.top, rect.right, rect.bottom, 
+			NULL/*parent*/, CreateMenu(), GetModuleHandle(NULL), static_cast<LPVOID>(this));
+		if (wnd)	// i'm setting parent hwnd to null, because child window are displayed in front of parend window
+			plugin_view->attached(static_cast<void*>(wnd), Steinberg::kPlatformTypeHWND);	// and it doesn't look right
 		return wnd != NULL;
 	}
-	else return false;
+	else
+		return false;
 }
 
 void VST3PluginGUI::Show() {

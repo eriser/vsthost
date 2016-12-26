@@ -41,7 +41,6 @@ public:
 	// vst2 callback procedure wrapper
 	static VstIntPtr VSTCALLBACK HostCallbackWrapper(AEffect *effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt);
 	
-	AEffect* GetAEffect() { return plugin; }; // temporary
 	void PrintPrograms();
 	void PrintParameters();
 	void PrintCanDos();

@@ -283,8 +283,11 @@ bool VST3Plugin::HasEditor() {
 
 void VST3Plugin::CreateEditor(HWND hWnd) {
 	if (!gui && HasEditor()) {
-		gui = new VST3PluginGUI(*this);
-		gui->Initialize(hWnd);
+		Steinberg::IPlugView* create_view = nullptr;
+		if ((create_view = editController->createView(Steinberg::Vst::ViewType::kEditor)) != nullptr) {
+			gui = new VST3PluginGUI(*this, create_view);
+			gui->Initialize(hWnd);
+		}
 	}
 }
 
@@ -365,10 +368,6 @@ void VST3Plugin::PrintParameters() {
 
 void VST3Plugin::PrintInfo() {
 
-}
-
-Steinberg::IPlugView* VST3Plugin::CreateView() {
-	return editController->createView("editor");
 }
 
 Steinberg::tresult PLUGIN_API VST3Plugin::beginEdit(Steinberg::Vst::ParamID id) {
