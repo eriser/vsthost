@@ -135,7 +135,7 @@ HMENU VST3PluginGUI::CreateMenu() {
 	// preset submenu
 	HMENU hpresets = ::CreateMenu();
 	Steinberg::Vst::ProgramListInfo list_info{};
-	for (Steinberg::uint32 i = 0; i < plugin.GetProgramCount(); ++i) {
+	for (Steinberg::int32 i = 0; i < plugin.GetProgramCount(); ++i) {
 		if (plugin.unit_info->getProgramListInfo(0, list_info) == Steinberg::kResultTrue) {
 			Steinberg::Vst::String128 tmp = { 0 };
 			if (plugin.unit_info->getProgramName(list_info.id, i, tmp) == Steinberg::kResultTrue) {

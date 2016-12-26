@@ -12,6 +12,7 @@ public:
 	virtual void Go();
 	virtual void Show();
 	virtual void Hide();
+	void Refresh();
 protected:
 	virtual void OnCreate(HWND hWnd);
 	virtual LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) = 0;

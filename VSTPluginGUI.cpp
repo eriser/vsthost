@@ -66,7 +66,7 @@ LRESULT CALLBACK VSTPluginGUI::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LP
 		case WM_COMMAND:
 			if (LOWORD(wParam) >= MenuItem::Preset) {
 				plugin.SetProgram(LOWORD(wParam) - MenuItem::Preset);
-				InvalidateRect(hWnd, NULL, false);
+				Refresh();
 				break;
 			}
 			switch (LOWORD(wParam)) {
@@ -91,14 +91,14 @@ LRESULT CALLBACK VSTPluginGUI::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LP
 					break;
 				case MenuItem::Load:
 					plugin.LoadState();
-					InvalidateRect(hWnd, NULL, false);
+					Refresh();
 					break;
 				case MenuItem::Save:
 					plugin.SaveState();
 					break;
 				case MenuItem::LoadFromFile:
 					plugin.LoadStateFromFile();
-					InvalidateRect(hWnd, NULL, false);
+					Refresh();
 					break;
 				case MenuItem::SaveToFile:
 					plugin.SaveStateToFile();

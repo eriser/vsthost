@@ -40,6 +40,10 @@ void Window::Hide() {
 	if (wnd) ShowWindow(wnd, SW_HIDE);
 }
 
+void Window::Refresh() {
+	InvalidateRect(wnd, NULL, false); // do i need to make use of wm_paint message?
+}
+
 bool Window::RegisterWC(const TCHAR* class_name) {
 	if (!wc) {
 		wc = new WNDCLASSEX;

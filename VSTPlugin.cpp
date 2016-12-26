@@ -449,7 +449,7 @@ VstIntPtr VSTCALLBACK VSTPlugin::HostCallback(AEffect *effect, VstInt32 opcode, 
 		}
 		case AudioMasterOpcodesX::audioMasterUpdateDisplay:
 			if (gui)
-				;//gui->Update();
+				gui->Refresh();
 			return 1;
 		case AudioMasterOpcodesX::audioMasterBeginEdit:
 			//index
