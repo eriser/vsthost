@@ -3,17 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vsthost_tester", "vsthost_tester.vcxproj", "{73E62178-335A-4FEF-BACC-2D496CA12640}"
+	ProjectSection(ProjectDependencies) = postProject
+		{69D20D43-CC9E-464F-8560-EB5F51AB63CE} = {69D20D43-CC9E-464F-8560-EB5F51AB63CE}
+	EndProjectSection
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vsthost", "vsthost.vcxproj", "{69D20D43-CC9E-464F-8560-EB5F51AB63CE}"
 	ProjectSection(ProjectDependencies) = postProject
 		{6F060EF8-07BE-4944-A28B-9A9D8AE7AF0E} = {6F060EF8-07BE-4944-A28B-9A9D8AE7AF0E}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base", "..\VST3 SDK\base\win\base.vcxproj", "{6F060EF8-07BE-4944-A28B-9A9D8AE7AF0E}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vsthost_tester", "vsthost_tester.vcxproj", "{73E62178-335A-4FEF-BACC-2D496CA12640}"
-	ProjectSection(ProjectDependencies) = postProject
-		{69D20D43-CC9E-464F-8560-EB5F51AB63CE} = {69D20D43-CC9E-464F-8560-EB5F51AB63CE}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
