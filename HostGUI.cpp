@@ -226,8 +226,8 @@ void HostGUI::SelectPlugin(unsigned i) {
 			EnableWindow(buttons[Items::Hide], false);
 		}
 		else {
-			EnableWindow(buttons[Items::Show], !host.plugins[i]->IsGUIActive());
-			EnableWindow(buttons[Items::Hide], host.plugins[i]->IsGUIActive());
+			EnableWindow(buttons[Items::Show], !host.plugins[i]->IsEditorVisible());
+			EnableWindow(buttons[Items::Hide], host.plugins[i]->IsEditorVisible());
 		}
 
 	}
