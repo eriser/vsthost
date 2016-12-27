@@ -61,11 +61,13 @@ void Host::Process(float** input, float** output) {
 		plugins.front()->Process(input, output);
 	else if (plugins.size() > 1) {
 		plugins.front()->Process(input, buffers[1]);
-		unsigned int i;
-		for (i = 1; i < plugins.size() - 1; i++) {
-			plugins[i]->Process(buffers[i % 2], buffers[(i + 1) % 2]);
-		}
-		plugins.back()->Process(buffers[i % 2], output);
+		unsigned i, last_processed = 1;
+		for (i = 1; i < plugins.size() - 1; i++)
+			if (!plugins[i]->BypassProcess()) {
+				last_processed = (i + 1) % 2;
+				plugins[i]->Process(buffers[i % 2], buffers[last_processed]);
+			}
+		plugins.back()->Process(buffers[last_processed], output);
 	}
 	else
 		for (unsigned i = 0; i < GetChannelCount(); ++i)
@@ -81,13 +83,6 @@ void Host::Process(std::int8_t* input, std::int8_t* output) {
 	Process(reinterpret_cast<std::int16_t*>(input), reinterpret_cast<std::int16_t*>(output));
 }
 
-void Host::test_conv(std::int16_t* input, std::int16_t* output) {
-	ConvertFrom16Bits(input, buffers[0]);
-	std::memcpy(buffers[1][0], buffers[0][0], sizeof(buffers[0][0][0]) * block_size);
-	std::memcpy(buffers[1][1], buffers[0][1], sizeof(buffers[0][1][0]) * block_size);
-	ConvertTo16Bits(buffers[1], output);
-}
-
 void Host::Process(std::int16_t* input, std::int16_t* output) {
 	ConvertFrom16Bits(input, buffers[0]);
 	if (plugins.size() == 1) {
@@ -95,13 +90,13 @@ void Host::Process(std::int16_t* input, std::int16_t* output) {
 		ConvertTo16Bits(buffers[1], output);
 	}
 	else if (plugins.size() > 1) {
-		plugins.front()->Process(buffers[0], buffers[1]);
-		unsigned int i;
-		for (i = 1; i < plugins.size() - 1; i++) {
-			plugins[i]->Process(buffers[i % 2], buffers[(i + 1) % 2]);
-		}
-		plugins.back()->Process(buffers[i % 2], buffers[(i + 1) % 2]);
-		ConvertTo16Bits(buffers[(i + 1) % 2], output);
+		unsigned i, last_processed = 0;			// remember where the most recently processed buffer is,
+		for (i = 0; i < plugins.size(); i++)	// so that it could be moved to output.
+			if (!plugins[i]->BypassProcess()) { // check whether i can bypass calling process,
+				last_processed = (i + 1) % 2;	// so that i can omit memcpying the buffers.
+				plugins[i]->Process(buffers[i % 2], buffers[last_processed]);
+			}
+		ConvertTo16Bits(buffers[last_processed], output);
 	}
 	else
 		std::memcpy(output, input, sizeof(input[0]) * block_size * GetChannelCount());
@@ -110,6 +105,8 @@ void Host::Process(std::int16_t* input, std::int16_t* output) {
 void Host::SetSampleRate(double sr) {
 	sample_rate = sr;
 	Plugin::SetSampleRate(sample_rate);
+	for (auto p : plugins)
+		p->UpdateSampleRate();
 }
 
 void Host::SetBlockSize(std::int64_t bs) {
@@ -117,8 +114,10 @@ void Host::SetBlockSize(std::int64_t bs) {
 		block_size = bs;
 		FreeBuffers();
 		AllocateBuffers();
+		Plugin::SetBlockSize(block_size);
+		for (auto p : plugins)
+			p->UpdateBlockSize();
 	}
-	Plugin::SetBlockSize(block_size);
 }
 
 void Host::SetSpeakerArrangement(std::uint64_t sa) {
@@ -126,8 +125,10 @@ void Host::SetSpeakerArrangement(std::uint64_t sa) {
 		FreeBuffers();
 		speaker_arrangement = sa;
 		AllocateBuffers();
+		Plugin::SetSpeakerArrangement(speaker_arrangement);
+		for (auto p : plugins)
+			p->UpdateSpeakerArrangement();
 	}
-	Plugin::SetSpeakerArrangement(speaker_arrangement);
 }
 
 void Host::SetActive(bool ia) {
@@ -149,10 +150,7 @@ Steinberg::tresult PLUGIN_API Host::createInstance(Steinberg::TUID cid, Steinber
 
 void Host::CreateGUI() {
 	gui = new HostGUI(*this);
-	//gui->CreateEditors();
 	gui->Initialize(NULL);
-	//gui->InsertPluginList();
-	//
 	gui->Go();
 }
 
