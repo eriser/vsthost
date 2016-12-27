@@ -45,40 +45,15 @@ bool Host::LoadPlugin(std::string path) {
 		name = name.substr(pos + 1);
 	Plugin* plugin = nullptr;
 	PluginLoader loader(path);
-	if (loader.IsVST() || loader.IsVST3()) {
-		if (loader.IsVST()) {
-			AEffect* effect = nullptr;
-			auto init = static_cast<PluginLoader::VSTInitProc>(loader.GetInitProc());
-			effect = init(VSTPlugin::HostCallbackWrapper);
-			plugin = new VSTPlugin(loader.GetModule(), effect);
-		}
-		else if (loader.IsVST3()) {
-			Steinberg::IPluginFactory* factory = nullptr;
-			GetFactoryProc getFactory = static_cast<GetFactoryProc>(loader.GetInitProc());
-			if (getFactory) {
-				factory = getFactory();
-				plugin = new VST3Plugin(loader.GetModule(), factory);
-			}
-		}
-		if (plugin->IsValid()) {
-			std::cout << "Loaded " << name << "." << std::endl;
-			plugins.push_back(plugin);
-			plugin->Initialize();
-			return true;
-		}
-		else {
-			std::cout << name << " is not a supported VST plugin." << std::endl;
-			if (plugin)
-				delete plugin;
-			return false;
-		}
+	plugin = loader.GetPlugin();
+	if (plugin) {
+		std::cout << "Loaded " << name << "." << std::endl;
+		plugins.push_back(plugin);
+		plugin->Initialize();
+		return true;	
 	}
-	else {
-		std::cout << name << " is not a VST plugin." << std::endl;
-		if (loader.GetModule())
-			FreeLibrary(loader.GetModule());
-		return false;
-	}
+	std::cout << "Could not load " << name << " ." << std::endl;
+	return false;
 }
 
 void Host::Process(float** input, float** output) {

@@ -21,4 +21,6 @@ DEF_CLASS_IID(Steinberg::Vst::IParamValueQueue)
 DEF_CLASS_IID(Steinberg::Vst::IParameterChanges)
 DEF_CLASS_IID(Steinberg::Vst::IUnitInfo)
 
+
+
 #include "Host.h"

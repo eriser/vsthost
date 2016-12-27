@@ -11,6 +11,8 @@
 #include <cstring>
 #include "base\source\fstring.h"
 
+extern "C" typedef bool (PLUGIN_API *VST3ExitProc)();
+
 VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), factory(f) {
 	Steinberg::PClassInfo ci;
 	Steinberg::tresult result;
@@ -60,7 +62,7 @@ VST3Plugin::~VST3Plugin() {
 	if (module) {
 		exitProc = ::GetProcAddress(module, "ExitDll");
 		if (exitProc)
-			static_cast<ExitModuleProc>(exitProc)();
+			static_cast<VST3ExitProc>(exitProc)();
 		::FreeLibrary(module);
 	}
 }

@@ -1,48 +1,57 @@
 #include "PluginLoader.h"
+
 #include <iostream>
+#include <Windows.h>
+
+#include "pluginterfaces/base/ipluginbase.h"
+#include "pluginterfaces/vst2.x/aeffect.h"
+
+#include "VST3Plugin.h"
+#include "VSTPlugin.h"
+
+extern "C" {
+	typedef AEffect* (*VSTInitProc)(audioMasterCallback host);
+	typedef bool (PLUGIN_API *VST3InitProc)();
+}
 
 PluginLoader::PluginLoader(std::string path) {
-	module = LoadLibraryA(path.c_str());
+	auto module = ::LoadLibraryA(path.c_str()); // unicode pending
 	if (module) {
-		Proc = GetProcAddress(module, "GetPluginFactory");
-		if (Proc) {
-			isVST3 = true;
-			void* initProc = GetProcAddress(module, "InitDll");
-			if (initProc)
-				static_cast<VST3InitProc>(initProc)();
+		auto proc = GetProcAddress(module, "GetPluginFactory");
+		if (proc) { // the library is a vst3 plugin
+			VST3InitProc init_proc = reinterpret_cast<VST3InitProc>(GetProcAddress(module, "InitDll"));
+			if (init_proc) // calling init proc to initialize the library
+				static_cast<VST3InitProc>(init_proc)();
+			Steinberg::IPluginFactory* factory = nullptr;
+			GetFactoryProc getFactory = reinterpret_cast<GetFactoryProc>(proc);
+			factory = getFactory(); // retrieving factory pointer from factory proc
+			plugin = new VST3Plugin(module, factory);
 		}
 		else {
-			// std::cout << GetLastError() << std::endl;
-			Proc = GetProcAddress(module, "VSTPluginMain");
-			if (!Proc)
-				Proc = GetProcAddress(module, "main");
-			if (Proc)
-				isVST = true;
-			else {
-				FreeLibrary(module);
-				Proc = nullptr;
-				module = 0;
+			proc = GetProcAddress(module, "VSTPluginMain");
+			if (!proc)
+				proc = GetProcAddress(module, "main"); // older than vst2.4
+			if (proc) { // the library is a vst2 plugin
+				AEffect* effect = nullptr;
+				VSTInitProc init_proc = reinterpret_cast<VSTInitProc>(proc);
+				effect = init_proc(VSTPlugin::HostCallbackWrapper);
+				plugin = new VSTPlugin(module, effect);
 			}
 		}
 	}
 }
 
-PluginLoader::~PluginLoader() {}
-
-bool PluginLoader::IsVST() {
-	return isVST;
+PluginLoader::~PluginLoader() {
+	if (plugin)
+		;// delete plugin; // proper destructors + smart pointers pending
 }
 
-bool PluginLoader::IsVST3() {
-	return isVST3;
-}
-
-void* PluginLoader::GetInitProc() {
-	if (isVST || isVST3) 
-		return Proc;
-	return nullptr;
-}
-
-HMODULE PluginLoader::GetModule() {
-	return module;
+Plugin* PluginLoader::GetPlugin() {
+	if (plugin && plugin->IsValid()) {
+		auto ret = plugin;
+		plugin = nullptr;
+		return ret;
+	}
+	else
+		return nullptr;
 }

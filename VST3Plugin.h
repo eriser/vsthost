@@ -20,8 +20,6 @@
 class VST3PluginGUI;
 class VST3Plugin : public Plugin, public Steinberg::FObject, public Steinberg::Vst::IComponentHandler {
 	friend class VST3PluginGUI;
-	// extern "C" ?
-	typedef bool (PLUGIN_API *ExitModuleProc)();
 public:
 	// basic plugin interface
 	VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f);
