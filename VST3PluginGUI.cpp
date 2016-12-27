@@ -2,6 +2,8 @@
 #include "VST3Plugin.h"
 
 #include "base/source/fstring.h"
+
+namespace VSTHost {
 VST3PluginGUI::VST3PluginGUI(VST3Plugin& p, Steinberg::IPlugView* pv) : PluginGUI(100, 100), plugin(p), plugin_view(pv) {}
 
 VST3PluginGUI::~VST3PluginGUI() {
@@ -147,3 +149,4 @@ HMENU VST3PluginGUI::CreateMenu() {
 	AppendMenu(hmenu, plugin.GetProgramCount() > 0 ? MF_POPUP : MF_POPUP | MF_GRAYED, (UINT_PTR)hpresets, "Plugin");
 	return hmenu;
 }
+} // namespace

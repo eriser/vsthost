@@ -1,5 +1,6 @@
 #include "VSTPreset.h"
 
+namespace VSTHost {
 VSTPreset::VSTPreset(AEffect *plugin) : VSTBase(plugin), isSaved(false), chunk(NULL) {
 	path[0] = '.';
 	path[1] = '\\';
@@ -116,3 +117,4 @@ void VSTPreset::AddExtension() {
 	path[pos + 3] = 'p';
 	path[pos + 4] = '\0';
 }
+} // namespace

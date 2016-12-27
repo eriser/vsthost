@@ -1,5 +1,6 @@
 #include "VSTBase.h"
 
+namespace VSTHost {
 VSTBase::~VSTBase() {
 	//if (plugin) 
 		//delete plugin;
@@ -130,3 +131,4 @@ void VSTBase::PrintFlags() {
 		std::cout << (GetFlags() & (1 << i) ? "Yes" : "No") << std::endl;
 	}
 }
+} // namespace

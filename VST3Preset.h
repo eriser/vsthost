@@ -6,6 +6,7 @@
 #include "Preset.h"
 #include <string>
 
+namespace VSTHost {
 class VST3Preset : public Preset {
 private:
 	Steinberg::Vst::IComponent* processor;
@@ -20,5 +21,6 @@ public:
 	void GetState();
 	void SaveToFile();
 };
+} // namespace
 
 #endif

@@ -13,6 +13,7 @@
 
 extern "C" typedef bool (PLUGIN_API *VST3ExitProc)();
 
+namespace VSTHost {
 VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), factory(f) {
 	Steinberg::PClassInfo ci;
 	Steinberg::tresult result;
@@ -427,3 +428,4 @@ void VST3Plugin::ProcessOutputParameterChanges() {
 Steinberg::FUnknown* VST3Plugin::UnknownCast() {
 	return static_cast<Steinberg::FObject *>(this);
 }
+} // namespace

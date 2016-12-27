@@ -114,7 +114,7 @@ int main() {
 	int bs_all_channels_bytes = bs_all_channels * (wave.GetBitDepth() / 8);
 	double sample_rate = static_cast<double>(wave.GetSampleRate());
 	bool stereo = wave.IsStereo();
-	Host host(block_size, sample_rate, stereo);
+	VSTHost::Host host(block_size, sample_rate, stereo);
 	host.test();
 
 	// this player is bad, because for small block_sizes it just doesn't work well

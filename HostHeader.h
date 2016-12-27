@@ -1,4 +1,6 @@
 #pragma once
+#define UNICODE_OFF
+
 #include "pluginterfaces/base/ipluginbase.h"
 #include "pluginterfaces/vst/ivsthostapplication.h"
 #include "pluginterfaces/vst/ivstcomponent.h"
@@ -20,7 +22,5 @@ DEF_CLASS_IID(Steinberg::Vst::IConnectionPoint)
 DEF_CLASS_IID(Steinberg::Vst::IParamValueQueue)
 DEF_CLASS_IID(Steinberg::Vst::IParameterChanges)
 DEF_CLASS_IID(Steinberg::Vst::IUnitInfo)
-
-
 
 #include "Host.h"

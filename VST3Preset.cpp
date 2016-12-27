@@ -4,6 +4,7 @@
 #include <fstream>
 #include "base/source/fstreamer.h"
 
+namespace VSTHost {
 VST3Preset::VST3Preset(Steinberg::Vst::IComponent* pc, Steinberg::Vst::IEditController* ec, std::string n) : processor(pc), edit(ec), name(n) {
 
 }
@@ -74,3 +75,4 @@ void VST3Preset::SaveToFile() {
 		file.close();
 	}
 }
+} // namespace

@@ -17,6 +17,7 @@
 
 #include "Plugin.h"
 
+namespace VSTHost {
 class VST3PluginGUI;
 class VST3Plugin : public Plugin, public Steinberg::FObject, public Steinberg::Vst::IComponentHandler {
 	friend class VST3PluginGUI;
@@ -94,5 +95,6 @@ private:
 	Steinberg::Vst::AudioBusBuffers* abb_in{ nullptr };
 	Steinberg::Vst::AudioBusBuffers* abb_out{ nullptr };
 };
+} // namespace
 
 #endif

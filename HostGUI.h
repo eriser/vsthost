@@ -4,6 +4,7 @@
 
 #include <vector>
 
+namespace VSTHost {
 class Host;
 class Plugin;
 class PluginGUI;
@@ -37,6 +38,6 @@ private:
 	HWND plugin_list;
 	HWND buttons[Items::BUTTON_COUNT];
 };
-
+} // namespace
 
 #endif

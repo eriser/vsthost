@@ -4,6 +4,7 @@
 
 #include "pluginterfaces/gui/iplugview.h"
 
+namespace VSTHost {
 class VST3Plugin;
 class VST3PluginGUI : public PluginGUI {
 	bool Initialize();
@@ -20,5 +21,6 @@ private:
 	VST3Plugin& plugin;
 	Steinberg::IPlugView* plugin_view = { nullptr };
 };
+} // namespace
 
 #endif

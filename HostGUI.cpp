@@ -1,5 +1,6 @@
-#include "Host.h"
 #include "HostGUI.h"
+
+#include "Host.h"
 #include "VSTPlugin.h"
 #include "VST3Plugin.h"
 #include "VST3PluginGUI.h"
@@ -7,6 +8,7 @@
 
 #include <iostream>
 
+namespace VSTHost {
 const TCHAR* HostGUI::button_labels[Items::BUTTON_COUNT] = { 
 	TEXT("Add"), TEXT("Delete"), TEXT("Move Up"), 
 	TEXT("Move Down"), TEXT("Show Editor"), TEXT("Hide Editor") };
@@ -28,7 +30,7 @@ HostGUI::~HostGUI() {
 }
 
 bool HostGUI::Initialize(HWND parent) {
-	if (RegisterWC(kClassName)) {
+	if (Window::RegisterWC(kClassName)) {
 		wnd = CreateWindow(kClassName, kCaption, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
 			rect.left, rect.top, rect.right, rect.bottom, parent, NULL, GetModuleHandle(NULL), (LPVOID)this);
 		if (wnd) {
@@ -185,16 +187,16 @@ void HostGUI::SetFont() {
 }
 
 void HostGUI::OpenDialog() {
-	static char filename[256];
+	static TCHAR filename[256];
 	if (!ofn) {
 		ofn = new OPENFILENAME;
 		ZeroMemory(ofn, sizeof(*ofn));
 		ofn->lStructSize = sizeof(*ofn);
 		ofn->hwndOwner = wnd;
-		ofn->lpstrFilter = "VST Plugins (*.dll, *.vst3)\0*.dll;*.vst3\0VST2 Plugins (*.dll)\0*.dll\0VST3 Plugins (*.vst3)\0*.vst3\0";
+		ofn->lpstrFilter = TEXT("VST Plugins (*.dll, *.vst3)\0*.dll;*.vst3\0VST2 Plugins (*.dll)\0*.dll\0VST3 Plugins (*.vst3)\0*.vst3\0");
 		ofn->lpstrFile = filename;
 		ofn->nMaxFile = sizeof(filename);
-		ofn->lpstrInitialDir = ".\\";
+		ofn->lpstrInitialDir = TEXT(".\\");
 		ofn->Flags = OFN_FILEMUSTEXIST;
 	}
 	ofn->lpstrFile[0] = '\0';
@@ -248,3 +250,4 @@ void HostGUI::CreateEditors() {
 	for (auto &p : host.plugins)
 		AddEditor(p);
 }
+} // namespace

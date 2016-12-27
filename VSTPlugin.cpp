@@ -3,8 +3,7 @@
 #include "VSTPreset.h"
 #include "VSTPluginGUI.h"
 
-using namespace std;
-
+namespace VSTHost {
 VSTPlugin::VSTPlugin(HMODULE m, AEffect* p) : Plugin(m), plugin(p) {
 
 }
@@ -202,65 +201,65 @@ void VSTPlugin::PrintParameters() {	// + 1, bo wyjatki wyrzucalo
 		Dispatcher(effGetParamLabel, i, 0, ParamLabel);
 		Dispatcher(effGetParamDisplay, i, 0, ParamDisplay);
 		Dispatcher(effGetParamName, i, 0, ParamName);
-		std::cout << "Parameter " << i << ":" << endl
-			<< "Label: " << ParamLabel << endl
-			<< "Display: " << ParamDisplay << endl
-			<< "Name: " << ParamName << endl
-			<< "Value: " << GetParameter(i) << endl;
+		std::cout << "Parameter " << i << ":" << std::endl
+			<< "Label: " << ParamLabel << std::endl
+			<< "Display: " << ParamDisplay << std::endl
+			<< "Name: " << ParamName << std::endl
+			<< "Value: " << GetParameter(i) << std::endl;
 		if (Dispatcher(effGetParameterProperties, i, 0, &properties)) {
 			for (int j = 0; j <= 6; j++) {
-				cout << "Flag ";
+				std::cout << "Flag ";
 				switch (1 << i) {
 				case kVstParameterIsSwitch:
-					cout << "kVstParameterIsSwitch: " << (properties.flags & (1 << i) ? "Yes" : "No") << endl;
+					std::cout << "kVstParameterIsSwitch: " << (properties.flags & (1 << i) ? "Yes" : "No") << std::endl;
 					break;
 				case kVstParameterUsesIntegerMinMax:
-					cout << "kVstParameterUsesIntegerMinMax: ";
+					std::cout << "kVstParameterUsesIntegerMinMax: ";
 					if (properties.flags & (1 << i)) {
-						cout << "Yes" << endl
-							<< "minInteger: " << properties.minInteger << endl
-							<< "maxInteger: " << properties.maxInteger << endl;
+						std::cout << "Yes" << std::endl
+							<< "minInteger: " << properties.minInteger << std::endl
+							<< "maxInteger: " << properties.maxInteger << std::endl;
 					}
-					else cout << "No" << endl;
+					else std::cout << "No" << std::endl;
 					break;
 				case kVstParameterUsesFloatStep:
-					cout << "kVstParameterUsesFloatStep: ";
+					std::cout << "kVstParameterUsesFloatStep: ";
 					if (properties.flags & (1 << i)) {
-						cout << "Yes" << endl
-							<< "stepFloat: " << properties.stepFloat << endl
-							<< "smallStepFloat: " << properties.smallStepFloat << endl
-							<< "largeStepFloat: " << properties.largeStepFloat << endl;
+						std::cout << "Yes" << std::endl
+							<< "stepFloat: " << properties.stepFloat << std::endl
+							<< "smallStepFloat: " << properties.smallStepFloat << std::endl
+							<< "largeStepFloat: " << properties.largeStepFloat << std::endl;
 					}
-					else cout << "No" << endl;
+					else std::cout << "No" << std::endl;
 					break;
 				case kVstParameterUsesIntStep:
-					cout << "kVstParameterUsesIntStep: ";
+					std::cout << "kVstParameterUsesIntStep: ";
 					if (properties.flags & (1 << i)) {
-						cout << "Yes" << endl
-							<< "largeStepInteger: " << properties.largeStepInteger << endl;
+						std::cout << "Yes" << std::endl
+							<< "largeStepInteger: " << properties.largeStepInteger << std::endl;
 					}
-					else cout << "No" << endl;
+					else std::cout << "No" << std::endl;
 					break;
 				case kVstParameterSupportsDisplayIndex:
-					cout << "kVstParameterSupportsDisplayIndex: ";
+					std::cout << "kVstParameterSupportsDisplayIndex: ";
 					if (properties.flags & (1 << i)) {
-						cout << "Yes" << endl
-							<< "displayIndex: " << properties.displayIndex << endl;
+						std::cout << "Yes" << std::endl
+							<< "displayIndex: " << properties.displayIndex << std::endl;
 					}
-					else cout << "No" << endl;
+					else std::cout << "No" << std::endl;
 					break;
 				case kVstParameterSupportsDisplayCategory:
-					cout << "kVstParameterSupportsDisplayCategory: ";
+					std::cout << "kVstParameterSupportsDisplayCategory: ";
 					if (properties.flags & (1 << i)) {
-						cout << "Yes" << endl
-							<< "category: " << properties.category << endl
-							<< "numParametersInCategory: " << properties.numParametersInCategory << endl
-							<< "categoryLabel: " << properties.categoryLabel << endl;
+						std::cout << "Yes" << std::endl
+							<< "category: " << properties.category << std::endl
+							<< "numParametersInCategory: " << properties.numParametersInCategory << std::endl
+							<< "categoryLabel: " << properties.categoryLabel << std::endl;
 					}
-					else cout << "No" << endl;
+					else std::cout << "No" << std::endl;
 					break;
 				case kVstParameterCanRamp:
-					cout << "kVstParameterCanRamps: " << (properties.flags & (1 << i) ? "Yes" : "No") << endl;
+					std::cout << "kVstParameterCanRamps: " << (properties.flags & (1 << i) ? "Yes" : "No") << std::endl;
 					break;
 				}
 			}
@@ -272,7 +271,7 @@ void VSTPlugin::PrintCanDos() {
 	char *PlugCanDos[] = { "sendVstEvents", "sendVstMidiEvent", "receiveVstEvents", "receiveVstMidiEvent",
 		"receiveVstTimeInfo", "offline", "midiProgramNames", "bypass" };
 	for (int i = 0; i < (sizeof(PlugCanDos) / sizeof(char *)); i++) {
-		cout << PlugCanDos[i] << ": " << (CanDo(PlugCanDos[i]) ? "Yes" : "No") << endl;
+		std::cout << PlugCanDos[i] << ": " << (CanDo(PlugCanDos[i]) ? "Yes" : "No") << std::endl;
 	}
 }
 
@@ -286,14 +285,14 @@ void VSTPlugin::PrintInfo() {
 	Dispatcher(effGetProductString, 0, 0, (void *)ProductString);
 	VstInt32 VendorVersion = GetVendorVersion();
 	VstInt32 VSTVersion = GetVSTVersion();
-	cout << "VST Plugin " << EffectName << endl
-		<< "Version: " << GetVersion() << endl
-		<< "Vendor: " << VendorString << endl
-		<< "Product: " << ProductString << endl
-		<< "Vendor Version: " << VendorVersion << endl
-		<< "UniqueID: " << plugin->uniqueID << endl
-		<< "VST Version: " << VSTVersion << endl
-		<< separator << "Flags: " << endl;
+	std::cout << "VST Plugin " << EffectName << std::endl
+		<< "Version: " << GetVersion() << std::endl
+		<< "Vendor: " << VendorString << std::endl
+		<< "Product: " << ProductString << std::endl
+		<< "Vendor Version: " << VendorVersion << std::endl
+		<< "UniqueID: " << plugin->uniqueID << std::endl
+		<< "VST Version: " << VSTVersion << std::endl
+		<< separator << "Flags: " << std::endl;
 	for (int i = 0; i < 13; i++) {
 		if (i == 6 || i == 7) continue;
 		switch (1 << i) {
@@ -333,15 +332,15 @@ void VSTPlugin::PrintInfo() {
 		}
 		std::cout << (plugin->flags & (1 << i) ? "Yes" : "No") << std::endl;
 	}
-	cout << separator << "Presets(" << GetProgramCount() << "):" << endl;
+	std::cout << separator << "Presets(" << GetProgramCount() << "):" << std::endl;
 	PrintPrograms();
-	cout << separator << "Parameters(" << GetParameterCount() << "):" << endl;
+	std::cout << separator << "Parameters(" << GetParameterCount() << "):" << std::endl;
 	//PrintParameters();
-	cout << separator << "Inputs: " << plugin->numInputs << endl
-		<< "Outputs: " << plugin->numOutputs << endl
-		<< separator << "CanDo:" << endl;
+	std::cout << separator << "Inputs: " << plugin->numInputs << std::endl
+		<< "Outputs: " << plugin->numOutputs << std::endl
+		<< separator << "CanDo:" << std::endl;
 	PrintCanDos();
-	cout << separator;
+	std::cout << separator;
 }
 
 void VSTPlugin::Resume() {
@@ -475,3 +474,4 @@ int VSTPlugin::GetVendorVersion() {
 int VSTPlugin::GetVSTVersion() {
 	return Dispatcher(effGetVstVersion);
 }
+} // namespace

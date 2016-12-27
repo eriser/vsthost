@@ -3,6 +3,7 @@
 #include <limits>
 #include <cstring>
 
+namespace VSTHost {
 const std::string Host::kPluginsPath{ "plugins.txt" };
 
 void Host::test() {
@@ -258,3 +259,4 @@ void Host::DeletePlugin(unsigned i) {
 		plugins.erase(plugins.begin() + i);
 	}
 }
+} // namespace

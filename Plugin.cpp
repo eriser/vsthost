@@ -1,6 +1,7 @@
 #include "Plugin.h"
 #include "PluginGUI.h"
 
+namespace VSTHost {
 Steinberg::Vst::TSamples Plugin::block_size = 128;
 Steinberg::Vst::SampleRate Plugin::sample_rate = 44100.0;
 Steinberg::Vst::SpeakerArrangement Plugin::speaker_arrangement = Steinberg::Vst::SpeakerArr::kStereo;
@@ -69,3 +70,4 @@ void Plugin::LoadStateFromFile() {
 Steinberg::uint32 Plugin::GetChannelCount() {
 	return static_cast<Steinberg::uint32>(Steinberg::Vst::SpeakerArr::getChannelCount(speaker_arrangement));
 }
+} // namespace

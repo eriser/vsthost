@@ -3,6 +3,7 @@
 
 #include <Windows.h>
 
+namespace VSTHost {
 class Window {
 public:
 	Window(int width, int height);
@@ -21,5 +22,6 @@ protected:
 	RECT rect;
 	HWND wnd;
 };
+} // namespace
 
 #endif

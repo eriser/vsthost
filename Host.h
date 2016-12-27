@@ -2,26 +2,24 @@
 #define HOST_H
 
 #include <cstdint>
-#define NOMINMAX // kolizja makra MAX z windows.h oraz std::numeric_limits<T>::max()
-
 #include <vector>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <thread>
 
-#include "Host.h"
+#include "base/source/fobject.h"
+#include "base/source/fstring.h"
+#include "pluginterfaces/base/ipluginbase.h"
+#include "pluginterfaces/vst/ivsthostapplication.h"
+
+#define NOMINMAX // kolizja makra MAX z windows.h oraz std::numeric_limits<T>::max()
 #include "HostGUI.h"
 #include "PluginLoader.h"
 #include "VSTPlugin.h"
 #include "VST3Plugin.h"
 
-#include "base/source/fobject.h"
-#include "base/source/fstring.h"
-#include "pluginterfaces/base/ipluginbase.h"
-#include "pluginterfaces/vst/ivsthostapplication.h"
-//DEF_CLASS_IID(Steinberg::Vst::IHostApplication)
-
+namespace VSTHost {
 class Host : public Steinberg::FObject, Steinberg::Vst::IHostApplication {
 	friend class HostGUI;
 public:
@@ -73,7 +71,7 @@ private:
 	Steinberg::Vst::SpeakerArrangement speaker_arrangement;
 	Steinberg::Vst::Sample32** buffers[2];
 	bool is_active{ false };
-	
 };
+}
 
 #endif

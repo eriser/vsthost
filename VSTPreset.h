@@ -10,6 +10,7 @@
 #include "VSTBase.h"
 #include "Preset.h"
 
+namespace VSTHost {
 class VSTPreset : public Preset, public VSTBase {
 private:
 	bool isSaved;
@@ -29,5 +30,6 @@ public:
 	void SaveToFile();
 	void AddExtension();
 };
+} // namespace
 
 #endif

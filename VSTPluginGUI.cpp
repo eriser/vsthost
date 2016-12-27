@@ -3,6 +3,7 @@
 
 #include <iostream>
 
+namespace VSTHost {
 VSTPluginGUI::VSTPluginGUI(VSTPlugin& p, AEffect* aeffect) : PluginGUI(100, 100), VSTBase(aeffect), plugin(p) {  }
 
 void VSTPluginGUI::SetRect() {
@@ -158,3 +159,4 @@ HMENU VSTPluginGUI::CreateMenu() {
 	AppendMenu(hmenu, plugin.GetProgramCount() > 0 ? MF_POPUP : MF_POPUP | MF_GRAYED, (UINT_PTR)hpresets, "Plugin");
 	return hmenu;
 }
+} // namespace

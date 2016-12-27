@@ -14,6 +14,7 @@ extern "C" {
 	typedef bool (PLUGIN_API *VST3InitProc)();
 }
 
+namespace VSTHost {
 PluginLoader::PluginLoader(std::string path) {
 	auto module = ::LoadLibraryA(path.c_str()); // unicode pending
 	if (module) {
@@ -55,3 +56,4 @@ Plugin* PluginLoader::GetPlugin() {
 	else
 		return nullptr;
 }
+} // namespace

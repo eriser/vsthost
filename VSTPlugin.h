@@ -11,6 +11,7 @@
 #include "VSTBase.h"
 #include "Plugin.h"
 
+namespace VSTHost {
 class VSTPluginGUI;
 class VSTPlugin : public Plugin {
 	friend class VSTPluginGUI;
@@ -60,5 +61,6 @@ private:
 	bool soft_bypass{ false };
 	AEffect* plugin;
 };
+} // namespace
 
 #endif

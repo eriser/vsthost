@@ -2,6 +2,7 @@
 #define PLUGINGUI_H
 #include "Window.h"
 
+namespace VSTHost {
 class PluginGUI : public Window {
 public:
 	PluginGUI(int width, int height);
@@ -27,5 +28,6 @@ protected:
 	bool is_active{ false };
 
 };
+} // namespace
 
 #endif

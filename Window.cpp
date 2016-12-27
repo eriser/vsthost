@@ -1,5 +1,6 @@
 #include "Window.h"
 
+namespace VSTHost {
 Window::Window(int width, int height) : wnd(NULL) {
 	int offset_x = 200;
 	int offset_y = offset_x;
@@ -65,4 +66,4 @@ bool Window::RegisterWC(const TCHAR* class_name) {
 }
 
 void Window::OnCreate(HWND hWnd) {}
-
+} // namespace

@@ -10,6 +10,7 @@
 #include "pluginterfaces/vst/vsttypes.h"
 #include "Preset.h"
 
+namespace VSTHost {
 class PluginGUI;
 class Plugin {
 public:
@@ -68,5 +69,6 @@ protected:
 	Preset* state{ nullptr };
 	PluginGUI* gui{ nullptr };
 };
+} // namespace
 
 #endif

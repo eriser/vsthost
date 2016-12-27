@@ -2,7 +2,7 @@
 #define PLUGINLOADER_H
 
 #include <string>
-
+namespace VSTHost {
 class Plugin;
 class PluginLoader {
 public:
@@ -12,5 +12,6 @@ public:
 private:
 	Plugin* plugin = { nullptr };
 };
+} // namespace
 
 #endif

@@ -1,5 +1,6 @@
 #include "PluginGUI.h"
 
+namespace VSTHost {
 const TCHAR* PluginGUI::kClassName = TEXT("PluginGUI");
 WNDCLASSEX* PluginGUI::wc_static = nullptr;
 int PluginGUI::offset = 50;
@@ -37,3 +38,4 @@ bool PluginGUI::RegisterWC(const TCHAR* class_name) {
 bool PluginGUI::IsActive() {
 	return is_active;
 }
+} // namespace

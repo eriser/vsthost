@@ -3,6 +3,7 @@
 #include "PluginGUI.h"
 #include "VSTBase.h"
 
+namespace VSTHost {
 class VSTPlugin;
 class VSTPluginGUI : public PluginGUI, public VSTBase {
 	bool Initialize();
@@ -18,5 +19,6 @@ public:
 private:
 	VSTPlugin& plugin;
 };
+} // namespace
 
 #endif

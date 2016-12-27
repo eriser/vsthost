@@ -1,3 +1,6 @@
+#ifndef VSTBASE_H
+#define VSTBASE_H
+
 #include <iostream>
 
 #ifndef VST_FORCE_DEPRECATED
@@ -6,9 +9,8 @@
 #include "pluginterfaces/vst2.x/aeffect.h"
 #include "pluginterfaces/vst2.x/aeffectx.h"
 
-#ifndef VSTBASE_H
-#define VSTBASE_H
 
+namespace VSTHost {
 class VSTBase {
 public:
 	VSTBase(AEffect *aeffect) : plugin(aeffect) {}
@@ -39,5 +41,6 @@ protected:
 private:
 	AEffect *plugin;
 };
+} // namespace
 
 #endif
