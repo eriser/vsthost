@@ -13,12 +13,10 @@ public:
 	~PluginVST3Window();
 	bool Initialize(HWND parent);
 	HMENU CreateMenu();
-	LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	void Show();
 	void Hide();
 	void SetRect();
 private:
-	PluginVST3& plugin;
 	Steinberg::IPlugView* plugin_view = { nullptr };
 };
 } // namespace

@@ -163,7 +163,7 @@ bool PluginVST2::HasEditor() {
 
 void PluginVST2::CreateEditor(HWND hWnd) {
 	if (!gui && HasEditor()) {
-		gui = new PluginVST2Window(*this, plugin);
+		gui = new PluginVST2Window(*this);
 		gui->Initialize(hWnd);
 	}
 }

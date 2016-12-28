@@ -3,9 +3,10 @@
 #include "Window.h"
 
 namespace VSTHost {
+class Plugin;
 class PluginWindow : public Window {
 public:
-	PluginWindow(int width, int height);
+	PluginWindow(int width, int height, Plugin& p);
 	virtual ~PluginWindow() {}
 	virtual bool Initialize(HWND parent) = 0;
 	virtual void SetRect() = 0;
@@ -17,16 +18,14 @@ protected:
 		Presets, Preset = 20000
 	};
 	void ApplyOffset();
-	void OnCreate(HWND hWnd);
 	virtual HMENU CreateMenu() = 0;
 	static const TCHAR* kClassName;
-	//virtual void OnCreate(HWND hWnd);
-	//LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) = 0;
+	LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	bool RegisterWC(const TCHAR* class_name);
 	static WNDCLASSEX* wc_static;
 	static int offset;
 	bool is_active{ false };
-
+	Plugin& plugin;
 };
 } // namespace
 

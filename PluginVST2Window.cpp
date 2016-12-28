@@ -4,11 +4,11 @@
 #include <iostream>
 
 namespace VSTHost {
-PluginVST2Window::PluginVST2Window(PluginVST2& p, AEffect* aeffect) : PluginWindow(100, 100), BaseVST2(aeffect), plugin(p) {  }
+PluginVST2Window::PluginVST2Window(PluginVST2& p) : PluginWindow(100, 100, p) {}
 
 void PluginVST2Window::SetRect() {
 	ERect *erect = new ERect;
-	if (Dispatcher(effEditGetRect, 0, 0, &erect)) {
+	if (dynamic_cast<PluginVST2&>(plugin).Dispatcher(AEffectOpcodes::effEditGetRect, 0, 0, &erect)) {
 		rect.left = erect->left;
 		rect.right = erect->right;
 		rect.top = erect->top;
@@ -46,7 +46,7 @@ bool PluginVST2Window::Initialize(HWND parent) {
 void PluginVST2Window::Show() {
 	if (wnd) {
 		is_active = true;
-		Dispatcher(effEditOpen, 0, 0, wnd); // call this every time?
+		dynamic_cast<PluginVST2&>(plugin).Dispatcher(AEffectOpcodes::effEditOpen, 0, 0, wnd); // call this every time?
 		Window::Show();
 	}
 }
@@ -54,72 +54,9 @@ void PluginVST2Window::Show() {
 void PluginVST2Window::Hide() {
 	if (wnd) {
 		is_active = false;
-		Dispatcher(effEditClose, 0, 0, wnd); // this too?
+		dynamic_cast<PluginVST2&>(plugin).Dispatcher(AEffectOpcodes::effEditClose, 0, 0, wnd); // this too?
 		Window::Hide();
 	}
-}
-
-LRESULT CALLBACK PluginVST2Window::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
-	switch (Msg) {
-		case WM_CREATE:
-			OnCreate(hWnd);
-			break;
-		case WM_COMMAND:
-			if (LOWORD(wParam) >= MenuItem::Preset) {
-				plugin.SetProgram(LOWORD(wParam) - MenuItem::Preset);
-				Refresh();
-				break;
-			}
-			switch (LOWORD(wParam)) {
-				case MenuItem::Bypass: {
-					HMENU menu; 
-					if (menu = GetMenu(hWnd)) {
-						CheckMenuItem(menu, MenuItem::Bypass, plugin.IsBypassed() ? MF_UNCHECKED : MF_CHECKED);
-						plugin.SetBypass(!plugin.IsBypassed());
-					}
-					break;
-				}
-				case MenuItem::Active: {
-					HMENU menu;
-					if (menu = GetMenu(hWnd)) {
-						CheckMenuItem(menu, MenuItem::Active, plugin.IsActive() ? MF_UNCHECKED : MF_CHECKED);
-						plugin.SetActive(!plugin.IsActive());
-					}
-					break;
-				}
-				case MenuItem::Close:
-					Window::Hide();
-					break;
-				case MenuItem::Load:
-					plugin.LoadState();
-					Refresh();
-					break;
-				case MenuItem::Save:
-					plugin.SaveState();
-					break;
-				case MenuItem::LoadFromFile:
-					plugin.LoadStateFromFile();
-					Refresh();
-					break;
-				case MenuItem::SaveToFile:
-					plugin.SaveStateToFile();
-					break;
-				default:
-					break;
-			}
-			break;
-		case WM_CLOSE:
-			//DestroyWindow(hWnd);
-			Window::Hide();
-			Dispatcher(effEditClose);
-			break;
-		case WM_DESTROY:
-			PostQuitMessage(0);
-			break;
-		default:
-			return DefWindowProc(hWnd, Msg, wParam, lParam);
-	}
-	return 0;
 }
 
 HMENU PluginVST2Window::CreateMenu() {
@@ -142,20 +79,21 @@ HMENU PluginVST2Window::CreateMenu() {
 	AppendMenu(hmenu, MF_POPUP, (UINT_PTR)hstate, "State");
 	// preset submenu
 	HMENU hpresets = ::CreateMenu();
-	auto currentProgram = Dispatcher(AEffectOpcodes::effGetProgram);
+	PluginVST2& p = dynamic_cast<PluginVST2&>(plugin);
+	auto currentProgram = p.Dispatcher(AEffectOpcodes::effGetProgram);
 	bool programChanged = false;
 	for (decltype(plugin.GetProgramCount()) i = 0; i < plugin.GetProgramCount(); ++i) {
 		char tmp[kVstMaxProgNameLen + 1] = { 0 };
-		plugin.Dispatcher(AEffectXOpcodes::effBeginSetProgram);
-		if (!Dispatcher(AEffectXOpcodes::effGetProgramNameIndexed, i, 0, tmp)) {
-			Dispatcher(AEffectOpcodes::effSetProgram, 0, i);
-			Dispatcher(AEffectOpcodes::effGetProgramName, 0, 0, tmp);
+		p.Dispatcher(AEffectXOpcodes::effBeginSetProgram);
+		if (!p.Dispatcher(AEffectXOpcodes::effGetProgramNameIndexed, i, 0, tmp)) {
+			p.Dispatcher(AEffectOpcodes::effSetProgram, 0, i);
+			p.Dispatcher(AEffectOpcodes::effGetProgramName, 0, 0, tmp);
 			if (!programChanged) programChanged = true;
 		}
-		plugin.Dispatcher(AEffectXOpcodes::effEndSetProgram);
+		p.Dispatcher(AEffectXOpcodes::effEndSetProgram);
 		AppendMenu(hpresets, MF_STRING, MenuItem::Preset + i, tmp);
 	}
-	if (programChanged) Dispatcher(AEffectOpcodes::effSetProgram, 0, currentProgram);
+	if (programChanged) p.Dispatcher(AEffectOpcodes::effSetProgram, 0, currentProgram);
 	AppendMenu(hmenu, plugin.GetProgramCount() > 0 ? MF_POPUP : MF_POPUP | MF_GRAYED, (UINT_PTR)hpresets, "Plugin");
 	return hmenu;
 }

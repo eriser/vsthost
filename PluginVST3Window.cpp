@@ -4,7 +4,7 @@
 #include "base/source/fstring.h"
 
 namespace VSTHost {
-PluginVST3Window::PluginVST3Window(PluginVST3& p, Steinberg::IPlugView* pv) : PluginWindow(100, 100), plugin(p), plugin_view(pv) {}
+PluginVST3Window::PluginVST3Window(PluginVST3& p, Steinberg::IPlugView* pv) : PluginWindow(100, 100, p), plugin_view(pv) {}
 
 PluginVST3Window::~PluginVST3Window() {
 	if (plugin_view)
@@ -59,63 +59,6 @@ void PluginVST3Window::Hide() {
 	}
 }
 
-LRESULT CALLBACK PluginVST3Window::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
-	switch (Msg) {
-		case WM_CLOSE:
-			Window::Hide();
-			break;
-		case WM_COMMAND:
-			if (LOWORD(wParam) >= MenuItem::Preset) {
-				plugin.SetProgram(LOWORD(wParam) - MenuItem::Preset);
-				break;
-			}
-			switch (LOWORD(wParam)) {
-				case MenuItem::Bypass: {
-					HMENU menu;
-					if (menu = GetMenu(hWnd)) {
-						CheckMenuItem(menu, MenuItem::Bypass, plugin.IsBypassed() ? MF_UNCHECKED : MF_CHECKED);
-						plugin.SetBypass(!plugin.IsBypassed());
-					}
-					break;
-				}
-				case MenuItem::Active: {
-					HMENU menu;
-					if (menu = GetMenu(hWnd)) {
-						CheckMenuItem(menu, MenuItem::Active, plugin.IsActive() ? MF_UNCHECKED : MF_CHECKED);
-						plugin.SetActive(!plugin.IsActive());
-					}
-					break;
-				}
-				case MenuItem::Close:
-					Window::Hide();
-					break;
-				case MenuItem::Load:
-					plugin.LoadState();
-					InvalidateRect(hWnd, NULL, false);
-					break;
-				case MenuItem::Save:
-					plugin.SaveState();
-					break;
-				case MenuItem::LoadFromFile:
-					plugin.LoadStateFromFile();
-					InvalidateRect(hWnd, NULL, false);
-					break;
-				case MenuItem::SaveToFile:
-					plugin.SaveStateToFile();
-					break;
-				default:
-					break;
-			}
-			break;
-		case WM_DESTROY:
-			::PostQuitMessage(0);
-			break;
-		default:
-			return DefWindowProc(hWnd, Msg, wParam, lParam);
-	}
-	return 0;
-}
-
 HMENU PluginVST3Window::CreateMenu() {
 	HMENU hmenu = ::CreateMenu();
 	// plugin submenu
@@ -136,11 +79,12 @@ HMENU PluginVST3Window::CreateMenu() {
 	AppendMenu(hmenu, MF_POPUP, (UINT_PTR)hstate, "State");
 	// preset submenu
 	HMENU hpresets = ::CreateMenu();
+	PluginVST3& p = dynamic_cast<PluginVST3&>(plugin);
 	Steinberg::Vst::ProgramListInfo list_info{};
 	for (Steinberg::int32 i = 0; i < plugin.GetProgramCount(); ++i) {
-		if (plugin.unit_info->getProgramListInfo(0, list_info) == Steinberg::kResultTrue) {
+		if (p.unit_info->getProgramListInfo(0, list_info) == Steinberg::kResultTrue) {
 			Steinberg::Vst::String128 tmp = { 0 };
-			if (plugin.unit_info->getProgramName(list_info.id, i, tmp) == Steinberg::kResultTrue) {
+			if (p.unit_info->getProgramName(list_info.id, i, tmp) == Steinberg::kResultTrue) {
 				Steinberg::String str(tmp);
 				AppendMenu(hpresets, MF_STRING, MenuItem::Preset + i, str.text8());
 			}

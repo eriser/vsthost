@@ -5,19 +5,16 @@
 
 namespace VSTHost {
 class PluginVST2;
-class PluginVST2Window : public PluginWindow, public BaseVST2 {
+class PluginVST2Window : public PluginWindow {
 	bool Initialize();
 public:
-	PluginVST2Window(PluginVST2& p, AEffect* aeffect);
+	PluginVST2Window(PluginVST2& p);
 	~PluginVST2Window() {}
 	bool Initialize(HWND parent);
 	HMENU CreateMenu();
-	LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	void Show();
 	void Hide();
 	void SetRect();
-private:
-	PluginVST2& plugin;
 };
 } // namespace
 
