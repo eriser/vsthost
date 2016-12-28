@@ -1,19 +1,19 @@
-#include "VST3Preset.h"
+#include "PresetVST3.h"
 
 #include <iostream>
 #include <fstream>
 #include "base/source/fstreamer.h"
 
 namespace VSTHost {
-VST3Preset::VST3Preset(Steinberg::Vst::IComponent* pc, Steinberg::Vst::IEditController* ec, std::string n) : processor(pc), edit(ec), name(n) {
+PresetVST3::PresetVST3(Steinberg::Vst::IComponent* pc, Steinberg::Vst::IEditController* ec, std::string n) : processor(pc), edit(ec), name(n) {
 
 }
 
-VST3Preset::~VST3Preset() {
+PresetVST3::~PresetVST3() {
 
 }
 
-bool VST3Preset::SetState() {
+bool PresetVST3::SetState() {
 	if (processor && processor_stream.getSize() > 0) {
 		processor->setState(&processor_stream);
 		processor_stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
@@ -28,7 +28,7 @@ bool VST3Preset::SetState() {
 	return true;
 }
 
-void VST3Preset::LoadFromFile() {
+void PresetVST3::LoadFromFile() {
 	std::ifstream file(name + ".fxp", std::ifstream::binary | std::ifstream::in);
 	if (file.is_open()) {
 		decltype(processor_stream.getSize()) size;
@@ -55,7 +55,7 @@ void VST3Preset::LoadFromFile() {
 	}
 }
 
-void VST3Preset::GetState() {
+void PresetVST3::GetState() {
 	if (processor && (processor->getState(&processor_stream) != Steinberg::kResultTrue))
 		processor_stream.setSize(0);
 	if (edit && (edit->getState(&edit_stream) != Steinberg::kResultTrue))
@@ -64,7 +64,7 @@ void VST3Preset::GetState() {
 	processor_stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
 }
 
-void VST3Preset::SaveToFile() {
+void PresetVST3::SaveToFile() {
 	std::ofstream file(name + ".fxp", std::ofstream::binary | std::ofstream::out | std::ofstream::trunc);
 	if (file.is_open()) {
 		GetState();

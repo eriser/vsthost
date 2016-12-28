@@ -1,7 +1,7 @@
-#include "VSTPreset.h"
+#include "PresetVST2.h"
 
 namespace VSTHost {
-VSTPreset::VSTPreset(AEffect *plugin) : VSTBase(plugin), isSaved(false), chunk(NULL) {
+PresetVST2::PresetVST2(AEffect *plugin) : BaseVST2(plugin), isSaved(false), chunk(NULL) {
 	path[0] = '.';
 	path[1] = '\\';
 	plugin->dispatcher(plugin, effGetEffectName, 0, 0, (void *)(path + 2), 0.);
@@ -30,12 +30,12 @@ VSTPreset::VSTPreset(AEffect *plugin) : VSTBase(plugin), isSaved(false), chunk(N
 	strcpy(program->prgName, "Custom");
 }
 
-VSTPreset::~VSTPreset() {
+PresetVST2::~PresetVST2() {
 	if (ProgramChunks() && chunk) free(chunk);
 	if (program) free(program);
 }
 
-bool VSTPreset::SetState() {
+bool PresetVST2::SetState() {
 	if (isSaved) {	// wczytuje wszystkie parametry w zaleznosci czy w postaci chunk czy tablicy
 		if (ProgramChunks()) {
 			Dispatcher(effSetChunk, 1, chunkSize, &chunk);
@@ -63,7 +63,7 @@ bool VSTPreset::SetState() {
 	}
 }
 
-void VSTPreset::LoadFromFile() {
+void PresetVST2::LoadFromFile() {
 	FILE *file = fopen(path, "r");
 	fread(program, size, 1, file);
 	if (ProgramChunks()) {
@@ -77,7 +77,7 @@ void VSTPreset::LoadFromFile() {
 	SetState();
 }
 
-void VSTPreset::GetState() {
+void PresetVST2::GetState() {
 	if (ProgramChunks()) {
 		if (chunk) free(chunk);
 		chunkSize = Dispatcher(effGetChunk, 1, 0, &chunk);
@@ -98,7 +98,7 @@ void VSTPreset::GetState() {
 	SaveToFile();
 }
 
-void VSTPreset::SaveToFile() {
+void PresetVST2::SaveToFile() {
 	FILE *file;
 	file = fopen(path, "w");
 	fwrite(program, size, 1, file);
@@ -108,7 +108,7 @@ void VSTPreset::SaveToFile() {
 	fclose(file);
 }
 
-void VSTPreset::AddExtension() {
+void PresetVST2::AddExtension() {
 	int pos = 0;
 	while (path[pos] != '\0') pos++;
 	path[pos] = '.';

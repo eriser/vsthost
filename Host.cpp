@@ -21,7 +21,7 @@ Host::Host(std::int64_t block_size, double sample_rate, bool stereo)
 	buffers[1] = nullptr;
 	AllocateBuffers();
 	LoadPluginList();
-	//gui = new HostGUI(*this);
+	//gui = new HostWindow(*this);
 	//std::thread gui_thread(&Host::CreateGUI, this);
 	//for (auto p : plugins)
 	//	p->CreateEditor();
@@ -150,7 +150,7 @@ Steinberg::tresult PLUGIN_API Host::createInstance(Steinberg::TUID cid, Steinber
 }
 
 void Host::CreateGUI() {
-	gui = new HostGUI(*this);
+	gui = new HostWindow(*this);
 	gui->Initialize(NULL);
 	gui->Go();
 }

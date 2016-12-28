@@ -24,37 +24,10 @@
     <ClCompile Include="PluginLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VST3Plugin.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VSTBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VSTPlugin.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VSTPreset.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\VST3 SDK\public.sdk\source\common\memorystream.cpp">
       <Filter>VST3 SDK</Filter>
     </ClCompile>
-    <ClCompile Include="HostGUI.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PluginGUI.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VSTPluginGUI.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VST3PluginGUI.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VST3Preset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Plugin.cpp">
@@ -63,12 +36,36 @@
     <ClCompile Include="..\VST3 SDK\public.sdk\source\vst\hosting\parameterchanges.cpp">
       <Filter>VST3 SDK</Filter>
     </ClCompile>
+    <ClCompile Include="PresetVST2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PluginVST2Window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PresetVST3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseVST2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HostWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PluginWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PluginVST3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PluginVST3Window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PluginVST2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Host.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HostHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Plugin.h">
@@ -80,41 +77,44 @@
     <ClInclude Include="Preset.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VST3Plugin.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VSTBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VSTPlugin.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VSTPreset.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\VST3 SDK\public.sdk\source\common\memorystream.h">
       <Filter>VST3 SDK</Filter>
     </ClInclude>
-    <ClInclude Include="HostGUI.h">
+    <ClInclude Include="..\VST3 SDK\public.sdk\source\vst\hosting\parameterchanges.h">
+      <Filter>VST3 SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="VSTHostHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PluginGUI.h">
+    <ClInclude Include="PresetVST2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VSTPluginGUI.h">
+    <ClInclude Include="PluginVST2Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VST3PluginGUI.h">
+    <ClInclude Include="PluginVST2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VST3Preset.h">
+    <ClInclude Include="BaseVST2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\VST3 SDK\public.sdk\source\vst\hosting\parameterchanges.h">
-      <Filter>VST3 SDK</Filter>
+    <ClInclude Include="PresetVST3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PluginVST3Window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PluginVST3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PluginWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HostWindow.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

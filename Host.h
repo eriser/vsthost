@@ -14,14 +14,14 @@
 #include "pluginterfaces/vst/ivsthostapplication.h"
 
 #define NOMINMAX // kolizja makra MAX z windows.h oraz std::numeric_limits<T>::max()
-#include "HostGUI.h"
+#include "HostWindow.h"
 #include "PluginLoader.h"
-#include "VSTPlugin.h"
-#include "VST3Plugin.h"
+#include "PluginVST2.h"
+#include "PluginVST3.h"
 
 namespace VSTHost {
 class Host : public Steinberg::FObject, Steinberg::Vst::IHostApplication {
-	friend class HostGUI;
+	friend class HostWindow;
 public:
 	Host(std::int64_t block_size, double sample_rate, bool stereo = true);
 	~Host();
@@ -63,7 +63,7 @@ private:
 	const static std::string kPluginsPath;
 
 	std::vector<Plugin*> plugins;
-	HostGUI* gui = { nullptr };
+	HostWindow* gui = { nullptr };
 	std::thread ui_thread;
 
 	Steinberg::Vst::TSamples block_size;

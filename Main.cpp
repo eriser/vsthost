@@ -1,4 +1,4 @@
-#include "HostHeader.h"
+#include "VSTHostHeader.h"
 
 #include <fstream>
 #include <string>

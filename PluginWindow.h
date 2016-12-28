@@ -1,12 +1,12 @@
-#ifndef PLUGINGUI_H
-#define PLUGINGUI_H
+#ifndef PLUGINWINDOW_H
+#define PLUGINWINDOW_H
 #include "Window.h"
 
 namespace VSTHost {
-class PluginGUI : public Window {
+class PluginWindow : public Window {
 public:
-	PluginGUI(int width, int height);
-	virtual ~PluginGUI() {}
+	PluginWindow(int width, int height);
+	virtual ~PluginWindow() {}
 	virtual bool Initialize(HWND parent) = 0;
 	virtual void SetRect() = 0;
 	bool IsActive();

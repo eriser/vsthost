@@ -1,5 +1,5 @@
 #include "Plugin.h"
-#include "PluginGUI.h"
+#include "PluginWindow.h"
 
 namespace VSTHost {
 Steinberg::Vst::TSamples Plugin::block_size = 128;

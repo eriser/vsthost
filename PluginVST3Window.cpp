@@ -1,17 +1,17 @@
-#include "VST3PluginGUI.h"
-#include "VST3Plugin.h"
+#include "PluginVST3Window.h"
+#include "PluginVST3.h"
 
 #include "base/source/fstring.h"
 
 namespace VSTHost {
-VST3PluginGUI::VST3PluginGUI(VST3Plugin& p, Steinberg::IPlugView* pv) : PluginGUI(100, 100), plugin(p), plugin_view(pv) {}
+PluginVST3Window::PluginVST3Window(PluginVST3& p, Steinberg::IPlugView* pv) : PluginWindow(100, 100), plugin(p), plugin_view(pv) {}
 
-VST3PluginGUI::~VST3PluginGUI() {
+PluginVST3Window::~PluginVST3Window() {
 	if (plugin_view)
 		plugin_view->release();
 }
 
-void VST3PluginGUI::SetRect() {
+void PluginVST3Window::SetRect() {
 	Steinberg::ViewRect vr;
 	plugin_view->getSize(&vr);
 	rect.left = vr.left;
@@ -31,7 +31,7 @@ void VST3PluginGUI::SetRect() {
 	ApplyOffset();
 }
 
-bool VST3PluginGUI::Initialize(HWND parent) {
+bool PluginVST3Window::Initialize(HWND parent) {
 	if (plugin_view && RegisterWC(kClassName)) {
 		SetRect();
 		wnd = CreateWindow(kClassName, plugin.GetPluginName().c_str(), WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
@@ -45,21 +45,21 @@ bool VST3PluginGUI::Initialize(HWND parent) {
 		return false;
 }
 
-void VST3PluginGUI::Show() {
+void PluginVST3Window::Show() {
 	if (wnd) {
 		is_active = true;
 		Window::Show();
 	}
 }
 
-void VST3PluginGUI::Hide() {
+void PluginVST3Window::Hide() {
 	if (wnd) {
 		is_active = false;
 		Window::Hide();
 	}
 }
 
-LRESULT CALLBACK VST3PluginGUI::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK PluginVST3Window::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 	switch (Msg) {
 		case WM_CLOSE:
 			Window::Hide();
@@ -116,7 +116,7 @@ LRESULT CALLBACK VST3PluginGUI::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, L
 	return 0;
 }
 
-HMENU VST3PluginGUI::CreateMenu() {
+HMENU PluginVST3Window::CreateMenu() {
 	HMENU hmenu = ::CreateMenu();
 	// plugin submenu
 	HMENU hplugin = ::CreateMenu();

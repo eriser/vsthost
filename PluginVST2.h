@@ -1,5 +1,5 @@
-#ifndef VSTPLUGIN_H
-#define VSTPLUGIN_H
+#ifndef PLUGINVST2_H
+#define PLUGINVST2_H
 
 #ifndef VST_FORCE_DEPRECATED
 #define VST_FORCE_DEPRECATED 0
@@ -8,17 +8,17 @@
 #include "pluginterfaces\vst2.x\aeffect.h"
 #include "pluginterfaces\vst2.x\aeffectx.h"
 
-#include "VSTBase.h"
+#include "BaseVST2.h"
 #include "Plugin.h"
 
 namespace VSTHost {
-class VSTPluginGUI;
-class VSTPlugin : public Plugin {
-	friend class VSTPluginGUI;
+class PluginVST2Window;
+class PluginVST2 : public Plugin {
+	friend class PluginVST2Window;
 public:
 	// basic plugin interface
-	VSTPlugin(HMODULE m, AEffect* p);
-	~VSTPlugin();
+	PluginVST2(HMODULE m, AEffect* p);
+	~PluginVST2();
 	bool IsValid();
 	void Initialize();
 	std::string GetPluginName();

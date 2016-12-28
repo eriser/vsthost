@@ -1,35 +1,35 @@
-#include "VSTPlugin.h"
+#include "PluginVST2.h"
 
-#include "VSTPreset.h"
-#include "VSTPluginGUI.h"
+#include "PresetVST2.h"
+#include "PluginVST2Window.h"
 
 namespace VSTHost {
-VSTPlugin::VSTPlugin(HMODULE m, AEffect* p) : Plugin(m), plugin(p) {
+PluginVST2::PluginVST2(HMODULE m, AEffect* p) : Plugin(m), plugin(p) {
 
 }
 
-VSTPlugin::~VSTPlugin() {
+PluginVST2::~PluginVST2() {
 	if (module) 
 		::FreeLibrary(module);
 }
 
-bool VSTPlugin::IsValid() {
+bool PluginVST2::IsValid() {
 	VstPlugCategory c = static_cast<VstPlugCategory>(Dispatcher(effGetPlugCategory));
 	return plugin->magic == kEffectMagic && c != kPlugCategSynth && c >= kPlugCategUnknown && c <= kPlugCategRestoration;
 }
 
-void VSTPlugin::Initialize() {
+void PluginVST2::Initialize() {
 	Dispatcher(AEffectOpcodes::effOpen);
 	SetSampleRate(sample_rate);
 	SetBlockSize(block_size);
 	UpdateSpeakerArrangement();
-	state = new VSTPreset(plugin);
+	state = new PresetVST2(plugin);
 	plugin->resvd1 = reinterpret_cast<VstIntPtr>(this);
 	soft_bypass = CanDo("bypass");
 	SetActive(true);
 }
 
-std::string VSTPlugin::GetPluginName() {
+std::string PluginVST2::GetPluginName() {
 	TCHAR name[kVstMaxProductStrLen + 1] = { 0 };
 	if (Dispatcher(effGetEffectName, 0, 0, (void *)name));
 	else if (Dispatcher(effGetProductString, 0, 0, (void *)name));
@@ -46,7 +46,7 @@ std::string VSTPlugin::GetPluginName() {
 	return std::string(name);
 }
 
-void VSTPlugin::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) {
+void PluginVST2::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) {
 	if (IsActive()) {
 		if (BypassProcess()) // hard bypass
 		for (unsigned i = 0; i < GetChannelCount(); ++i)
@@ -62,7 +62,7 @@ void VSTPlugin::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample
 	}
 }
 
-void VSTPlugin::UpdateBlockSize() {
+void PluginVST2::UpdateBlockSize() {
 	bool was_active;
 	if (was_active = IsActive())
 		SetActive(false);
@@ -71,7 +71,7 @@ void VSTPlugin::UpdateBlockSize() {
 		SetActive(true);
 }
 
-void VSTPlugin::UpdateSampleRate() {
+void PluginVST2::UpdateSampleRate() {
 	bool was_active;
 	if (was_active = IsActive())
 		SetActive(false);
@@ -80,7 +80,7 @@ void VSTPlugin::UpdateSampleRate() {
 		SetActive(true);
 }
 
-void VSTPlugin::UpdateSpeakerArrangement() {
+void PluginVST2::UpdateSpeakerArrangement() {
 	if (GetVSTVersion() < 2300)
 		return;
 	bool was_active;
@@ -123,29 +123,29 @@ void VSTPlugin::UpdateSpeakerArrangement() {
 		SetActive(true);
 }
 
-Steinberg::int32 VSTPlugin::GetProgramCount() {
+Steinberg::int32 PluginVST2::GetProgramCount() {
 	return plugin->numPrograms;
 }
 
-void VSTPlugin::SetProgram(Steinberg::int32 id) {
+void PluginVST2::SetProgram(Steinberg::int32 id) {
 	Dispatcher(AEffectXOpcodes::effBeginSetProgram);
 	Dispatcher(AEffectOpcodes::effSetProgram, 0, id);
 	Dispatcher(AEffectXOpcodes::effEndSetProgram);
 }
 
-Steinberg::int32 VSTPlugin::GetParameterCount() {
+Steinberg::int32 PluginVST2::GetParameterCount() {
 	return plugin->numParams;
 }
 
-Steinberg::Vst::ParamValue VSTPlugin::GetParameter(Steinberg::Vst::ParamID id) {
+Steinberg::Vst::ParamValue PluginVST2::GetParameter(Steinberg::Vst::ParamID id) {
 	return plugin->getParameter(plugin, id);
 }
 
-void VSTPlugin::SetParameter(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value) {
+void PluginVST2::SetParameter(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value) {
 	plugin->setParameter(plugin, id, static_cast<float>(value));
 }
 
-void VSTPlugin::SetBypass(bool bypass_) {
+void PluginVST2::SetBypass(bool bypass_) {
 	if (bypass != bypass_) {
 		bypass = bypass_;
 		if (soft_bypass)
@@ -153,31 +153,31 @@ void VSTPlugin::SetBypass(bool bypass_) {
 	}
 }
 
-bool VSTPlugin::BypassProcess() {	// wywolanie process omijaj tylko wtedy, jak
+bool PluginVST2::BypassProcess() {	// wywolanie process omijaj tylko wtedy, jak
 	return bypass && !soft_bypass;	// bypass == true i wtyczka nie obsluguje soft bypass
 }
 
-bool VSTPlugin::HasEditor() {
+bool PluginVST2::HasEditor() {
 	return static_cast<bool>(plugin->flags & effFlagsHasEditor);
 }
 
-void VSTPlugin::CreateEditor(HWND hWnd) {
+void PluginVST2::CreateEditor(HWND hWnd) {
 	if (!gui && HasEditor()) {
-		gui = new VSTPluginGUI(*this, plugin);
+		gui = new PluginVST2Window(*this, plugin);
 		gui->Initialize(hWnd);
 	}
 }
 
-VstIntPtr VSTCALLBACK VSTPlugin::HostCallbackWrapper(AEffect *effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt) {
+VstIntPtr VSTCALLBACK PluginVST2::HostCallbackWrapper(AEffect *effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt) {
 	if (opcode == AudioMasterOpcodes::audioMasterVersion)
 		return 2400;
-	VSTPlugin* plugin = reinterpret_cast<VSTPlugin*>(effect->resvd1);
+	PluginVST2* plugin = reinterpret_cast<PluginVST2*>(effect->resvd1);
 	if (plugin)
 		return plugin->HostCallback(effect, opcode, index, value, ptr, opt);
 	return 0;
 }
 
-void VSTPlugin::PrintPrograms() {
+void PluginVST2::PrintPrograms() {
 	char ProgramName[kVstMaxProgNameLen + 1] = { 0 };
 	int currentProgram = Dispatcher(AEffectOpcodes::effGetProgram);
 	bool programChanged = false;
@@ -192,7 +192,7 @@ void VSTPlugin::PrintPrograms() {
 	if (programChanged) Dispatcher(AEffectOpcodes::effSetProgram, 0, currentProgram);
 }
 
-void VSTPlugin::PrintParameters() {	// + 1, bo wyjatki wyrzucalo
+void PluginVST2::PrintParameters() {	// + 1, bo wyjatki wyrzucalo
 	char ParamLabel[kVstMaxParamStrLen + 1] = { 0 };
 	char ParamDisplay[kVstMaxParamStrLen + 1] = { 0 };
 	char ParamName[kVstMaxParamStrLen + 1] = { 0 };
@@ -267,7 +267,7 @@ void VSTPlugin::PrintParameters() {	// + 1, bo wyjatki wyrzucalo
 	}
 }
 
-void VSTPlugin::PrintCanDos() {
+void PluginVST2::PrintCanDos() {
 	char *PlugCanDos[] = { "sendVstEvents", "sendVstMidiEvent", "receiveVstEvents", "receiveVstMidiEvent",
 		"receiveVstTimeInfo", "offline", "midiProgramNames", "bypass" };
 	for (int i = 0; i < (sizeof(PlugCanDos) / sizeof(char *)); i++) {
@@ -275,7 +275,7 @@ void VSTPlugin::PrintCanDos() {
 	}
 }
 
-void VSTPlugin::PrintInfo() {
+void PluginVST2::PrintInfo() {
 	char *separator = "================\n";
 	char EffectName[kVstMaxEffectNameLen + 1] = { 0 };
 	char VendorString[kVstMaxVendorStrLen + 1] = { 0 };
@@ -343,31 +343,31 @@ void VSTPlugin::PrintInfo() {
 	std::cout << separator;
 }
 
-void VSTPlugin::Resume() {
+void PluginVST2::Resume() {
 	Dispatcher(AEffectOpcodes::effMainsChanged, 0, true);
 	StopProcessing();
 	active = true;
 }
 
-void VSTPlugin::Suspend() {
+void PluginVST2::Suspend() {
 	StopProcessing();
 	Dispatcher(AEffectOpcodes::effMainsChanged, 0, false);
 	active = false;
 }
 
-void VSTPlugin::StartProcessing() {
+void PluginVST2::StartProcessing() {
 	Dispatcher(AEffectXOpcodes::effStartProcess);
 }
 
-void VSTPlugin::StopProcessing() {
+void PluginVST2::StopProcessing() {
 	Dispatcher(AEffectXOpcodes::effStopProcess);
 }
 
-VstIntPtr VSTCALLBACK VSTPlugin::Dispatcher(VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt) {
+VstIntPtr VSTCALLBACK PluginVST2::Dispatcher(VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt) {
 	return plugin->dispatcher(plugin, opcode, index, value, ptr, opt);
 }
 
-VstIntPtr VSTCALLBACK VSTPlugin::HostCallback(AEffect *effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt) {
+VstIntPtr VSTCALLBACK PluginVST2::HostCallback(AEffect *effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt) {
 	switch (opcode) {
 		case AudioMasterOpcodes::audioMasterVersion:
 			return 2400;
@@ -463,15 +463,15 @@ VstIntPtr VSTCALLBACK VSTPlugin::HostCallback(AEffect *effect, VstInt32 opcode, 
 	}
 }
 
-bool VSTPlugin::CanDo(const char *canDo) {
+bool PluginVST2::CanDo(const char *canDo) {
 	return (Dispatcher(effCanDo, 0, 0, (void *)canDo) != 0);
 }
 
-int VSTPlugin::GetVendorVersion() {
+int PluginVST2::GetVendorVersion() {
 	return Dispatcher(effGetVendorVersion);
 }
 
-int VSTPlugin::GetVSTVersion() {
+int PluginVST2::GetVSTVersion() {
 	return Dispatcher(effGetVstVersion);
 }
 } // namespace

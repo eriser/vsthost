@@ -1,16 +1,16 @@
-#ifndef VST3PLUGINGUI_H
-#define VST3PLUGINGUI_H
-#include "PluginGUI.h"
+#ifndef PLUGINVST3WINDOW_H
+#define PLUGINVST3WINDOW_H
+#include "PluginWindow.h"
 
 #include "pluginterfaces/gui/iplugview.h"
 
 namespace VSTHost {
-class VST3Plugin;
-class VST3PluginGUI : public PluginGUI {
+class PluginVST3;
+class PluginVST3Window : public PluginWindow {
 	bool Initialize();
 public:
-	VST3PluginGUI(VST3Plugin& p, Steinberg::IPlugView* pv);
-	~VST3PluginGUI();
+	PluginVST3Window(PluginVST3& p, Steinberg::IPlugView* pv);
+	~PluginVST3Window();
 	bool Initialize(HWND parent);
 	HMENU CreateMenu();
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -18,7 +18,7 @@ public:
 	void Hide();
 	void SetRect();
 private:
-	VST3Plugin& plugin;
+	PluginVST3& plugin;
 	Steinberg::IPlugView* plugin_view = { nullptr };
 };
 } // namespace

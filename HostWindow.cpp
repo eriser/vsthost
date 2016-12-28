@@ -1,35 +1,35 @@
-#include "HostGUI.h"
+#include "HostWindow.h"
 
 #include "Host.h"
-#include "VSTPlugin.h"
-#include "VST3Plugin.h"
-#include "VST3PluginGUI.h"
-#include "VSTPluginGUI.h"
+#include "PluginVST2.h"
+#include "PluginVST3.h"
+#include "PluginVST3Window.h"
+#include "PluginVST2Window.h"
 
 #include <iostream>
 
 namespace VSTHost {
-const TCHAR* HostGUI::button_labels[Items::BUTTON_COUNT] = { 
+const TCHAR* HostWindow::button_labels[Items::BUTTON_COUNT] = { 
 	TEXT("Add"), TEXT("Delete"), TEXT("Move Up"), 
 	TEXT("Move Down"), TEXT("Show Editor"), TEXT("Hide Editor") };
-const TCHAR* HostGUI::kClassName = TEXT("HostGUI");
-const TCHAR* HostGUI::kCaption = TEXT("HostGUI");
-const int HostGUI::kWindowWidth = 300;
-const int HostGUI::kWindowHeight = 500;
-const int HostGUI::kListWidth = 150;
-const int HostGUI::kListHeight = 250;
-const int HostGUI::kButtonWidth = 30;
-const int HostGUI::kButtonHeight = 120; // move to enum?
+const TCHAR* HostWindow::kClassName = TEXT("HostWindow");
+const TCHAR* HostWindow::kCaption = TEXT("HostWindow");
+const int HostWindow::kWindowWidth = 300;
+const int HostWindow::kWindowHeight = 500;
+const int HostWindow::kListWidth = 150;
+const int HostWindow::kListHeight = 250;
+const int HostWindow::kButtonWidth = 30;
+const int HostWindow::kButtonHeight = 120; // move to enum?
 
-HostGUI::HostGUI(Host& h) : Window(kWindowWidth, kWindowHeight), host(h) { }
+HostWindow::HostWindow(Host& h) : Window(kWindowWidth, kWindowHeight), host(h) { }
 
-HostGUI::~HostGUI() {
+HostWindow::~HostWindow() {
 	if (ofn)
 		delete ofn;
 	//::DeleteObject(font)
 }
 
-bool HostGUI::Initialize(HWND parent) {
+bool HostWindow::Initialize(HWND parent) {
 	if (Window::RegisterWC(kClassName)) {
 		wnd = CreateWindow(kClassName, kCaption, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
 			rect.left, rect.top, rect.right, rect.bottom, parent, NULL, GetModuleHandle(NULL), (LPVOID)this);
@@ -44,7 +44,7 @@ bool HostGUI::Initialize(HWND parent) {
 	else return false;
 }
 
-void HostGUI::OnCreate(HWND hWnd) {
+void HostWindow::OnCreate(HWND hWnd) {
 	plugin_list = CreateWindow(TEXT("listbox"), NULL, WS_CHILD | WS_VISIBLE | WS_BORDER | WS_HSCROLL | LBS_NOTIFY,
 		20, 20, kListWidth, kListHeight, hWnd, (HMENU)Items::PluginList, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
 	for (int i = Items::Add; i < Items::BUTTON_COUNT; ++i) {
@@ -55,7 +55,7 @@ void HostGUI::OnCreate(HWND hWnd) {
 }
 
 
-LRESULT CALLBACK HostGUI::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK HostWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	switch (uMsg) {
 		case WM_CREATE:
 			OnCreate(hWnd);
@@ -147,13 +147,13 @@ LRESULT CALLBACK HostGUI::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 	return 0;
 }
 
-void HostGUI::AddEditor(Plugin* p) {
+void HostWindow::AddEditor(Plugin* p) {
 	p->CreateEditor(wnd);
 	/*
-	PluginGUI* editor = nullptr;
+	PluginWindow* editor = nullptr;
 	if (p->HasEditor()) {
-		if (p->isVST()) editor = new VSTPluginGUI(*dynamic_cast<VSTPlugin*>(p));
-		else if (p->IsVST3()) editor = new VST3PluginGUI(*dynamic_cast<VST3Plugin*>(p));
+		if (p->isVST()) editor = new PluginVST2Window(*dynamic_cast<PluginVST2*>(p));
+		else if (p->IsVST3()) editor = new PluginVST3Window(*dynamic_cast<PluginVST3*>(p));
 		if (editor && !editor->Initialize(wnd)) {
 			delete editor;
 			editor = nullptr;
@@ -163,7 +163,7 @@ void HostGUI::AddEditor(Plugin* p) {
 	*/
 }
 
-void HostGUI::PopulatePluginList() {
+void HostWindow::PopulatePluginList() {
 	if (plugin_list) {
 		SendMessage(plugin_list, LB_RESETCONTENT, NULL, NULL);
 		int i = 0;
@@ -175,7 +175,7 @@ void HostGUI::PopulatePluginList() {
 	}
 }
 
-void HostGUI::SetFont() {
+void HostWindow::SetFont() {
 	NONCLIENTMETRICS metrics;
 	metrics.cbSize = sizeof(NONCLIENTMETRICS);
 	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &metrics, 0);
@@ -186,7 +186,7 @@ void HostGUI::SetFont() {
 		SendMessage(buttons[i], WM_SETFONT, (WPARAM)font, MAKELPARAM(TRUE, 0));
 }
 
-void HostGUI::OpenDialog() {
+void HostWindow::OpenDialog() {
 	static TCHAR filename[256];
 	if (!ofn) {
 		ofn = new OPENFILENAME;
@@ -210,7 +210,7 @@ void HostGUI::OpenDialog() {
 	}
 }
 
-void HostGUI::SelectPlugin(unsigned i) {
+void HostWindow::SelectPlugin(unsigned i) {
 	if (plugin_list) {
 		SendMessage(plugin_list, LB_SETCURSEL, i, 0);
 		SetFocus(plugin_list);
@@ -235,18 +235,18 @@ void HostGUI::SelectPlugin(unsigned i) {
 	}
 }
 
-unsigned HostGUI::GetPluginCount() {
+unsigned HostWindow::GetPluginCount() {
 	return host.plugins.size();
 }
 
-LRESULT HostGUI::GetPluginSelection() {
+LRESULT HostWindow::GetPluginSelection() {
 	if (plugin_list)
 		return SendMessage(plugin_list, LB_GETCURSEL, NULL, NULL);
 	else 
 		return -1;
 }
 
-void HostGUI::CreateEditors() {
+void HostWindow::CreateEditors() {
 	for (auto &p : host.plugins)
 		AddEditor(p);
 }

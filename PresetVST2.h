@@ -1,5 +1,5 @@
-#ifndef VSTPRESET_H
-#define VSTPRESET_H
+#ifndef PRESETVST2_H
+#define PRESETVST2_H
 
 #include <iostream>
 #include <string.h>
@@ -7,11 +7,11 @@
 #include "pluginterfaces\vst2.x\aeffectx.h"
 #include "pluginterfaces\vst2.x\vstfxstore.h"
 
-#include "VSTBase.h"
+#include "BaseVST2.h"
 #include "Preset.h"
 
 namespace VSTHost {
-class VSTPreset : public Preset, public VSTBase {
+	class PresetVST2 : public Preset, public BaseVST2 {
 private:
 	bool isSaved;
 	char path[kVstMaxEffectNameLen + 2 + 4 + 1];	// 2 na "./", 4 na ".fxp", 1 na wszelki wypadek
@@ -22,8 +22,8 @@ private:
 	char *chunk;
 	int size, chunkSize;
 public:
-	VSTPreset(AEffect *plugin);
-	~VSTPreset();
+	PresetVST2(AEffect *plugin);
+	~PresetVST2();
 	bool SetState();
 	void LoadFromFile();
 	void GetState();

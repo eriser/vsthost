@@ -74,36 +74,36 @@
     <ClCompile Include="..\VST3 SDK\public.sdk\source\common\memorystream.cpp" />
     <ClCompile Include="..\VST3 SDK\public.sdk\source\vst\hosting\parameterchanges.cpp" />
     <ClCompile Include="Host.cpp" />
-    <ClCompile Include="HostGUI.cpp" />
+    <ClCompile Include="HostWindow.cpp" />
     <ClCompile Include="Plugin.cpp" />
-    <ClCompile Include="PluginGUI.cpp" />
+    <ClCompile Include="PluginWindow.cpp" />
     <ClCompile Include="PluginLoader.cpp" />
-    <ClCompile Include="VST3Plugin.cpp" />
-    <ClCompile Include="VST3PluginGUI.cpp" />
-    <ClCompile Include="VST3Preset.cpp" />
-    <ClCompile Include="VSTBase.cpp" />
-    <ClCompile Include="VSTPlugin.cpp" />
-    <ClCompile Include="VSTPluginGUI.cpp" />
-    <ClCompile Include="VSTPreset.cpp" />
+    <ClCompile Include="PluginVST3.cpp" />
+    <ClCompile Include="PluginVST3Window.cpp" />
+    <ClCompile Include="PresetVST3.cpp" />
+    <ClCompile Include="BaseVST2.cpp" />
+    <ClCompile Include="PluginVST2.cpp" />
+    <ClCompile Include="PluginVST2Window.cpp" />
+    <ClCompile Include="PresetVST2.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\VST3 SDK\public.sdk\source\common\memorystream.h" />
     <ClInclude Include="..\VST3 SDK\public.sdk\source\vst\hosting\parameterchanges.h" />
     <ClInclude Include="Host.h" />
-    <ClInclude Include="HostGUI.h" />
-    <ClInclude Include="HostHeader.h" />
+    <ClInclude Include="HostWindow.h" />
+    <ClInclude Include="VSTHostHeader.h" />
     <ClInclude Include="Plugin.h" />
-    <ClInclude Include="PluginGUI.h" />
+    <ClInclude Include="PluginWindow.h" />
     <ClInclude Include="PluginLoader.h" />
     <ClInclude Include="Preset.h" />
-    <ClInclude Include="VST3Plugin.h" />
-    <ClInclude Include="VST3PluginGUI.h" />
-    <ClInclude Include="VST3Preset.h" />
-    <ClInclude Include="VSTBase.h" />
-    <ClInclude Include="VSTPlugin.h" />
-    <ClInclude Include="VSTPluginGUI.h" />
-    <ClInclude Include="VSTPreset.h" />
+    <ClInclude Include="PluginVST3.h" />
+    <ClInclude Include="PluginVST3Window.h" />
+    <ClInclude Include="PresetVST3.h" />
+    <ClInclude Include="BaseVST2.h" />
+    <ClInclude Include="PluginVST2.h" />
+    <ClInclude Include="PluginVST2Window.h" />
+    <ClInclude Include="PresetVST2.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>

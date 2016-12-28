@@ -6,8 +6,8 @@
 #include "pluginterfaces/base/ipluginbase.h"
 #include "pluginterfaces/vst2.x/aeffect.h"
 
-#include "VST3Plugin.h"
-#include "VSTPlugin.h"
+#include "PluginVST3.h"
+#include "PluginVST2.h"
 
 extern "C" {
 	typedef AEffect* (*VSTInitProc)(audioMasterCallback host);
@@ -26,17 +26,17 @@ PluginLoader::PluginLoader(std::string path) {
 			Steinberg::IPluginFactory* factory = nullptr;
 			GetFactoryProc getFactory = reinterpret_cast<GetFactoryProc>(proc);
 			factory = getFactory(); // retrieving factory pointer from factory proc
-			plugin = new VST3Plugin(module, factory);
+			plugin = new PluginVST3(module, factory);
 		}
 		else {
-			proc = GetProcAddress(module, "VSTPluginMain");
+			proc = GetProcAddress(module, "PluginVST2Main");
 			if (!proc)
 				proc = GetProcAddress(module, "main"); // older than vst2.4
 			if (proc) { // the library is a vst2 plugin
 				AEffect* effect = nullptr;
 				VSTInitProc init_proc = reinterpret_cast<VSTInitProc>(proc);
-				effect = init_proc(VSTPlugin::HostCallbackWrapper);
-				plugin = new VSTPlugin(module, effect);
+				effect = init_proc(PluginVST2::HostCallbackWrapper);
+				plugin = new PluginVST2(module, effect);
 			}
 		}
 	}

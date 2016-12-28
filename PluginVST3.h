@@ -1,5 +1,5 @@
-#ifndef VST3PLUGIN_H
-#define VST3PLUGIN_H
+#ifndef PLUGINVST3_H
+#define PLUGINVST3_H
 
 #include "base/source/fobject.h"
 #include "pluginterfaces/base/ipluginbase.h"
@@ -18,13 +18,13 @@
 #include "Plugin.h"
 
 namespace VSTHost {
-class VST3PluginGUI;
-class VST3Plugin : public Plugin, public Steinberg::FObject, public Steinberg::Vst::IComponentHandler {
-	friend class VST3PluginGUI;
+class PluginVST3Window;
+class PluginVST3 : public Plugin, public Steinberg::FObject, public Steinberg::Vst::IComponentHandler {
+	friend class PluginVST3Window;
 public:
 	// basic plugin interface
-	VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f);
-	~VST3Plugin();
+	PluginVST3(HMODULE m, Steinberg::IPluginFactory* f);
+	~PluginVST3();
 	bool IsValid();
 	void Initialize();
 	std::string GetPluginName();
@@ -58,7 +58,7 @@ public:
 	Steinberg::tresult PLUGIN_API performEdit(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue valueNormalized);
 	Steinberg::tresult PLUGIN_API endEdit(Steinberg::Vst::ParamID id);
 	Steinberg::tresult PLUGIN_API restartComponent(Steinberg::int32 flags);
-	OBJ_METHODS(VST3Plugin, FObject)
+	OBJ_METHODS(PluginVST3, FObject)
 		REFCOUNT_METHODS(FObject)
 		DEFINE_INTERFACES
 		DEF_INTERFACE(IComponentHandler)

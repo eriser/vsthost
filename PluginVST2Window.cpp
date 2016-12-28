@@ -1,12 +1,12 @@
-#include "VSTPluginGUI.h"
-#include "VSTPlugin.h"
+#include "PluginVST2Window.h"
+#include "PluginVST2.h"
 
 #include <iostream>
 
 namespace VSTHost {
-VSTPluginGUI::VSTPluginGUI(VSTPlugin& p, AEffect* aeffect) : PluginGUI(100, 100), VSTBase(aeffect), plugin(p) {  }
+PluginVST2Window::PluginVST2Window(PluginVST2& p, AEffect* aeffect) : PluginWindow(100, 100), BaseVST2(aeffect), plugin(p) {  }
 
-void VSTPluginGUI::SetRect() {
+void PluginVST2Window::SetRect() {
 	ERect *erect = new ERect;
 	if (Dispatcher(effEditGetRect, 0, 0, &erect)) {
 		rect.left = erect->left;
@@ -33,7 +33,7 @@ void VSTPluginGUI::SetRect() {
 	ApplyOffset();
 }
 
-bool VSTPluginGUI::Initialize(HWND parent) {
+bool PluginVST2Window::Initialize(HWND parent) {
 	if (RegisterWC(kClassName)) {
 		SetRect();
 		wnd = CreateWindow(kClassName, plugin.GetPluginName().c_str(), WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
@@ -43,7 +43,7 @@ bool VSTPluginGUI::Initialize(HWND parent) {
 	else return false;
 }
 
-void VSTPluginGUI::Show() {
+void PluginVST2Window::Show() {
 	if (wnd) {
 		is_active = true;
 		Dispatcher(effEditOpen, 0, 0, wnd); // call this every time?
@@ -51,7 +51,7 @@ void VSTPluginGUI::Show() {
 	}
 }
 
-void VSTPluginGUI::Hide() {
+void PluginVST2Window::Hide() {
 	if (wnd) {
 		is_active = false;
 		Dispatcher(effEditClose, 0, 0, wnd); // this too?
@@ -59,7 +59,7 @@ void VSTPluginGUI::Hide() {
 	}
 }
 
-LRESULT CALLBACK VSTPluginGUI::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK PluginVST2Window::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 	switch (Msg) {
 		case WM_CREATE:
 			OnCreate(hWnd);
@@ -122,7 +122,7 @@ LRESULT CALLBACK VSTPluginGUI::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LP
 	return 0;
 }
 
-HMENU VSTPluginGUI::CreateMenu() {
+HMENU PluginVST2Window::CreateMenu() {
 	HMENU hmenu = ::CreateMenu();
 	// plugin submenu
 	HMENU hplugin = ::CreateMenu();

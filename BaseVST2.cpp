@@ -1,96 +1,96 @@
-#include "VSTBase.h"
+#include "BaseVST2.h"
 
 namespace VSTHost {
-VSTBase::~VSTBase() {
+BaseVST2::~BaseVST2() {
 	//if (plugin) 
 		//delete plugin;
 }
 
-AEffect *VSTBase::GetAEffect() {
+AEffect *BaseVST2::GetAEffect() {
 	return plugin;
 }
 
-int VSTBase::Dispatcher(int opcode, int index, int value, void* ptr, float opt) {
+int BaseVST2::Dispatcher(int opcode, int index, int value, void* ptr, float opt) {
 	return plugin->dispatcher(plugin, opcode, index, value, ptr, opt);
 }
 
-void VSTBase::Process(float** inputs, float** outputs, int sampleFrames) {
+void BaseVST2::Process(float** inputs, float** outputs, int sampleFrames) {
 	plugin->process(plugin, inputs, outputs, sampleFrames);
 }
 
-void VSTBase::ProcessReplacing(float** inputs, float** outputs, int sampleFrames) {
+void BaseVST2::ProcessReplacing(float** inputs, float** outputs, int sampleFrames) {
 	plugin->processReplacing(plugin, inputs, outputs, sampleFrames);
 }
 
-void VSTBase::DoubleProcessReplacing(double** inputs, double** outputs, VstInt32 sampleFrames){
+void BaseVST2::DoubleProcessReplacing(double** inputs, double** outputs, VstInt32 sampleFrames){
 	plugin->processDoubleReplacing(plugin, inputs, outputs, sampleFrames);
 }
 
-void VSTBase::SetParameter(int index, float parameter){
+void BaseVST2::SetParameter(int index, float parameter){
 	plugin->setParameter(plugin, index, parameter);
 }
 
-float VSTBase::GetParameter(int index) {
+float BaseVST2::GetParameter(int index) {
 	return plugin->getParameter(plugin, index);
 }
 
-int VSTBase::GetMagic() {
+int BaseVST2::GetMagic() {
 	return plugin->magic;
 }
 
-int VSTBase::GetUniqueID() {
+int BaseVST2::GetUniqueID() {
 	return plugin->uniqueID;
 }
 
-int VSTBase::GetVersion() {
+int BaseVST2::GetVersion() {
 	return plugin->version;
 }
 
-int VSTBase::GetNumPrograms() {
+int BaseVST2::GetNumPrograms() {
 	return plugin->numPrograms;
 }
 
-int VSTBase::GetNumParams() {
+int BaseVST2::GetNumParams() {
 	return plugin->numParams;
 }
 
-int VSTBase::GetNumInputs() {
+int BaseVST2::GetNumInputs() {
 	return plugin->numInputs;
 }
 
-int VSTBase::GetNumOutputs() {
+int BaseVST2::GetNumOutputs() {
 	return plugin->numOutputs;
 }
 
-int VSTBase::GetFlags() {
+int BaseVST2::GetFlags() {
 	return plugin->flags;
 }
 
-bool VSTBase::HasEditor() {
+bool BaseVST2::HasEditor() {
 	return static_cast<bool>(GetFlags() & effFlagsHasEditor);
 }
 
-bool VSTBase::CanReplacing() {
+bool BaseVST2::CanReplacing() {
 	return 0 != (GetFlags() & effFlagsCanReplacing);
 }
 
-bool VSTBase::CanDoubleReplacing(){
+bool BaseVST2::CanDoubleReplacing(){
 	return 0 != (GetFlags() & effFlagsCanDoubleReplacing);
 }
 
-bool VSTBase::ProgramChunks(){
+bool BaseVST2::ProgramChunks(){
 	return 0 != (GetFlags() & effFlagsProgramChunks);
 }
 
-bool VSTBase::IsSynth(){
+bool BaseVST2::IsSynth(){
 	return 0 != (GetFlags() & effFlagsIsSynth);
 }
 
-bool VSTBase::NoSoundInStop(){
+bool BaseVST2::NoSoundInStop(){
 	return 0 != (GetFlags() & effFlagsNoSoundInStop);
 }
 
-void VSTBase::PrintFlags() {
+void BaseVST2::PrintFlags() {
 	for (int i = 0; i < 13; i++) {
 		if (i == 6 || i == 7) continue;
 		switch(1 << i) {

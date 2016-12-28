@@ -1,4 +1,4 @@
-#include "VST3Plugin.h"
+#include "PluginVST3.h"
 
 #include "pluginterfaces/vst/ivstmessage.h"
 
@@ -6,15 +6,15 @@
 
 #include "pluginterfaces/gui/iplugview.h"
 
-#include "VST3PluginGUI.h"
-#include "VST3Preset.h"
+#include "PluginVST3Window.h"
+#include "PresetVST3.h"
 #include <cstring>
 #include "base\source\fstring.h"
 
 extern "C" typedef bool (PLUGIN_API *VST3ExitProc)();
 
 namespace VSTHost {
-VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), factory(f) {
+PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), factory(f) {
 	Steinberg::PClassInfo ci;
 	Steinberg::tresult result;
 	bool initialized = false;
@@ -48,7 +48,7 @@ VST3Plugin::VST3Plugin(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), fac
 	}
 }
 
-VST3Plugin::~VST3Plugin() {
+PluginVST3::~PluginVST3() {
 	if (audio)
 		audio->release();
 	if (processorComponent)
@@ -68,7 +68,7 @@ VST3Plugin::~VST3Plugin() {
 	}
 }
 
-bool VST3Plugin::IsValid() {
+bool PluginVST3::IsValid() {
 	Steinberg::IPluginFactory2* factory2 = nullptr;
 	factory->queryInterface(Steinberg::IPluginFactory2::iid, reinterpret_cast<void**>(&factory2));
 	if (factory2) {
@@ -82,7 +82,7 @@ bool VST3Plugin::IsValid() {
 	return false;
 }
 
-void VST3Plugin::Initialize() {
+void PluginVST3::Initialize() {
 	// initialize edit controller (processor component is already initialized)
 	editController->initialize(UnknownCast());
 	editController->setComponentHandler(this);
@@ -176,16 +176,16 @@ void VST3Plugin::Initialize() {
 	}
 
 	// create plugin state module
-	state = new VST3Preset(processorComponent, editController, GetPluginName());
+	state = new PresetVST3(processorComponent, editController, GetPluginName());
 }
 
-std::string VST3Plugin::GetPluginName() {
+std::string PluginVST3::GetPluginName() {
 	Steinberg::PClassInfo ci;
 	factory->getClassInfo(0, &ci);
 	return std::string(ci.name);
 }
 
-void VST3Plugin::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) {
+void PluginVST3::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) {
 	if (IsActive()) {
 		if (BypassProcess()) // hard bypass
 			for (unsigned i = 0; i < GetChannelCount(); ++i)
@@ -203,7 +203,7 @@ void VST3Plugin::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sampl
 	}
 }
 
-void VST3Plugin::UpdateBlockSize() {
+void PluginVST3::UpdateBlockSize() {
 	bool was_active;
 	if (was_active = IsActive())
 		SetActive(false);
@@ -212,7 +212,7 @@ void VST3Plugin::UpdateBlockSize() {
 		SetActive(true);
 }
 
-void VST3Plugin::UpdateSampleRate() {
+void PluginVST3::UpdateSampleRate() {
 	bool was_active;
 	if (was_active = IsActive())
 		SetActive(false);
@@ -225,7 +225,7 @@ void VST3Plugin::UpdateSampleRate() {
 		SetActive(true);
 }
 
-void VST3Plugin::UpdateSpeakerArrangement() {
+void PluginVST3::UpdateSpeakerArrangement() {
 	bool was_active;
 	if (was_active = IsActive())
 		SetActive(false);
@@ -234,11 +234,11 @@ void VST3Plugin::UpdateSpeakerArrangement() {
 		SetActive(true);
 }
 
-Steinberg::int32 VST3Plugin::GetProgramCount() {
+Steinberg::int32 PluginVST3::GetProgramCount() {
 	return program_count;
 }
 
-void VST3Plugin::SetProgram(Steinberg::int32 id) {
+void PluginVST3::SetProgram(Steinberg::int32 id) {
 	if (id < program_count && program_change_param_id != -1) {
 		Steinberg::Vst::ParameterInfo param_info{};
 		if (editController->getParameterInfo(program_change_param_idx, param_info) == Steinberg::kResultTrue) {
@@ -250,22 +250,22 @@ void VST3Plugin::SetProgram(Steinberg::int32 id) {
 	}
 }
 
-Steinberg::int32 VST3Plugin::GetParameterCount() {
+Steinberg::int32 PluginVST3::GetParameterCount() {
 	return editController->getParameterCount();
 }
 
-Steinberg::Vst::ParamValue VST3Plugin::GetParameter(Steinberg::Vst::ParamID id) {
+Steinberg::Vst::ParamValue PluginVST3::GetParameter(Steinberg::Vst::ParamID id) {
 	return 0;
 }
 
-void VST3Plugin::SetParameter(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value) {
+void PluginVST3::SetParameter(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value) {
 	beginEdit(id);
 	editController->setParamNormalized(id, value);
 	performEdit(id, value);
 	endEdit(id);
 }
 
-void VST3Plugin::SetBypass(bool bypass_) {
+void PluginVST3::SetBypass(bool bypass_) {
 	if (bypass != bypass_) {
 		bypass = bypass_;
 		if (bypass_param_id != -1) {
@@ -276,25 +276,25 @@ void VST3Plugin::SetBypass(bool bypass_) {
 	}
 }
 
-bool VST3Plugin::BypassProcess() {			// wywolanie process omijaj tylko wtedy, jak
+bool PluginVST3::BypassProcess() {			// wywolanie process omijaj tylko wtedy, jak
 	return bypass && bypass_param_id == -1;	// bypass == true i nie znaleziono parametru "bypass"
 }
 
-bool VST3Plugin::HasEditor() {
+bool PluginVST3::HasEditor() {
 	return has_editor;
 }
 
-void VST3Plugin::CreateEditor(HWND hWnd) {
+void PluginVST3::CreateEditor(HWND hWnd) {
 	if (!gui && HasEditor()) {
 		Steinberg::IPlugView* create_view = nullptr;
 		if ((create_view = editController->createView(Steinberg::Vst::ViewType::kEditor)) != nullptr) {
-			gui = new VST3PluginGUI(*this, create_view);
+			gui = new PluginVST3Window(*this, create_view);
 			gui->Initialize(hWnd);
 		}
 	}
 }
 
-void VST3Plugin::PrintFactory() {
+void PluginVST3::PrintFactory() {
 	Steinberg::PFactoryInfo factoryInfo;
 	factory->getFactoryInfo(&factoryInfo);
 	std::cout << "  Factory Info:\n\tvendor = " << factoryInfo.vendor
@@ -316,18 +316,18 @@ void VST3Plugin::PrintFactory() {
 		factory2->release();
 }
 
-void VST3Plugin::PrintClass(const Steinberg::PClassInfo &ci, int i) {
+void PluginVST3::PrintClass(const Steinberg::PClassInfo &ci, int i) {
 	std::cout << "  Class Info " << i << ":\n\tname = " << ci.name
 		<< "\n\tcategory = " << ci.category << std::endl;
 }
 
-void VST3Plugin::PrintClass2(const Steinberg::PClassInfo2 &ci, int i) {
+void PluginVST3::PrintClass2(const Steinberg::PClassInfo2 &ci, int i) {
 	std::cout << "  Class Info " << i << ":\n\tname = " << ci.name
 		<< "\n\tcategory = " << ci.category << std::endl
 		<< "\tsubCategory = " << ci.subCategories << std::endl;
 }
 
-void VST3Plugin::PrintBusInfo() {
+void PluginVST3::PrintBusInfo() {
 	if (processorComponent) {
 		std::cout << "-----------BUSES------------" << std::endl;
 		Steinberg::Vst::BusInfo bi;
@@ -352,7 +352,7 @@ void VST3Plugin::PrintBusInfo() {
 	}
 }
 
-void VST3Plugin::PrintParameters() {
+void PluginVST3::PrintParameters() {
 	if (editController) {
 		Steinberg::Vst::ParameterInfo pi;
 		for (Steinberg::int32 i = 0; i < editController->getParameterCount() - 20; ++i) {
@@ -369,17 +369,17 @@ void VST3Plugin::PrintParameters() {
 	}
 }
 
-void VST3Plugin::PrintInfo() {
+void PluginVST3::PrintInfo() {
 
 }
 
-Steinberg::tresult PLUGIN_API VST3Plugin::beginEdit(Steinberg::Vst::ParamID id) {
+Steinberg::tresult PLUGIN_API PluginVST3::beginEdit(Steinberg::Vst::ParamID id) {
 	current_queue = pd.inputParameterChanges->addParameterData(id, current_param_idx);
 	offset = 0;
 	return Steinberg::kResultTrue;
 }
 
-Steinberg::tresult PLUGIN_API VST3Plugin::performEdit(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue valueNormalized) {
+Steinberg::tresult PLUGIN_API PluginVST3::performEdit(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue valueNormalized) {
 	Steinberg::int32 index;
 	if (!current_queue)
 		current_queue = pd.inputParameterChanges->addParameterData(id, current_param_idx);
@@ -387,35 +387,35 @@ Steinberg::tresult PLUGIN_API VST3Plugin::performEdit(Steinberg::Vst::ParamID id
 	return Steinberg::kResultTrue;
 }
 
-Steinberg::tresult PLUGIN_API VST3Plugin::endEdit(Steinberg::Vst::ParamID id) {
+Steinberg::tresult PLUGIN_API PluginVST3::endEdit(Steinberg::Vst::ParamID id) {
 	return Steinberg::kResultTrue;
 }
 
-Steinberg::tresult PLUGIN_API VST3Plugin::restartComponent(Steinberg::int32 flags) {
+Steinberg::tresult PLUGIN_API PluginVST3::restartComponent(Steinberg::int32 flags) {
 	return Steinberg::kResultFalse;
 }
 
-void VST3Plugin::Resume() {
+void PluginVST3::Resume() {
 	processorComponent->setActive(true);
 	StartProcessing();
 	active = true;
 }
 
-void VST3Plugin::Suspend() {
+void PluginVST3::Suspend() {
 	StopProcessing();
 	processorComponent->setActive(false);
 	active = false;
 }
 
-void VST3Plugin::StartProcessing() {
+void PluginVST3::StartProcessing() {
 	audio->setProcessing(true);
 }
 
-void VST3Plugin::StopProcessing() {
+void PluginVST3::StopProcessing() {
 	audio->setProcessing(false);
 }
 
-void VST3Plugin::ProcessOutputParameterChanges() {
+void PluginVST3::ProcessOutputParameterChanges() {
 	for (unsigned i = 0; i < static_cast<unsigned>(pd.outputParameterChanges->getParameterCount()); ++i) {
 		auto q = pd.outputParameterChanges->getParameterData(i);
 		Steinberg::Vst::ParamValue value;
@@ -425,7 +425,7 @@ void VST3Plugin::ProcessOutputParameterChanges() {
 	}
 }
 
-Steinberg::FUnknown* VST3Plugin::UnknownCast() {
+Steinberg::FUnknown* PluginVST3::UnknownCast() {
 	return static_cast<Steinberg::FObject *>(this);
 }
 } // namespace

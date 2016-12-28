@@ -1,5 +1,5 @@
-#ifndef VSTBASE_H
-#define VSTBASE_H
+#ifndef BaseVST22_H
+#define BaseVST22_H
 
 #include <iostream>
 
@@ -11,10 +11,10 @@
 
 
 namespace VSTHost {
-class VSTBase {
+class BaseVST2 {
 public:
-	VSTBase(AEffect *aeffect) : plugin(aeffect) {}
-	~VSTBase();
+	BaseVST2(AEffect *aeffect) : plugin(aeffect) {}
+	~BaseVST2();
 	AEffect *GetAEffect();
 protected:
 	int Dispatcher(int opcode, int index = 0, int value = 0, void* ptr = NULL, float opt = 0.);

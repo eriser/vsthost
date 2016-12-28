@@ -11,7 +11,7 @@
 #include "Preset.h"
 
 namespace VSTHost {
-class PluginGUI;
+class PluginWindow;
 class Plugin {
 public:
 	// basic plugin interface
@@ -67,7 +67,7 @@ protected:
 	static Steinberg::Vst::SampleRate sample_rate;
 	static Steinberg::Vst::SpeakerArrangement speaker_arrangement;
 	Preset* state{ nullptr };
-	PluginGUI* gui{ nullptr };
+	PluginWindow* gui{ nullptr };
 };
 } // namespace
 
