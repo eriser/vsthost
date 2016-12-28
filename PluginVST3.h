@@ -19,8 +19,10 @@
 
 namespace VSTHost {
 class PluginVST3Window;
+class PresetVST3;
 class PluginVST3 : public Plugin, public Steinberg::FObject, public Steinberg::Vst::IComponentHandler {
 	friend class PluginVST3Window;
+	friend class PresetVST3;
 public:
 	// basic plugin interface
 	PluginVST3(HMODULE m, Steinberg::IPluginFactory* f);

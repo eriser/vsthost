@@ -11,7 +11,8 @@
 #include "Preset.h"
 
 namespace VSTHost {
-	class PresetVST2 : public Preset, public BaseVST2 {
+class PluginVST2;
+class PresetVST2 : public Preset {
 private:
 	bool isSaved;
 	char path[kVstMaxEffectNameLen + 2 + 4 + 1];	// 2 na "./", 4 na ".fxp", 1 na wszelki wypadek
@@ -22,13 +23,16 @@ private:
 	char *chunk;
 	int size, chunkSize;
 public:
-	PresetVST2(AEffect *plugin);
+	PresetVST2(PluginVST2& p);
 	~PresetVST2();
 	bool SetState();
 	void LoadFromFile();
 	void GetState();
 	void SaveToFile();
 	void AddExtension();
+private:
+	bool ProgramChunks();
+	PluginVST2& plugin;
 };
 } // namespace
 

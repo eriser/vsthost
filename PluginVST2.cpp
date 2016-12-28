@@ -23,7 +23,7 @@ void PluginVST2::Initialize() {
 	SetSampleRate(sample_rate);
 	SetBlockSize(block_size);
 	UpdateSpeakerArrangement();
-	state = new PresetVST2(plugin);
+	state = new PresetVST2(*this);
 	plugin->resvd1 = reinterpret_cast<VstIntPtr>(this);
 	soft_bypass = CanDo("bypass");
 	SetActive(true);

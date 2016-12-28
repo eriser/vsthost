@@ -1,23 +1,25 @@
 #include "PresetVST2.h"
 
+#include "PluginVST2.h"
+
 namespace VSTHost {
-PresetVST2::PresetVST2(AEffect *plugin) : BaseVST2(plugin), isSaved(false), chunk(NULL) {
+PresetVST2::PresetVST2(PluginVST2& p) : plugin(p), isSaved(false), chunk(NULL) {
 	path[0] = '.';
 	path[1] = '\\';
-	plugin->dispatcher(plugin, effGetEffectName, 0, 0, (void *)(path + 2), 0.);
+	plugin.Dispatcher(AEffectXOpcodes::effGetEffectName, 0, 0, (void *)(path + 2));
 	AddExtension();
 
 	info.version = 1;
-	info.pluginUniqueID = GetUniqueID();
-	info.pluginVersion = GetVersion();
-	info.numElements = GetNumParams();
+	info.pluginUniqueID = plugin.plugin->uniqueID;
+	info.pluginVersion = plugin.GetVSTVersion();
+	info.numElements = plugin.GetParameterCount();
 	if (ProgramChunks()) {
 		size = sizeof(fxProgram);
 		program = (fxProgram *)malloc(size);
 		program->fxMagic = chunkPresetMagic;
 	}
 	else {
-		size = sizeof(fxProgram) + (GetNumParams() - 2) * sizeof(float); // 0 element juz jest wliczony w strukture
+		size = sizeof(fxProgram)+(plugin.GetParameterCount() - 2) * sizeof(float); // 0 element juz jest wliczony w strukture
 		program = (fxProgram *)malloc(size);	// union ma size 8 wiec params[1] tez wliczony.  ? wiec -2
 		program->fxMagic = fMagic;
 	}
@@ -38,11 +40,11 @@ PresetVST2::~PresetVST2() {
 bool PresetVST2::SetState() {
 	if (isSaved) {	// wczytuje wszystkie parametry w zaleznosci czy w postaci chunk czy tablicy
 		if (ProgramChunks()) {
-			Dispatcher(effSetChunk, 1, chunkSize, &chunk);
+			plugin.Dispatcher(effSetChunk, 1, chunkSize, &chunk);
 		}
 		else {
-			for (int i = 0; i < GetNumParams(); i++){
-				SetParameter(i, program->content.params[i]);
+			for (int i = 0; i < plugin.GetParameterCount(); i++){
+				plugin.SetParameter(i, program->content.params[i]);
 			}
 		}
 		return true;
@@ -80,7 +82,7 @@ void PresetVST2::LoadFromFile() {
 void PresetVST2::GetState() {
 	if (ProgramChunks()) {
 		if (chunk) free(chunk);
-		chunkSize = Dispatcher(effGetChunk, 1, 0, &chunk);
+		chunkSize = plugin.Dispatcher(effGetChunk, 1, 0, &chunk);
 		program->content.data.size = chunkSize;
 		// program->content.data.chunk = chunk;	// todo: zapisac do struktury tablice a nie 1 element tylko
 		program->content.data.chunk[0] = chunk[0];
@@ -88,10 +90,10 @@ void PresetVST2::GetState() {
 		program->byteSize = sizeof(fxProgram) - 2 * sizeof(VstInt32) + chunkSize;
 	}
 	else {
-		chunkSize = (GetNumParams() - 1) * sizeof(float);
+		chunkSize = (plugin.GetParameterCount() - 1) * sizeof(float);
 		program->byteSize += program->byteSize = sizeof(fxProgram) - 2 * sizeof(VstInt32) + chunkSize;
-		for (int i = 0; i < GetNumParams(); i++) {
-			program->content.params[i] = GetParameter(i);
+		for (int i = 0; i < plugin.GetParameterCount(); i++) {
+			program->content.params[i] = plugin.GetParameter(i);
 		}
 	}
 	isSaved = true;
@@ -116,5 +118,9 @@ void PresetVST2::AddExtension() {
 	path[pos + 2] = 'x';
 	path[pos + 3] = 'p';
 	path[pos + 4] = '\0';
+}
+
+bool PresetVST2::ProgramChunks() {
+	return 0 != (plugin.GetFlags() & VstAEffectFlags::effFlagsProgramChunks);
 }
 } // namespace

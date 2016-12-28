@@ -13,8 +13,10 @@
 
 namespace VSTHost {
 class PluginVST2Window;
+class PresetVST3;
 class PluginVST2 : public Plugin {
 	friend class PluginVST2Window;
+	friend class PresetVST2;
 public:
 	// basic plugin interface
 	PluginVST2(HMODULE m, AEffect* p);
@@ -57,6 +59,7 @@ private:
 	bool CanDo(const char *canDo);
 	int GetVendorVersion();
 	int GetVSTVersion();
+	Steinberg::int32 GetFlags() { return plugin->flags; }
 	// soft bypass
 	bool soft_bypass{ false };
 	AEffect* plugin;

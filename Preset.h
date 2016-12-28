@@ -4,7 +4,6 @@
 namespace VSTHost {
 class Preset {
 public:
-	Preset() {}
 	virtual ~Preset() {}
 	virtual bool SetState() = 0;
 	virtual void LoadFromFile() = 0;
