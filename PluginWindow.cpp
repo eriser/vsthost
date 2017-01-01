@@ -4,10 +4,17 @@
 
 namespace VSTHost {
 const TCHAR* PluginWindow::kClassName = TEXT("PluginWindow");
-WNDCLASSEX* PluginWindow::wc_static = nullptr;
 int PluginWindow::offset = 50;
+bool PluginWindow::registered = false;
 
-PluginWindow::PluginWindow(int width, int height, Plugin& p) : Window(width, height), plugin(p) {}
+PluginWindow::PluginWindow(int width, int height, Plugin& p) : Window(width, height), menu(NULL), plugin(p) {
+
+}
+
+PluginWindow::~PluginWindow() {
+	if (menu)
+		DestroyMenu(menu);
+}
 
 void PluginWindow::ApplyOffset() {
 	rect.left += offset;
@@ -16,23 +23,9 @@ void PluginWindow::ApplyOffset() {
 }
 
 bool PluginWindow::RegisterWC(const TCHAR* class_name) {
-	if (!wc_static) {
-		wc_static = new WNDCLASSEX;
-		wc_static->cbSize = sizeof(WNDCLASSEX);
-		wc_static->style = 0;
-		wc_static->lpfnWndProc = Wrapper;
-		wc_static->cbClsExtra = 0;
-		wc_static->cbWndExtra = 0;
-		wc_static->hInstance = GetModuleHandle(NULL);
-		wc_static->hIcon = LoadIcon(NULL, IDI_APPLICATION);
-		wc_static->hCursor = LoadCursor(NULL, IDC_ARROW);
-		wc_static->hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
-		wc_static->lpszMenuName = NULL;
-		wc_static->lpszClassName = class_name;
-		wc_static->hIconSm = LoadIcon(NULL, IDI_APPLICATION);
-		return 0 != RegisterClassEx(wc_static);
-	}
-	else return true;
+	if (!registered)
+		registered = Window::RegisterWC(class_name);
+	return registered;
 }
 
 bool PluginWindow::IsActive() {
@@ -43,7 +36,6 @@ bool PluginWindow::IsActive() {
 LRESULT CALLBACK PluginWindow::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 	switch (Msg) {
 		case WM_CLOSE:
-			//DestroyWindow(hWnd);
 			Hide();
 			break;
 		case WM_COMMAND:
@@ -53,16 +45,14 @@ LRESULT CALLBACK PluginWindow::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LP
 			}
 			switch (LOWORD(wParam)) {
 				case MenuItem::Bypass: {
-					HMENU menu;
-					if (menu = GetMenu(hWnd)) {
+					if (menu) {
 						CheckMenuItem(menu, MenuItem::Bypass, plugin.IsBypassed() ? MF_UNCHECKED : MF_CHECKED);
 						plugin.SetBypass(!plugin.IsBypassed());
 					}
 					break;
 				}
 				case MenuItem::Active: {
-					HMENU menu;
-					if (menu = GetMenu(hWnd)) {
+					if (menu) {
 						CheckMenuItem(menu, MenuItem::Active, plugin.IsActive() ? MF_UNCHECKED : MF_CHECKED);
 						plugin.SetActive(!plugin.IsActive());
 					}

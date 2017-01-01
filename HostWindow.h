@@ -3,6 +3,7 @@
 #include "Window.h"
 
 #include <vector>
+#include <memory>
 
 namespace VSTHost {
 class Host;
@@ -29,14 +30,16 @@ public:
 	bool Initialize(HWND parent);
 	void CreateEditors();
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	void AddEditor(Plugin* p);
 	void PopulatePluginList();
 	void OpenDialog();
+	bool RegisterWC(const TCHAR* class_name);
 private:
-	Host& host;
-	OPENFILENAME *ofn = { nullptr };
+	static bool registered;
+	HFONT font;
 	HWND plugin_list;
 	HWND buttons[Items::BUTTON_COUNT];
+	std::unique_ptr<OPENFILENAME> ofn;
+	Host& host;
 };
 } // namespace
 

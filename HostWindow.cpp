@@ -20,19 +20,32 @@ const int HostWindow::kListWidth = 150;
 const int HostWindow::kListHeight = 250;
 const int HostWindow::kButtonWidth = 30;
 const int HostWindow::kButtonHeight = 120; // move to enum?
+bool HostWindow::registered = false;
 
-HostWindow::HostWindow(Host& h) : Window(kWindowWidth, kWindowHeight), host(h) { }
+HostWindow::HostWindow(Host& h) : Window(kWindowWidth, kWindowHeight), font(NULL), host(h) { }
 
 HostWindow::~HostWindow() {
-	if (ofn)
-		delete ofn;
-	//::DeleteObject(font)
+	if (font)
+		::DeleteObject(font);
+	for (auto b : buttons)
+		if (b != NULL)
+			::DestroyWindow(b);
+	if (plugin_list)
+		::DestroyWindow(plugin_list);
+	// wnd freed through base class dtor
+	// unregistering class seems not worth it
+}
+
+bool HostWindow::RegisterWC(const TCHAR* class_name) {
+	if (!registered)
+		registered = Window::RegisterWC(class_name);
+	return registered;
 }
 
 bool HostWindow::Initialize(HWND parent) {
-	if (Window::RegisterWC(kClassName)) {
+	if (RegisterWC(kClassName)) {
 		wnd = CreateWindow(kClassName, kCaption, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-			rect.left, rect.top, rect.right, rect.bottom, parent, NULL, GetModuleHandle(NULL), (LPVOID)this);
+			rect.left, rect.top, rect.right, rect.bottom, parent, NULL, GetModuleHandle(NULL), reinterpret_cast<LPVOID>(this));
 		if (wnd) {
 			SetFont();
 			CreateEditors();
@@ -51,7 +64,6 @@ void HostWindow::OnCreate(HWND hWnd) {
 		buttons[i] = CreateWindow(TEXT("button"), button_labels[i], WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
 			20 + kListWidth + 20, 20 + i * 40, kButtonHeight, kButtonWidth, hWnd, (HMENU)i, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
 	}
-	//if (!plugin_list) std::cout << GetLastError() << std::endl;
 }
 
 
@@ -96,20 +108,8 @@ LRESULT CALLBACK HostWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 					}
 					break;
 				case Items::PluginList:
-					if (HIWORD(wParam) == LBN_SELCHANGE) {
+					if (HIWORD(wParam) == LBN_SELCHANGE)
 						SelectPlugin(GetPluginSelection());
-						/*
-						auto sel = GetPluginSelection();
-						if (sel > 0)
-							EnableWindow(buttons[Items::Up], true);
-						else
-							EnableWindow(buttons[Items::Up], false);
-						if (sel < GetPluginCount() - 1)
-							EnableWindow(buttons[Items::Down], true);
-						else
-							EnableWindow(buttons[Items::Down], false);
-						*/
-					}
 					break;
 				case Items::Show:
 					if (HIWORD(wParam) == BN_CLICKED) {
@@ -147,22 +147,6 @@ LRESULT CALLBACK HostWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 	return 0;
 }
 
-void HostWindow::AddEditor(Plugin* p) {
-	p->CreateEditor(wnd);
-	/*
-	PluginWindow* editor = nullptr;
-	if (p->HasEditor()) {
-		if (p->isVST()) editor = new PluginVST2Window(*dynamic_cast<PluginVST2*>(p));
-		else if (p->IsVST3()) editor = new PluginVST3Window(*dynamic_cast<PluginVST3*>(p));
-		if (editor && !editor->Initialize(wnd)) {
-			delete editor;
-			editor = nullptr;
-		}
-	}
-	editors.push_back(editor);
-	*/
-}
-
 void HostWindow::PopulatePluginList() {
 	if (plugin_list) {
 		SendMessage(plugin_list, LB_RESETCONTENT, NULL, NULL);
@@ -179,7 +163,7 @@ void HostWindow::SetFont() {
 	NONCLIENTMETRICS metrics;
 	metrics.cbSize = sizeof(NONCLIENTMETRICS);
 	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &metrics, 0);
-	HFONT font = CreateFontIndirect(&metrics.lfMessageFont);
+	font = CreateFontIndirect(&metrics.lfMessageFont);
 	SendMessage(wnd, WM_SETFONT, (WPARAM)font, MAKELPARAM(TRUE, 0));
 	SendMessage(plugin_list, WM_SETFONT, (WPARAM)font, MAKELPARAM(TRUE, 0));
 	for (int i = Items::Add; i < Items::BUTTON_COUNT; ++i)
@@ -189,8 +173,7 @@ void HostWindow::SetFont() {
 void HostWindow::OpenDialog() {
 	static TCHAR filename[256];
 	if (!ofn) {
-		ofn = new OPENFILENAME;
-		ZeroMemory(ofn, sizeof(*ofn));
+		ofn = std::unique_ptr<OPENFILENAME>(new OPENFILENAME());
 		ofn->lStructSize = sizeof(*ofn);
 		ofn->hwndOwner = wnd;
 		ofn->lpstrFilter = TEXT("VST Plugins (*.dll, *.vst3)\0*.dll;*.vst3\0VST2 Plugins (*.dll)\0*.dll\0VST3 Plugins (*.vst3)\0*.vst3\0");
@@ -200,10 +183,10 @@ void HostWindow::OpenDialog() {
 		ofn->Flags = OFN_FILEMUSTEXIST;
 	}
 	ofn->lpstrFile[0] = '\0';
-	if (GetOpenFileName(ofn)) {
+	if (GetOpenFileName(ofn.get())) {
 		auto count = GetPluginCount();
 		if (host.LoadPlugin(std::string(filename))) {
-			AddEditor(host.plugins.back());
+			host.plugins.back()->CreateEditor(wnd);
 			PopulatePluginList();
 			SelectPlugin(count);
 		}
@@ -248,6 +231,6 @@ LRESULT HostWindow::GetPluginSelection() {
 
 void HostWindow::CreateEditors() {
 	for (auto &p : host.plugins)
-		AddEditor(p);
+		p->CreateEditor(wnd);
 }
 } // namespace

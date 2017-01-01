@@ -9,13 +9,16 @@ PluginVST2::PluginVST2(HMODULE m, AEffect* p) : Plugin(m), plugin(p) {
 }
 
 PluginVST2::~PluginVST2() {
-	if (module) 
-		::FreeLibrary(module);
+	Dispatcher(AEffectOpcodes::effClose);
 }
 
 bool PluginVST2::IsValid() {
-	VstPlugCategory c = static_cast<VstPlugCategory>(Dispatcher(effGetPlugCategory));
-	return plugin->magic == kEffectMagic && c != kPlugCategSynth && c >= kPlugCategUnknown && c <= kPlugCategRestoration;
+	if (plugin) {
+		VstPlugCategory c = static_cast<VstPlugCategory>(Dispatcher(effGetPlugCategory));
+		return plugin->magic == kEffectMagic && c != kPlugCategSynth && c >= kPlugCategUnknown && c <= kPlugCategRestoration;
+	}
+	else
+		return false;
 }
 
 void PluginVST2::Initialize() {
@@ -23,7 +26,7 @@ void PluginVST2::Initialize() {
 	SetSampleRate(sample_rate);
 	SetBlockSize(block_size);
 	UpdateSpeakerArrangement();
-	state = new PresetVST2(*this);
+	state = std::unique_ptr<Preset>(new PresetVST2(*this));
 	plugin->resvd1 = reinterpret_cast<VstIntPtr>(this);
 	soft_bypass = CanDo("bypass");
 	SetActive(true);
@@ -54,9 +57,9 @@ void PluginVST2::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sampl
 		else {
 			StartProcessing();
 			if (0 != (plugin->flags & VstAEffectFlags::effFlagsCanReplacing))
-				plugin->processReplacing(plugin, input, output, block_size);
+				plugin->processReplacing(plugin.get(), input, output, block_size);
 			else
-				plugin->process(plugin, input, output, block_size);
+				plugin->process(plugin.get(), input, output, block_size);
 			StopProcessing();
 		}
 	}
@@ -138,11 +141,11 @@ Steinberg::int32 PluginVST2::GetParameterCount() {
 }
 
 Steinberg::Vst::ParamValue PluginVST2::GetParameter(Steinberg::Vst::ParamID id) {
-	return plugin->getParameter(plugin, id);
+	return plugin->getParameter(plugin.get(), id);
 }
 
 void PluginVST2::SetParameter(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value) {
-	plugin->setParameter(plugin, id, static_cast<float>(value));
+	plugin->setParameter(plugin.get(), id, static_cast<float>(value));
 }
 
 void PluginVST2::SetBypass(bool bypass_) {
@@ -163,7 +166,7 @@ bool PluginVST2::HasEditor() {
 
 void PluginVST2::CreateEditor(HWND hWnd) {
 	if (!gui && HasEditor()) {
-		gui = new PluginVST2Window(*this);
+		gui = std::unique_ptr<PluginWindow>(new PluginVST2Window(*this));
 		gui->Initialize(hWnd);
 	}
 }
@@ -364,7 +367,7 @@ void PluginVST2::StopProcessing() {
 }
 
 VstIntPtr VSTCALLBACK PluginVST2::Dispatcher(VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt) {
-	return plugin->dispatcher(plugin, opcode, index, value, ptr, opt);
+	return plugin->dispatcher(plugin.get(), opcode, index, value, ptr, opt);
 }
 
 VstIntPtr VSTCALLBACK PluginVST2::HostCallback(AEffect *effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt) {

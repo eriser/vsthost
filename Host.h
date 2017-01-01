@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <thread>
+#include <memory>
 
 #include "base/source/fobject.h"
 #include "base/source/fstring.h"
@@ -62,8 +63,8 @@ private:
 
 	const static std::string kPluginsPath;
 
-	std::vector<Plugin*> plugins;
-	HostWindow* gui = { nullptr };
+	std::vector<std::unique_ptr<Plugin>> plugins;
+	std::unique_ptr<HostWindow> gui;
 	std::thread ui_thread;
 
 	Steinberg::Vst::TSamples block_size;

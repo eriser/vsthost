@@ -44,16 +44,15 @@ PluginLoader::PluginLoader(std::string path) {
 
 PluginLoader::~PluginLoader() {
 	if (plugin)
-		;// delete plugin; // proper destructors + smart pointers pending
+		delete plugin;
 }
 
 Plugin* PluginLoader::GetPlugin() {
+	Plugin* ret = nullptr;
 	if (plugin && plugin->IsValid()) {
-		auto ret = plugin;
+		ret = plugin;
 		plugin = nullptr;
-		return ret;
 	}
-	else
-		return nullptr;
+	return ret;
 }
 } // namespace

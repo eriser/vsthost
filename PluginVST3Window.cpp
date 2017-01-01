@@ -36,7 +36,7 @@ bool PluginVST3Window::Initialize(HWND parent) {
 		SetRect();
 		wnd = CreateWindow(kClassName, plugin.GetPluginName().c_str(), WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
 			rect.left, rect.top, rect.right, rect.bottom, 
-			NULL/*parent*/, CreateMenu(), GetModuleHandle(NULL), static_cast<LPVOID>(this));
+			NULL/*parent*/, menu = CreateMenu(), GetModuleHandle(NULL), static_cast<LPVOID>(this));
 		if (wnd)	// i'm setting parent hwnd to null, because child window are displayed in front of parend window
 			plugin_view->attached(static_cast<void*>(wnd), Steinberg::kPlatformTypeHWND);	// and it doesn't look right
 		return wnd != NULL;

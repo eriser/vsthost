@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <memory>
 
 #include "pluginterfaces/vst/vsttypes.h"
 #include "Preset.h"
@@ -15,8 +16,8 @@ class PluginWindow;
 class Plugin {
 public:
 	// basic plugin interface
-	Plugin(HMODULE m) : module(m) {}
-	virtual ~Plugin() {}
+	Plugin(HMODULE m);
+	virtual ~Plugin();
 	virtual bool IsValid() = 0;
 	virtual void Initialize() = 0;
 	virtual std::string GetPluginName() = 0;
@@ -66,8 +67,8 @@ protected:
 	static Steinberg::Vst::TSamples block_size;
 	static Steinberg::Vst::SampleRate sample_rate;
 	static Steinberg::Vst::SpeakerArrangement speaker_arrangement;
-	Preset* state{ nullptr };
-	PluginWindow* gui{ nullptr };
+	std::unique_ptr<Preset> state;
+	std::unique_ptr<PluginWindow> gui;
 };
 } // namespace
 

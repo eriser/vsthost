@@ -28,12 +28,6 @@ Host::Host(std::int64_t block_size, double sample_rate, bool stereo)
 }
 
 Host::~Host() {
-	if (gui)
-		delete gui;
-	gui = nullptr;
-	for (auto p : plugins)
-		delete p;
-	plugins.clear();
 	FreeBuffers();
 }
 
@@ -47,13 +41,13 @@ bool Host::LoadPlugin(std::string path) {
 	Plugin* plugin = nullptr;
 	PluginLoader loader(path);
 	plugin = loader.GetPlugin();
-	if (plugin) {
+	if (plugin) { // host now owns what plugins points at
 		std::cout << "Loaded " << name << "." << std::endl;
-		plugins.push_back(plugin);
+		plugins.emplace_back(plugin);
 		plugin->Initialize();
 		return true;	
 	}
-	std::cout << "Could not load " << name << " ." << std::endl;
+	std::cout << "Could not load " << name << "." << std::endl;
 	return false;
 }
 
@@ -106,7 +100,7 @@ void Host::Process(std::int16_t* input, std::int16_t* output) {
 void Host::SetSampleRate(double sr) {
 	sample_rate = sr;
 	Plugin::SetSampleRate(sample_rate);
-	for (auto p : plugins)
+	for (auto& p : plugins)
 		p->UpdateSampleRate();
 }
 
@@ -116,7 +110,7 @@ void Host::SetBlockSize(std::int64_t bs) {
 		FreeBuffers();
 		AllocateBuffers();
 		Plugin::SetBlockSize(block_size);
-		for (auto p : plugins)
+		for (auto& p : plugins)
 			p->UpdateBlockSize();
 	}
 }
@@ -127,7 +121,7 @@ void Host::SetSpeakerArrangement(std::uint64_t sa) {
 		speaker_arrangement = sa;
 		AllocateBuffers();
 		Plugin::SetSpeakerArrangement(speaker_arrangement);
-		for (auto p : plugins)
+		for (auto& p : plugins)
 			p->UpdateSpeakerArrangement();
 	}
 }
@@ -150,7 +144,7 @@ Steinberg::tresult PLUGIN_API Host::createInstance(Steinberg::TUID cid, Steinber
 }
 
 void Host::CreateGUI() {
-	gui = new HostWindow(*this);
+	gui = std::unique_ptr<HostWindow>(new HostWindow(*this));
 	gui->Initialize(NULL);
 	gui->Go();
 }

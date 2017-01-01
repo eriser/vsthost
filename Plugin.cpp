@@ -6,6 +6,15 @@ Steinberg::Vst::TSamples Plugin::block_size = 128;
 Steinberg::Vst::SampleRate Plugin::sample_rate = 44100.0;
 Steinberg::Vst::SpeakerArrangement Plugin::speaker_arrangement = Steinberg::Vst::SpeakerArr::kStereo;
 
+Plugin::Plugin(HMODULE m) : module(m) {
+
+}
+
+Plugin::~Plugin() {
+	if (module)
+		::FreeLibrary(module);
+}
+
 void Plugin::SetBlockSize(Steinberg::Vst::TSamples bs) {
 	block_size = bs;
 }
@@ -52,19 +61,23 @@ void Plugin::HideEditor() {
 }
 
 void Plugin::SaveState() {
-	if (state) state->GetState();
+	if (state)
+		state->GetState();
 }
 
 void Plugin::LoadState() {
-	if (state) state->SetState();
+	if (state)
+		state->SetState();
 }
 
 void Plugin::SaveStateToFile() {
-	if (state) state->SaveToFile();
+	if (state)
+		state->SaveToFile();
 }
 
 void Plugin::LoadStateFromFile() {
-	if (state) state->LoadFromFile();
+	if (state)
+		state->LoadFromFile();
 }
 
 Steinberg::uint32 Plugin::GetChannelCount() {

@@ -7,19 +7,19 @@
 #include <string>
 
 namespace VSTHost {
+class PluginVST3;
 class PresetVST3 : public Preset {
-private:
-	Steinberg::Vst::IComponent* processor;
-	Steinberg::Vst::IEditController* edit;
-	Steinberg::MemoryStream edit_stream, processor_stream;
-	std::string name;
 public:
-	PresetVST3(Steinberg::Vst::IComponent* pc, Steinberg::Vst::IEditController* ec, std::string n);
+	PresetVST3(PluginVST3& p, std::string n);
 	~PresetVST3();
 	bool SetState();
 	void LoadFromFile();
 	void GetState();
 	void SaveToFile();
+private:
+	Steinberg::MemoryStream edit_stream, processor_stream;
+	std::string name;
+	PluginVST3& plugin;
 };
 } // namespace
 

@@ -1,11 +1,13 @@
 #include "PresetVST3.h"
 
+#include "PluginVST3.h"
+
 #include <iostream>
 #include <fstream>
 #include "base/source/fstreamer.h"
 
 namespace VSTHost {
-PresetVST3::PresetVST3(Steinberg::Vst::IComponent* pc, Steinberg::Vst::IEditController* ec, std::string n) : processor(pc), edit(ec), name(n) {
+PresetVST3::PresetVST3(PluginVST3& p, std::string n) : plugin(p), name(n) {
 
 }
 
@@ -14,14 +16,12 @@ PresetVST3::~PresetVST3() {
 }
 
 bool PresetVST3::SetState() {
-	if (processor && processor_stream.getSize() > 0) {
-		processor->setState(&processor_stream);
+	if (processor_stream.getSize() > 0) {
+		plugin.processorComponent->setState(&processor_stream);
 		processor_stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
-		if (edit) { // todo: examine why again example is being weird about this
-			if (edit_stream.getSize() > 0)
-				edit->setState(&edit_stream);
-			edit->setComponentState(&processor_stream);
-		}
+		if (edit_stream.getSize() > 0)
+			plugin.editController->setState(&edit_stream);
+		plugin.editController->setComponentState(&processor_stream);
 	}
 	edit_stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
 	processor_stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
@@ -56,9 +56,9 @@ void PresetVST3::LoadFromFile() {
 }
 
 void PresetVST3::GetState() {
-	if (processor && (processor->getState(&processor_stream) != Steinberg::kResultTrue))
+	if (plugin.processorComponent->getState(&processor_stream) != Steinberg::kResultTrue)
 		processor_stream.setSize(0);
-	if (edit && (edit->getState(&edit_stream) != Steinberg::kResultTrue))
+	if (plugin.editController->getState(&edit_stream) != Steinberg::kResultTrue)
 		edit_stream.setSize(0);
 	edit_stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
 	processor_stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);

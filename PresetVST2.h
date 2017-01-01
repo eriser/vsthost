@@ -7,7 +7,6 @@
 #include "pluginterfaces\vst2.x\aeffectx.h"
 #include "pluginterfaces\vst2.x\vstfxstore.h"
 
-#include "BaseVST2.h"
 #include "Preset.h"
 
 namespace VSTHost {

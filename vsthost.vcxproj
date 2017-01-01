@@ -81,7 +81,6 @@
     <ClCompile Include="PluginVST3.cpp" />
     <ClCompile Include="PluginVST3Window.cpp" />
     <ClCompile Include="PresetVST3.cpp" />
-    <ClCompile Include="BaseVST2.cpp" />
     <ClCompile Include="PluginVST2.cpp" />
     <ClCompile Include="PluginVST2Window.cpp" />
     <ClCompile Include="PresetVST2.cpp" />
@@ -100,7 +99,6 @@
     <ClInclude Include="PluginVST3.h" />
     <ClInclude Include="PluginVST3Window.h" />
     <ClInclude Include="PresetVST3.h" />
-    <ClInclude Include="BaseVST2.h" />
     <ClInclude Include="PluginVST2.h" />
     <ClInclude Include="PluginVST2Window.h" />
     <ClInclude Include="PresetVST2.h" />

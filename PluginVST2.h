@@ -8,7 +8,6 @@
 #include "pluginterfaces\vst2.x\aeffect.h"
 #include "pluginterfaces\vst2.x\aeffectx.h"
 
-#include "BaseVST2.h"
 #include "Plugin.h"
 
 namespace VSTHost {
@@ -62,7 +61,7 @@ private:
 	Steinberg::int32 GetFlags() { return plugin->flags; }
 	// soft bypass
 	bool soft_bypass{ false };
-	AEffect* plugin;
+	std::unique_ptr<AEffect> plugin;
 };
 } // namespace
 

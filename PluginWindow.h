@@ -7,7 +7,7 @@ class Plugin;
 class PluginWindow : public Window {
 public:
 	PluginWindow(int width, int height, Plugin& p);
-	virtual ~PluginWindow() {}
+	virtual ~PluginWindow();
 	virtual bool Initialize(HWND parent) = 0;
 	virtual void SetRect() = 0;
 	bool IsActive();
@@ -19,10 +19,11 @@ protected:
 	};
 	void ApplyOffset();
 	virtual HMENU CreateMenu() = 0;
+	HMENU menu;
 	static const TCHAR* kClassName;
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	bool RegisterWC(const TCHAR* class_name);
-	static WNDCLASSEX* wc_static;
+	static bool registered;
 	static int offset;
 	bool is_active{ false };
 	Plugin& plugin;

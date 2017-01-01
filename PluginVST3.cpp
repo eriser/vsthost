@@ -176,7 +176,7 @@ void PluginVST3::Initialize() {
 	}
 
 	// create plugin state module
-	state = new PresetVST3(processorComponent, editController, GetPluginName());
+	state = std::unique_ptr<Preset>(new PresetVST3(*this, GetPluginName()));
 }
 
 std::string PluginVST3::GetPluginName() {
@@ -288,7 +288,7 @@ void PluginVST3::CreateEditor(HWND hWnd) {
 	if (!gui && HasEditor()) {
 		Steinberg::IPlugView* create_view = nullptr;
 		if ((create_view = editController->createView(Steinberg::Vst::ViewType::kEditor)) != nullptr) {
-			gui = new PluginVST3Window(*this, create_view);
+			gui = std::unique_ptr<PluginWindow>(new PluginVST3Window(*this, create_view));
 			gui->Initialize(hWnd);
 		}
 	}

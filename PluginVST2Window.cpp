@@ -13,7 +13,7 @@ void PluginVST2Window::SetRect() {
 		rect.right = erect->right;
 		rect.top = erect->top;
 		rect.bottom = erect->bottom;
-		AdjustWindowRect(&rect, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, false); // WS_SYSMENU
+		AdjustWindowRect(&rect, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, false);
 		rect.bottom += ::GetSystemMetrics(SM_CYMENU);
 		if (rect.left < 0) {
 			rect.right -= rect.left;
@@ -37,7 +37,7 @@ bool PluginVST2Window::Initialize(HWND parent) {
 	if (RegisterWC(kClassName)) {
 		SetRect();
 		wnd = CreateWindow(kClassName, plugin.GetPluginName().c_str(), WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-			rect.left, rect.top, rect.right, rect.bottom, NULL/*parent*/, CreateMenu(), GetModuleHandle(NULL), (LPVOID)this);
+			rect.left, rect.top, rect.right, rect.bottom, NULL/*parent*/, menu = CreateMenu(), GetModuleHandle(NULL), (LPVOID)this);
 		return wnd != NULL; // i'm setting parent hwnd to null, because child window are displayed in front of parend window
 	}						// and it doesn't look right
 	else return false;
