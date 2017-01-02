@@ -1,9 +1,10 @@
-#include "VSTHostHeader.h"
-
+#include <Windows.h>
+#include <MMSystem.h>
 #include <fstream>
 #include <string>
+#include <iostream>
 
-#include <MMSystem.h>
+#include "VSTHostHeader.h"
 
 class WAVFile {
 public:

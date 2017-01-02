@@ -1,13 +1,15 @@
 #include "PluginVST3.h"
 
-#include "public.sdk/source/common/memorystream.h"
+#include <iostream>
 
+#include "public.sdk/source/common/memorystream.h"
 #include "pluginterfaces/gui/iplugview.h"
+#include "base/source/fstring.h"
+#include "pluginterfaces/base/ipluginbase.h"
+#include "pluginterfaces/vst/ivstcomponent.h"
 
 #include "PluginVST3Window.h"
 #include "PresetVST3.h"
-#include <cstring>
-#include "base\source\fstring.h"
 
 extern "C" typedef bool (PLUGIN_API *VST3ExitProc)();
 
@@ -57,7 +59,7 @@ PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), fac
 PluginVST3::~PluginVST3() {
 	SetActive(false);
 	gui.reset();
-	state.reset(); // gui and state have to be called before the rest of the plugin is freed...
+	state.reset(); // gui and state have to be destroyed before the rest of the plugin is freed...
 	if (iConnectionPointComponent && iConnectionPointController) {
 		iConnectionPointComponent->disconnect(iConnectionPointController);
 		iConnectionPointController->disconnect(iConnectionPointComponent);

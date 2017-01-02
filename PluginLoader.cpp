@@ -1,6 +1,5 @@
 #include "PluginLoader.h"
 
-#include <iostream>
 #include <Windows.h>
 
 #include "pluginterfaces/base/ipluginbase.h"

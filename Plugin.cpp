@@ -1,4 +1,6 @@
 #include "Plugin.h"
+
+#include "Preset.h"
 #include "PluginWindow.h"
 
 namespace VSTHost {

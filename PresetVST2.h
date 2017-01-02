@@ -1,9 +1,6 @@
 #ifndef PRESETVST2_H
 #define PRESETVST2_H
 
-#include <iostream>
-#include <string.h>
-
 #include "pluginterfaces\vst2.x\aeffectx.h"
 #include "pluginterfaces\vst2.x\vstfxstore.h"
 

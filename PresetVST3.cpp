@@ -1,10 +1,8 @@
 #include "PresetVST3.h"
 
-#include "PluginVST3.h"
-
-#include <iostream>
 #include <fstream>
-#include "base/source/fstreamer.h"
+
+#include "PluginVST3.h"
 
 namespace VSTHost {
 PresetVST3::PresetVST3(PluginVST3& p, std::string n) : plugin(p), name(n) {

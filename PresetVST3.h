@@ -1,10 +1,11 @@
 #ifndef PRESETVST3_H
 #define PRESETVST3_H
-#include "public.sdk/source/common/memorystream.h"
-#include "pluginterfaces/vst/ivstcomponent.h"
-#include "pluginterfaces/vst/ivsteditcontroller.h"
-#include "Preset.h"
+
 #include <string>
+
+#include "public.sdk/source/common/memorystream.h"
+
+#include "Preset.h"
 
 namespace VSTHost {
 class PluginVST3;

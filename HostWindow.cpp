@@ -83,7 +83,6 @@ LRESULT CALLBACK HostWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 						auto sel = GetPluginSelection();
 						auto count = GetPluginCount();
 						host.DeletePlugin(sel);
-						// todo: need to call destructor here and free stuff regarding editor
 						PopulatePluginList();
 						if (sel == count - 1)
 							SelectPlugin(sel - 1);
@@ -171,7 +170,7 @@ void HostWindow::SetFont() {
 }
 
 void HostWindow::OpenDialog() {
-	static TCHAR filename[256];
+	TCHAR filename[256]{};
 	if (!ofn) {
 		ofn = std::unique_ptr<OPENFILENAME>(new OPENFILENAME());
 		ofn->lStructSize = sizeof(*ofn);
@@ -198,7 +197,7 @@ void HostWindow::SelectPlugin(unsigned i) {
 		SendMessage(plugin_list, LB_SETCURSEL, i, 0);
 		SetFocus(plugin_list);
 		auto count = GetPluginCount();
-		if (count > 2) {
+		if (count >= 2) {
 			EnableWindow(buttons[Items::Up], i > 0);
 			EnableWindow(buttons[Items::Down], i < count - 1);
 		}
@@ -209,12 +208,13 @@ void HostWindow::SelectPlugin(unsigned i) {
 		if (count == 0) {
 			EnableWindow(buttons[Items::Show], false);
 			EnableWindow(buttons[Items::Hide], false);
+			EnableWindow(buttons[Items::Delete], false);
 		}
 		else {
 			EnableWindow(buttons[Items::Show], !host.plugins[i]->IsEditorVisible());
 			EnableWindow(buttons[Items::Hide], host.plugins[i]->IsEditorVisible());
+			EnableWindow(buttons[Items::Delete], true);
 		}
-
 	}
 }
 

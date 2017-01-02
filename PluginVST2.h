@@ -6,7 +6,6 @@
 #endif
 
 #include "pluginterfaces\vst2.x\aeffect.h"
-#include "pluginterfaces\vst2.x\aeffectx.h"
 
 #include "Plugin.h"
 
@@ -58,7 +57,7 @@ private:
 	bool CanDo(const char *canDo);
 	int GetVendorVersion();
 	int GetVSTVersion();
-	Steinberg::int32 GetFlags() { return plugin->flags; }
+	Steinberg::int32 GetFlags();
 	// soft bypass
 	bool soft_bypass{ false };
 	std::unique_ptr<AEffect> plugin;

@@ -2,6 +2,14 @@
 
 #include <limits>
 #include <cstring>
+#include <fstream>
+#include <iostream>
+
+#include "base/source/fstring.h"
+
+#include "Plugin.h"
+#include "HostWindow.h"
+#include "PluginLoader.h"
 
 namespace VSTHost {
 const std::string Host::kPluginsPath{ "plugins.txt" };

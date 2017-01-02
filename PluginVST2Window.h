@@ -1,5 +1,6 @@
 #ifndef PLUGINVST2WINDOW_H
 #define PLUGINVST2WINDOW_H
+
 #include "PluginWindow.h"
 
 namespace VSTHost {

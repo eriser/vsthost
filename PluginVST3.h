@@ -2,24 +2,22 @@
 #define PLUGINVST3_H
 
 #include "base/source/fobject.h"
-#include "pluginterfaces/base/ipluginbase.h"
-#include "pluginterfaces/vst/ivstcomponent.h"
 #include "pluginterfaces/vst/ivsteditcontroller.h"
 #include "pluginterfaces/vst/ivstaudioprocessor.h"
 #include "pluginterfaces/vst/ivstmessage.h"
 #include "pluginterfaces/vst/ivstunits.h"
-
 #include "public.sdk/source/vst/hosting/parameterchanges.h"
-//DEF_CLASS_IID(Steinberg::Vst::IComponent)
-//DEF_CLASS_IID(Steinberg::Vst::IComponentHandler)
-//DEF_CLASS_IID(Steinberg::Vst::IAudioProcessor)
-//#include <Windows.h>
 
 #include "Plugin.h"
 
 namespace VSTHost {
 class PluginVST3Window;
 class PresetVST3;
+class Steinberg::IPluginFactory;
+struct Steinberg::PClassInfo;
+struct Steinberg::PClassInfo2;
+class Steinberg::Vst::IComponent;
+class Steinberg::Vst::IConnectionPoint;
 class PluginVST3 : public Plugin, public Steinberg::FObject, public Steinberg::Vst::IComponentHandler {
 	friend class PluginVST3Window;
 	friend class PresetVST3;

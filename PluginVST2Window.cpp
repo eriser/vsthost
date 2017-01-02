@@ -1,7 +1,8 @@
 #include "PluginVST2Window.h"
-#include "PluginVST2.h"
 
-#include <iostream>
+#include "pluginterfaces\vst2.x\aeffectx.h"
+
+#include "PluginVST2.h"
 
 namespace VSTHost {
 PluginVST2Window::PluginVST2Window(PluginVST2& p) : PluginWindow(100, 100, p) {}

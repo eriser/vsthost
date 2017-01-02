@@ -1,5 +1,9 @@
 #include "PluginVST2.h"
 
+#include <iostream>
+
+#include "pluginterfaces\vst2.x\aeffectx.h"
+
 #include "PresetVST2.h"
 #include "PluginVST2Window.h"
 
@@ -11,7 +15,7 @@ PluginVST2::PluginVST2(HMODULE m, AEffect* p) : Plugin(m), plugin(p) {
 PluginVST2::~PluginVST2() {
 	SetActive(false);
 	gui.reset();
-	state.reset(); // gui and state have to be called before the rest of the plugin is freed...
+	state.reset(); // gui and state have to be destroyed before the rest of the plugin is freed...
 	Dispatcher(AEffectOpcodes::effClose);
 	// turns out offClose opcode handles freeing AEffect object and I musn't do that
 	plugin.release();
@@ -481,5 +485,9 @@ int PluginVST2::GetVendorVersion() {
 
 int PluginVST2::GetVSTVersion() {
 	return Dispatcher(effGetVstVersion);
+}
+
+Steinberg::int32 PluginVST2::GetFlags() {
+	return plugin->flags;
 }
 } // namespace

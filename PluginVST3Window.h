@@ -1,8 +1,11 @@
 #ifndef PLUGINVST3WINDOW_H
 #define PLUGINVST3WINDOW_H
-#include "PluginWindow.h"
+
+#include <Windows.h> // deleting this line shows the need for using tchar macro
 
 #include "pluginterfaces/gui/iplugview.h"
+
+#include "PluginWindow.h"
 
 namespace VSTHost {
 class PluginVST3;

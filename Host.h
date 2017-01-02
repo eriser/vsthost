@@ -3,24 +3,18 @@
 
 #include <cstdint>
 #include <vector>
-#include <iostream>
-#include <fstream>
 #include <string>
 #include <thread>
 #include <memory>
 
 #include "base/source/fobject.h"
-#include "base/source/fstring.h"
-#include "pluginterfaces/base/ipluginbase.h"
 #include "pluginterfaces/vst/ivsthostapplication.h"
 
 #define NOMINMAX // kolizja makra MAX z windows.h oraz std::numeric_limits<T>::max()
-#include "HostWindow.h"
-#include "PluginLoader.h"
-#include "PluginVST2.h"
-#include "PluginVST3.h"
 
 namespace VSTHost {
+class Plugin;
+class HostWindow;
 class Host : public Steinberg::FObject, Steinberg::Vst::IHostApplication {
 	friend class HostWindow;
 public:

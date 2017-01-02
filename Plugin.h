@@ -1,19 +1,16 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
 
-#include <windows.h>
-#include <process.h>
-#include <string>
-#include <vector>
-#include <iostream>
+#include <Windows.h>
 #include <memory>
+#include <string>
 #include <mutex>
 
 #include "pluginterfaces/vst/vsttypes.h"
-#include "Preset.h"
 
 namespace VSTHost {
 class PluginWindow;
+class Preset;
 class Plugin {
 public:
 	// basic plugin interface

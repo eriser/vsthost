@@ -2,7 +2,6 @@
 #define PLUGINLOADER_H
 
 #include <string>
-#include <memory>
 
 namespace VSTHost {
 class Plugin;

@@ -65,20 +65,20 @@ HMENU PluginVST3Window::CreateMenu() {
 	HMENU hmenu = ::CreateMenu();
 	// plugin submenu
 	HMENU hplugin = ::CreateMenu();
-	AppendMenu(hplugin, MF_STRING, MenuItem::Bypass, "Bypass");
+	AppendMenu(hplugin, MF_STRING, MenuItem::Bypass, TEXT("Bypass"));
 	auto flag = MF_STRING;
 	if (plugin.IsActive())
 		flag |= MF_CHECKED;
-	AppendMenu(hplugin, flag, MenuItem::Active, "Active");
-	AppendMenu(hplugin, MF_STRING, MenuItem::Close, "Close");
-	AppendMenu(hmenu, MF_POPUP, (UINT_PTR)hplugin, "Plugin");
+	AppendMenu(hplugin, flag, MenuItem::Active, TEXT("Active"));
+	AppendMenu(hplugin, MF_STRING, MenuItem::Close, TEXT("Close"));
+	AppendMenu(hmenu, MF_POPUP, (UINT_PTR)hplugin, TEXT("Plugin"));
 	// state submenu
 	HMENU hstate = ::CreateMenu();
-	AppendMenu(hstate, MF_STRING, MenuItem::Save, "Save");
-	AppendMenu(hstate, MF_STRING, MenuItem::Load, "Load");
-	AppendMenu(hstate, MF_STRING, MenuItem::SaveToFile, "Save To File");
-	AppendMenu(hstate, MF_STRING, MenuItem::LoadFromFile, "Load From File");
-	AppendMenu(hmenu, MF_POPUP, (UINT_PTR)hstate, "State");
+	AppendMenu(hstate, MF_STRING, MenuItem::Save, TEXT("Save"));
+	AppendMenu(hstate, MF_STRING, MenuItem::Load, TEXT("Load"));
+	AppendMenu(hstate, MF_STRING, MenuItem::SaveToFile, TEXT("Save To File"));
+	AppendMenu(hstate, MF_STRING, MenuItem::LoadFromFile, TEXT("Load From File"));
+	AppendMenu(hmenu, MF_POPUP, (UINT_PTR)hstate, TEXT("State"));
 	// preset submenu
 	HMENU hpresets = ::CreateMenu();
 	PluginVST3& p = dynamic_cast<PluginVST3&>(plugin);
@@ -92,7 +92,7 @@ HMENU PluginVST3Window::CreateMenu() {
 			}
 		}
 	}
-	AppendMenu(hmenu, plugin.GetProgramCount() > 0 ? MF_POPUP : MF_POPUP | MF_GRAYED, (UINT_PTR)hpresets, "Plugin");
+	AppendMenu(hmenu, plugin.GetProgramCount() > 0 ? MF_POPUP : MF_POPUP | MF_GRAYED, (UINT_PTR)hpresets, TEXT("Plugin"));
 	return hmenu;
 }
 } // namespace
