@@ -55,6 +55,9 @@ PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), fac
 }
 
 PluginVST3::~PluginVST3() {
+	SetActive(false);
+	gui.reset();
+	state.reset(); // gui and state have to be called before the rest of the plugin is freed...
 	if (iConnectionPointComponent && iConnectionPointController) {
 		iConnectionPointComponent->disconnect(iConnectionPointController);
 		iConnectionPointController->disconnect(iConnectionPointComponent);
@@ -215,6 +218,7 @@ void PluginVST3::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sampl
 			for (unsigned i = 0; i < GetChannelCount(); ++i)
 				std::memcpy(static_cast<void*>(output[i]), static_cast<void*>(input[i]), sizeof(input[0][0]));
 		else {
+			std::lock_guard<std::mutex> lock(processing);
 			pd.inputs->channelBuffers32 = input;
 			pd.outputs->channelBuffers32 = output;
 			pd.numSamples = block_size;

@@ -5,11 +5,16 @@
 
 namespace VSTHost {
 PluginVST2::PluginVST2(HMODULE m, AEffect* p) : Plugin(m), plugin(p) {
-
+	plugin->resvd1 = reinterpret_cast<VstIntPtr>(this);
 }
 
 PluginVST2::~PluginVST2() {
+	SetActive(false);
+	gui.reset();
+	state.reset(); // gui and state have to be called before the rest of the plugin is freed...
 	Dispatcher(AEffectOpcodes::effClose);
+	// turns out offClose opcode handles freeing AEffect object and I musn't do that
+	plugin.release();
 }
 
 bool PluginVST2::IsValid() {
@@ -27,7 +32,6 @@ void PluginVST2::Initialize() {
 	SetBlockSize(block_size);
 	UpdateSpeakerArrangement();
 	state = std::unique_ptr<Preset>(new PresetVST2(*this));
-	plugin->resvd1 = reinterpret_cast<VstIntPtr>(this);
 	soft_bypass = CanDo("bypass");
 	SetActive(true);
 }
@@ -55,6 +59,7 @@ void PluginVST2::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sampl
 		for (unsigned i = 0; i < GetChannelCount(); ++i)
 			std::memcpy(static_cast<void*>(output[i]), static_cast<void*>(input[i]), sizeof(input[0][0]));
 		else {
+			std::lock_guard<std::mutex> lock(processing);
 			StartProcessing();
 			if (0 != (plugin->flags & VstAEffectFlags::effFlagsCanReplacing))
 				plugin->processReplacing(plugin.get(), input, output, block_size);

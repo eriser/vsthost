@@ -7,6 +7,7 @@
 #include <vector>
 #include <iostream>
 #include <memory>
+#include <mutex>
 
 #include "pluginterfaces/vst/vsttypes.h"
 #include "Preset.h"
@@ -62,6 +63,7 @@ protected:
 	static Steinberg::uint32 GetChannelCount();
 
 	HMODULE module;
+	std::mutex processing; // locked when plugin is processing or setting itself (in)active
 	bool active{ false };
 	bool bypass{ false };
 	static Steinberg::Vst::TSamples block_size;

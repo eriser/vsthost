@@ -28,11 +28,13 @@ void Plugin::SetSpeakerArrangement(Steinberg::Vst::SpeakerArrangement sa) {
 }
 
 void Plugin::SetActive(bool active_) {
-	if (active != active_)
+	if (active != active_) {
+		std::lock_guard<std::mutex> lock(processing);
 		if (active = active_)
 			Resume();
 		else
 			Suspend();
+	}
 }
 
 bool Plugin::IsActive() {

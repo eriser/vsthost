@@ -11,6 +11,7 @@ Window::Window(int width, int height) : wnd(NULL) {
 }
 
 Window::~Window() {
+	SetWindowLongPtr(wnd, GWL_USERDATA, (LONG_PTR)NULL);
 	if (wnd)
 		::DestroyWindow(wnd);
 }
