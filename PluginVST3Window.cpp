@@ -7,8 +7,10 @@ namespace VSTHost {
 PluginVST3Window::PluginVST3Window(PluginVST3& p, Steinberg::IPlugView* pv) : PluginWindow(100, 100, p), plugin_view(pv) {}
 
 PluginVST3Window::~PluginVST3Window() {
-	if (plugin_view)
+	if (plugin_view) {
+		plugin_view->removed();
 		plugin_view->release();
+	}
 }
 
 void PluginVST3Window::SetRect() {

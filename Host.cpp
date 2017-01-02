@@ -41,7 +41,7 @@ bool Host::LoadPlugin(std::string path) {
 	Plugin* plugin = nullptr;
 	PluginLoader loader(path);
 	plugin = loader.GetPlugin();
-	if (plugin) { // host now owns what plugins points at
+	if (plugin) { // host now owns what plugin points at
 		std::cout << "Loaded " << name << "." << std::endl;
 		plugins.emplace_back(plugin);
 		plugin->Initialize();

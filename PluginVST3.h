@@ -6,7 +6,7 @@
 #include "pluginterfaces/vst/ivstcomponent.h"
 #include "pluginterfaces/vst/ivsteditcontroller.h"
 #include "pluginterfaces/vst/ivstaudioprocessor.h"
-
+#include "pluginterfaces/vst/ivstmessage.h"
 #include "pluginterfaces/vst/ivstunits.h"
 
 #include "public.sdk/source/vst/hosting/parameterchanges.h"
@@ -64,7 +64,7 @@ public:
 		REFCOUNT_METHODS(FObject)
 		DEFINE_INTERFACES
 		DEF_INTERFACE(IComponentHandler)
-	END_DEFINE_INTERFACES(FObject)
+		END_DEFINE_INTERFACES(FObject)
 private:
 	void Resume();
 	void Suspend();
@@ -91,11 +91,13 @@ private:
 	Steinberg::FObject* plugin;
 	Steinberg::Vst::IComponent* processorComponent;
 	Steinberg::Vst::IEditController* editController;
+	bool processorComponent_initialized{ false };
+	bool editController_initialized{ false };
+	Steinberg::Vst::IConnectionPoint* iConnectionPointComponent{ nullptr };
+	Steinberg::Vst::IConnectionPoint* iConnectionPointController{ nullptr };
 	// audio related
 	Steinberg::Vst::IAudioProcessor* audio;
 	Steinberg::Vst::ProcessData pd;
-	Steinberg::Vst::AudioBusBuffers* abb_in{ nullptr };
-	Steinberg::Vst::AudioBusBuffers* abb_out{ nullptr };
 };
 } // namespace
 

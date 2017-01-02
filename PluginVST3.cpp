@@ -1,7 +1,5 @@
 #include "PluginVST3.h"
 
-#include "pluginterfaces/vst/ivstmessage.h"
-
 #include "public.sdk/source/common/memorystream.h"
 
 #include "pluginterfaces/gui/iplugview.h"
@@ -15,6 +13,11 @@ extern "C" typedef bool (PLUGIN_API *VST3ExitProc)();
 
 namespace VSTHost {
 PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), factory(f) {
+	pd.inputs = nullptr;
+	pd.outputs = nullptr;
+	pd.inputParameterChanges = nullptr;
+	pd.outputParameterChanges = nullptr;
+	factory->addRef();
 	Steinberg::PClassInfo ci;
 	Steinberg::tresult result;
 	bool initialized = false;
@@ -31,16 +34,19 @@ PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), fac
 					if (processorComponent->getControllerClassId(controllerCID) == Steinberg::kResultTrue && controllerCID.isValid())
 						result = factory->createInstance(controllerCID, Steinberg::Vst::IEditController::iid, (void**)&editController);
 				}
-				if (result == Steinberg::kResultOk) {
-					if (initialized = (processorComponent->initialize(UnknownCast()) == Steinberg::kResultOk))
+				if (result == Steinberg::kResultOk)
+					if (initialized = (processorComponent->initialize(UnknownCast()) == Steinberg::kResultOk)) {
 						result = processorComponent->queryInterface(Steinberg::Vst::IAudioProcessor::iid, reinterpret_cast<void**>(&audio));
-				}
+						processorComponent_initialized = true;
+					}
 			}
 		}
 		if (IsValid() && result == Steinberg::kResultOk)
 			break;
-		if (initialized)
+		if (initialized) {
 			processorComponent->terminate();
+			processorComponent_initialized = false;
+		}
 		processorComponent = nullptr;
 		editController = nullptr;
 		audio = nullptr;
@@ -49,23 +55,42 @@ PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), fac
 }
 
 PluginVST3::~PluginVST3() {
+	if (iConnectionPointComponent && iConnectionPointController) {
+		iConnectionPointComponent->disconnect(iConnectionPointController);
+		iConnectionPointController->disconnect(iConnectionPointComponent);
+		iConnectionPointComponent->release();
+		iConnectionPointController->release();
+	}
+	if (pd.inputs)
+		delete pd.inputs;
+	if (pd.outputs)
+		delete pd.outputs;
+	if (pd.inputParameterChanges)
+		delete pd.inputParameterChanges;
+	if (pd.outputParameterChanges)
+		delete pd.outputParameterChanges;
 	if (audio)
 		audio->release();
-	if (processorComponent)
+	if (unit_info)
+		unit_info->release();
+	if (processorComponent) {
+		if (processorComponent_initialized)
+			processorComponent->terminate();
 		processorComponent->release();
-	if (editController)
+	}
+	if (editController) {
+		if (editController_initialized)
+			editController->terminate();
 		editController->release();
+	}
 	if (plugin)
 		plugin->release();
 	if (factory)
 		factory->release();
 	void* exitProc = nullptr;
-	if (module) {
-		exitProc = ::GetProcAddress(module, "ExitDll");
-		if (exitProc)
-			static_cast<VST3ExitProc>(exitProc)();
-		::FreeLibrary(module);
-	}
+	exitProc = ::GetProcAddress(module, "ExitDll");
+	if (exitProc)
+		static_cast<VST3ExitProc>(exitProc)();
 }
 
 bool PluginVST3::IsValid() {
@@ -85,6 +110,7 @@ bool PluginVST3::IsValid() {
 void PluginVST3::Initialize() {
 	// initialize edit controller (processor component is already initialized)
 	editController->initialize(UnknownCast());
+	editController_initialized = true;
 	editController->setComponentHandler(this);
 
 	// check if plugin has editor and remember it
@@ -161,8 +187,6 @@ void PluginVST3::Initialize() {
 	SetActive(true);
 
 	// synchronize controller and processor
-	Steinberg::Vst::IConnectionPoint* iConnectionPointComponent = nullptr;
-	Steinberg::Vst::IConnectionPoint* iConnectionPointController = nullptr;
 	processorComponent->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&iConnectionPointComponent);
 	editController->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&iConnectionPointController);
 	if (iConnectionPointComponent && iConnectionPointController) {
