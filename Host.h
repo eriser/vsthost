@@ -7,6 +7,9 @@
 #include <thread>
 #include <memory>
 
+#ifndef UNICODE
+#define UNICODE_OFF
+#endif
 #include "base/source/fobject.h"
 #include "pluginterfaces/vst/ivsthostapplication.h"
 
@@ -20,7 +23,7 @@ class Host : public Steinberg::FObject, Steinberg::Vst::IHostApplication {
 public:
 	Host(std::int64_t block_size, double sample_rate, bool stereo = true);
 	~Host();
-	bool LoadPlugin(std::string path);
+	bool LoadPlugin(std::wstring path);
 	void Process(float** input, float** output);
 	void Process(char* input, char* output);
 	void Process(std::int8_t* input, std::int8_t* output);
@@ -40,12 +43,14 @@ public:
 	END_DEFINE_INTERFACES(FObject)
 
 	void test();
+	const static std::wstring kPluginList;
 private:
 	std::vector<std::string> GetPluginNames();
 	void SwapPlugins(unsigned i, unsigned j);
 	void DeletePlugin(unsigned i);
 	void CreateGUI();
 	void LoadPluginList();
+	void SavePluginList();
 	Steinberg::uint32 GetChannelCount();
 	void AllocateBuffers();
 	void FreeBuffers();
@@ -54,8 +59,6 @@ private:
 	void ConvertFrom16Bits(std::int16_t* input, float** output);
 	void ConvertTo16Bits(float** input, std::int8_t* output);
 	void ConvertTo16Bits(float** input, std::int16_t* output);
-
-	const static std::string kPluginsPath;
 
 	std::vector<std::unique_ptr<Plugin>> plugins;
 	std::unique_ptr<HostWindow> gui;

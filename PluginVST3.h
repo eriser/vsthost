@@ -1,6 +1,9 @@
 #ifndef PLUGINVST3_H
 #define PLUGINVST3_H
 
+#ifndef UNICODE
+#define UNICODE_OFF
+#endif
 #include "base/source/fobject.h"
 #include "pluginterfaces/vst/ivsteditcontroller.h"
 #include "pluginterfaces/vst/ivstaudioprocessor.h"
@@ -27,7 +30,7 @@ public:
 	~PluginVST3();
 	bool IsValid();
 	void Initialize();
-	std::string GetPluginName();
+	std::basic_string<TCHAR> GetPluginName();
 	void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output);
 	void UpdateBlockSize();
 	void UpdateSampleRate();
@@ -84,6 +87,7 @@ private:
 	// has editor flag for optimization
 	bool has_editor{ false };
 	// vst3 general
+	Steinberg::int32 class_index; // index of the class produced by factory which is valid 
 	Steinberg::FUnknown* UnknownCast();
 	Steinberg::IPluginFactory* factory;
 	Steinberg::FObject* plugin;

@@ -14,7 +14,7 @@
 extern "C" typedef bool (PLUGIN_API *VST3ExitProc)();
 
 namespace VSTHost {
-PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), factory(f) {
+PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), factory(f), class_index(0) {
 	pd.inputs = nullptr;
 	pd.outputs = nullptr;
 	pd.inputParameterChanges = nullptr;
@@ -24,7 +24,8 @@ PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), fac
 	Steinberg::tresult result;
 	bool initialized = false;
 	for (decltype(factory->countClasses()) i = 0; i < factory->countClasses(); ++i) {
-		factory->getClassInfo(i, &ci);
+		class_index = i;
+		factory->getClassInfo(class_index, &ci);
 		result = factory->createInstance(ci.cid, FUnknown::iid, reinterpret_cast<void**>(&plugin));
 		if (result == Steinberg::kResultOk && plugin) {
 			result = plugin->queryInterface(Steinberg::Vst::IComponent::iid, reinterpret_cast<void**>(&processorComponent));
@@ -103,7 +104,7 @@ bool PluginVST3::IsValid() {
 	factory->queryInterface(Steinberg::IPluginFactory2::iid, reinterpret_cast<void**>(&factory2));
 	if (factory2) {
 		Steinberg::PClassInfo2 ci2;
-		factory2->getClassInfo2(0, &ci2);
+		factory2->getClassInfo2(class_index, &ci2);
 		factory2->release();
 		if (!std::strcmp(ci2.category, "Audio Module Class") && ci2.subCategories[0] == 'F' && ci2.subCategories[1] == 'x'
 			&& editController && audio && processorComponent)
@@ -208,10 +209,15 @@ void PluginVST3::Initialize() {
 	state = std::unique_ptr<Preset>(new PresetVST3(*this, GetPluginName()));
 }
 
-std::string PluginVST3::GetPluginName() {
+std::basic_string<TCHAR> PluginVST3::GetPluginName() {
 	Steinberg::PClassInfo ci;
-	factory->getClassInfo(0, &ci);
-	return std::string(ci.name);
+	factory->getClassInfo(class_index, &ci);
+#ifdef UNICODE // for some reason ci.name is single byte ASCII too
+	std::string tmp(ci.name); // if name is not single byte string, this will fail 
+	return std::basic_string<TCHAR>(tmp.begin(), tmp.end());
+#else
+	return std::basic_string<TCHAR>(ci.name);
+#endif
 }
 
 void PluginVST3::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) {

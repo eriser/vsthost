@@ -21,7 +21,7 @@ public:
 	~PluginVST2();
 	bool IsValid();
 	void Initialize();
-	std::string GetPluginName();
+	std::basic_string<TCHAR> GetPluginName();
 	void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output);
 	void UpdateBlockSize();
 	void UpdateSampleRate();

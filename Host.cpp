@@ -12,7 +12,7 @@
 #include "PluginLoader.h"
 
 namespace VSTHost {
-const std::string Host::kPluginsPath{ "plugins.txt" };
+const std::wstring Host::kPluginList{ L"vsthost.ini" };
 
 void Host::test() {
 	std::thread gui_thread(&Host::CreateGUI, this);
@@ -39,23 +39,16 @@ Host::~Host() {
 	FreeBuffers();
 }
 
-bool Host::LoadPlugin(std::string path) {
-	std::string name(path);
-	std::string::size_type pos = 0;
-	if ((pos = name.find_last_of('\\')) != std::string::npos)
-		name = name.substr(pos + 1);
-	else if ((pos = name.find_last_of('/')) != std::string::npos)
-		name = name.substr(pos + 1);
-	Plugin* plugin = nullptr;
+bool Host::LoadPlugin(std::wstring path) {
 	PluginLoader loader(path);
-	plugin = loader.GetPlugin();
+	auto plugin = loader.GetPlugin();
 	if (plugin) { // host now owns what plugin points at
-		std::cout << "Loaded " << name << "." << std::endl;
+		std::wcout << "Loaded " << path << "." << std::endl;
 		plugins.emplace_back(plugin);
 		plugin->Initialize();
 		return true;	
 	}
-	std::cout << "Could not load " << name << "." << std::endl;
+	std::wcout << "Could not load " << path << "." << std::endl;
 	return false;
 }
 
@@ -158,14 +151,27 @@ void Host::CreateGUI() {
 }
 
 void Host::LoadPluginList() {
-	std::string line;
-	std::ifstream paths(kPluginsPath); // jak nie ma pliku to stworzyc pusty.
-	if (paths.is_open())
-		while (getline(paths, line))
+	std::wstring line;
+	std::wifstream list(kPluginList);
+	if (list.is_open()) {
+		while (getline(list, line)) {
 			if (!line.empty())
 				LoadPlugin(line);
-			else 
-				std::cout << "Could not open " << kPluginsPath << '.' << std::endl;
+			else
+				std::wcout << "Could not open " << kPluginList << '.' << std::endl;
+		}
+		list.close();
+	}
+}
+
+void Host::SavePluginList() {
+	std::wofstream list(kPluginList);
+	if (list.is_open()) {
+		for (auto& p : plugins) {
+			list << Plugin::kPluginDirectory + p->GetPluginFileName() << std::endl;
+		}
+		list.close();
+	}
 }
 
 Steinberg::uint32 Host::GetChannelCount() {
@@ -245,7 +251,8 @@ void Host::ConvertTo16Bits(float** input, std::int16_t* output) {
 
 std::vector<std::string> Host::GetPluginNames() {
 	std::vector<std::string> v;
-	for (auto &p : plugins) v.emplace_back(p->GetPluginName());
+	for (auto &p : plugins)
+		v.emplace_back(p->GetPluginName());
 	return v;
 }
 
@@ -256,9 +263,7 @@ void Host::SwapPlugins(unsigned i, unsigned j) {
 }
 
 void Host::DeletePlugin(unsigned i) {
-	if (i < plugins.size()) {
-		//delete plugins[i]; //todo: deleting a plugin and clicking the console window = crash
+	if (i < plugins.size())
 		plugins.erase(plugins.begin() + i);
-	}
 }
 } // namespace

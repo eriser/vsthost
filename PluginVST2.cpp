@@ -40,21 +40,28 @@ void PluginVST2::Initialize() {
 	SetActive(true);
 }
 
-std::string PluginVST2::GetPluginName() {
-	TCHAR name[kVstMaxProductStrLen + 1] = { 0 };
-	if (Dispatcher(effGetEffectName, 0, 0, (void *)name));
-	else if (Dispatcher(effGetProductString, 0, 0, (void *)name));
+std::basic_string<TCHAR> PluginVST2::GetPluginName() {
+	char name[kVstMaxProductStrLen] = { 0 }; // vst2 does not support unicode
+	if (Dispatcher(effGetEffectName, 0, 0, reinterpret_cast<void*>(name)) || 
+		Dispatcher(effGetProductString, 0, 0, reinterpret_cast<void*>(name))) {
+#ifdef UNICODE	// if name is not single byte string, this will fail 
+		std::string tmp(name);	// (enabling unicode would be beneficial here)
+		return std::basic_string<TCHAR>(tmp.begin(), tmp.end());
+#else
+		return std::basic_string<TCHAR>(name);
+#endif
+	}
 	else {
-		GetModuleFileName(module, name, kVstMaxProductStrLen + 1);
-		std::string tmp(name);
-		std::string::size_type pos = 0;
-		if ((pos = tmp.find_last_of('\\')) != std::string::npos)
+		TCHAR buf[MAX_PATH] = { 0 };
+		GetModuleFileName(module, buf, MAX_PATH);
+		std::basic_string<TCHAR> tmp(name);
+		std::basic_string<TCHAR>::size_type pos = 0;
+		if ((pos = tmp.find_last_of('\\')) != std::basic_string<TCHAR>::npos)
 			tmp = tmp.substr(pos + 1);
-		if ((pos = tmp.find_last_of('.')) != std::string::npos)
+		if ((pos = tmp.find_last_of('.')) != std::basic_string<TCHAR>::npos)
 			tmp = tmp.substr(0, pos);
 		return tmp;
 	}
-	return std::string(name);
 }
 
 void PluginVST2::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) {
@@ -447,8 +454,8 @@ VstIntPtr VSTCALLBACK PluginVST2::HostCallback(AEffect *effect, VstInt32 opcode,
 		case AudioMasterOpcodesX::audioMasterGetLanguage:
 			return VstHostLanguage::kVstLangEnglish;
 		case AudioMasterOpcodesX::audioMasterGetDirectory: {
-			char buf[128]{};
-			auto length = GetModuleFileName(module, buf, 128);
+			char buf[MAX_PATH]{};
+			auto length = GetModuleFileNameA(module, buf, MAX_PATH);
 			std::string tmp(buf, length);
 			std::string::size_type pos = 0;
 			if ((pos = tmp.find_last_of('\\')) != std::string::npos) {

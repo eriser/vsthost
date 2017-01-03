@@ -184,7 +184,12 @@ void HostWindow::OpenDialog() {
 	ofn->lpstrFile[0] = '\0';
 	if (GetOpenFileName(ofn.get())) {
 		auto count = GetPluginCount();
-		if (host.LoadPlugin(std::string(filename))) {
+#ifndef UNICODE
+		std::string tmp(filename);
+		if (host.LoadPlugin(std::wstring(tmp.begin(), tmp.end()))) {
+#else
+		if (host.LoadPlugin(std::wstring(filename))) {
+#endif
 			host.plugins.back()->CreateEditor(wnd);
 			PopulatePluginList();
 			SelectPlugin(count);

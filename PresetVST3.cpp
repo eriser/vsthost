@@ -5,7 +5,7 @@
 #include "PluginVST3.h"
 
 namespace VSTHost {
-PresetVST3::PresetVST3(PluginVST3& p, std::string n) : plugin(p), name(n) {
+	PresetVST3::PresetVST3(PluginVST3& p, std::basic_string<TCHAR> n) : plugin(p), name(n) {
 
 }
 

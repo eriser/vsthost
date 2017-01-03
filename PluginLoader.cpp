@@ -14,12 +14,12 @@ extern "C" {
 }
 
 namespace VSTHost {
-PluginLoader::PluginLoader(std::string path) {
-	auto module = ::LoadLibraryA(path.c_str()); // unicode pending
+PluginLoader::PluginLoader(std::wstring path) {
+	auto module = ::LoadLibraryW(path.c_str()); // unicode pending
 	if (module) {
-		auto proc = GetProcAddress(module, "GetPluginFactory");
+		auto proc = ::GetProcAddress(module, "GetPluginFactory");
 		if (proc) { // the library is a vst3 plugin
-			VST3InitProc init_proc = reinterpret_cast<VST3InitProc>(GetProcAddress(module, "InitDll"));
+			VST3InitProc init_proc = reinterpret_cast<VST3InitProc>(::GetProcAddress(module, "InitDll"));
 			if (init_proc) // calling init proc to initialize the library
 				static_cast<VST3InitProc>(init_proc)();
 			Steinberg::IPluginFactory* factory = nullptr;
@@ -28,9 +28,9 @@ PluginLoader::PluginLoader(std::string path) {
 			plugin = new PluginVST3(module, factory);
 		}
 		else {
-			proc = GetProcAddress(module, "PluginVST2Main");
+			proc = ::GetProcAddress(module, "PluginVST2Main");
 			if (!proc)
-				proc = GetProcAddress(module, "main"); // older than vst2.4
+				proc = ::GetProcAddress(module, "main"); // older than vst2.4
 			if (proc) { // the library is a vst2 plugin
 				AEffect* effect = nullptr;
 				VSTInitProc init_proc = reinterpret_cast<VSTInitProc>(proc);
