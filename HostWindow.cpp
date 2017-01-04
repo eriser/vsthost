@@ -150,9 +150,8 @@ void HostWindow::PopulatePluginList() {
 	if (plugin_list) {
 		SendMessage(plugin_list, LB_RESETCONTENT, NULL, NULL);
 		int i = 0;
-		auto v = host.GetPluginNames();
-		for (auto& s : v) {
-			int pos = SendMessage(plugin_list, LB_ADDSTRING, 0, (LPARAM)s.c_str());
+		for (auto& p : host.plugins) {
+			int pos = SendMessage(plugin_list, LB_ADDSTRING, 0, (LPARAM)p->GetPluginName().c_str());
 			SendMessage(plugin_list, LB_SETITEMDATA, pos, (LPARAM)i++);
 		}
 	}
@@ -170,26 +169,21 @@ void HostWindow::SetFont() {
 }
 
 void HostWindow::OpenDialog() {
-	TCHAR filename[256]{};
+	wchar_t filename[256]{};
 	if (!ofn) {
-		ofn = std::unique_ptr<OPENFILENAME>(new OPENFILENAME());
+		ofn = std::unique_ptr<OPENFILENAMEW>(new OPENFILENAMEW());
 		ofn->lStructSize = sizeof(*ofn);
 		ofn->hwndOwner = wnd;
-		ofn->lpstrFilter = TEXT("VST Plugins (*.dll, *.vst3)\0*.dll;*.vst3\0VST2 Plugins (*.dll)\0*.dll\0VST3 Plugins (*.vst3)\0*.vst3\0");
+		ofn->lpstrFilter = L"VST Plugins (*.dll, *.vst3)\0*.dll;*.vst3\0VST2 Plugins (*.dll)\0*.dll\0VST3 Plugins (*.vst3)\0*.vst3\0";
 		ofn->lpstrFile = filename;
 		ofn->nMaxFile = sizeof(filename);
-		ofn->lpstrInitialDir = TEXT(".\\");
+		ofn->lpstrInitialDir = L".\\";
 		ofn->Flags = OFN_FILEMUSTEXIST;
 	}
 	ofn->lpstrFile[0] = '\0';
-	if (GetOpenFileName(ofn.get())) {
+	if (::GetOpenFileNameW(ofn.get())) {
 		auto count = GetPluginCount();
-#ifndef UNICODE
-		std::string tmp(filename);
-		if (host.LoadPlugin(std::wstring(tmp.begin(), tmp.end()))) {
-#else
 		if (host.LoadPlugin(std::wstring(filename))) {
-#endif
 			host.plugins.back()->CreateEditor(wnd);
 			PopulatePluginList();
 			SelectPlugin(count);

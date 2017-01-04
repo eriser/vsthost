@@ -27,7 +27,7 @@ bool PresetVST3::SetState() {
 }
 
 void PresetVST3::LoadFromFile() {
-	std::ifstream file(name + ".fxp", std::ifstream::binary | std::ifstream::in);
+	std::ifstream file(/*name*/std::string("justfornow") + ".fxp", std::ifstream::binary | std::ifstream::in);
 	if (file.is_open()) {
 		decltype(processor_stream.getSize()) size;
 		Steinberg::int32 read;
@@ -63,7 +63,7 @@ void PresetVST3::GetState() {
 }
 
 void PresetVST3::SaveToFile() {
-	std::ofstream file(name + ".fxp", std::ofstream::binary | std::ofstream::out | std::ofstream::trunc);
+	std::ofstream file(/*name*/std::string("justfornow") + ".fxp", std::ofstream::binary | std::ofstream::out | std::ofstream::trunc);
 	if (file.is_open()) {
 		GetState();
 		file << processor_stream.getSize();

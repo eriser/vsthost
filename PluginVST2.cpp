@@ -54,7 +54,7 @@ std::basic_string<TCHAR> PluginVST2::GetPluginName() {
 	else {
 		TCHAR buf[MAX_PATH] = { 0 };
 		GetModuleFileName(module, buf, MAX_PATH);
-		std::basic_string<TCHAR> tmp(name);
+		std::basic_string<TCHAR> tmp(buf);
 		std::basic_string<TCHAR>::size_type pos = 0;
 		if ((pos = tmp.find_last_of('\\')) != std::basic_string<TCHAR>::npos)
 			tmp = tmp.substr(pos + 1);

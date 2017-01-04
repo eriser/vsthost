@@ -45,7 +45,6 @@ public:
 	void test();
 	const static std::wstring kPluginList;
 private:
-	std::vector<std::string> GetPluginNames();
 	void SwapPlugins(unsigned i, unsigned j);
 	void DeletePlugin(unsigned i);
 	void CreateGUI();
