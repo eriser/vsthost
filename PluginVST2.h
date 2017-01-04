@@ -40,7 +40,7 @@ public:
 	bool HasEditor();
 	void CreateEditor(HWND hWnd);
 	// vst2 callback procedure wrapper
-	static VstIntPtr VSTCALLBACK HostCallbackWrapper(AEffect *effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt);
+	static VstIntPtr VSTCALLBACK HostCallbackWrapper(AEffect *effect, VstInt32 opcode, VstInt32 index, VstIntPtr value, void *ptr, float opt);
 	
 	void PrintPrograms();
 	void PrintParameters();
@@ -53,7 +53,7 @@ private:
 	void StopProcessing();
 	// vst2 specific
 	VstIntPtr VSTCALLBACK Dispatcher(VstInt32 opcode, VstInt32 index = 0, VstIntPtr value = 0, void* ptr = nullptr, float opt = 0.);
-	VstIntPtr VSTCALLBACK HostCallback(AEffect* effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt);
+	VstIntPtr VSTCALLBACK HostCallback(AEffect* effect, VstInt32 opcode, VstInt32 index, VstIntPtr value, void *ptr, float opt);
 	bool CanDo(const char *canDo);
 	int GetVendorVersion();
 	int GetVSTVersion();

@@ -21,8 +21,8 @@ class HostWindow : public Window {
 	static const int kButtonWidth, kButtonHeight;
 	void OnCreate(HWND hWnd);
 	void SetFont();
-	void SelectPlugin(unsigned i);
-	unsigned GetPluginCount();
+	void SelectPlugin(size_t i);
+	size_t GetPluginCount();
 	LRESULT GetPluginSelection();
 public:
 	HostWindow(Host& h);

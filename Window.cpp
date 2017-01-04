@@ -11,7 +11,7 @@ Window::Window(int width, int height) : wnd(NULL) {
 }
 
 Window::~Window() {
-	SetWindowLongPtr(wnd, GWL_USERDATA, (LONG_PTR)NULL);
+	SetWindowLongPtr(wnd, GWLP_USERDATA, (LONG_PTR)NULL);
 	if (wnd)
 		::DestroyWindow(wnd);
 }
@@ -20,9 +20,9 @@ LRESULT CALLBACK Window::Wrapper(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	Window* window = NULL;
 	if (uMsg == WM_NCCREATE) {
 		window = (Window*)((LPCREATESTRUCT)lParam)->lpCreateParams;
-		SetWindowLongPtr(hWnd, GWL_USERDATA, (LONG_PTR)window);
+		SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)window);
 	}
-	else window = (Window*)GetWindowLongPtr(hWnd, GWL_USERDATA);
+	else window = (Window*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 	return window ? window->WindowProc(hWnd, uMsg, wParam, lParam) : DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 

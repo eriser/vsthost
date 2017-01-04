@@ -59,10 +59,10 @@ bool HostWindow::Initialize(HWND parent) {
 
 void HostWindow::OnCreate(HWND hWnd) {
 	plugin_list = CreateWindow(TEXT("listbox"), NULL, WS_CHILD | WS_VISIBLE | WS_BORDER | WS_HSCROLL | LBS_NOTIFY,
-		20, 20, kListWidth, kListHeight, hWnd, (HMENU)Items::PluginList, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+		20, 20, kListWidth, kListHeight, hWnd, (HMENU)Items::PluginList, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
 	for (int i = Items::Add; i < Items::BUTTON_COUNT; ++i) {
 		buttons[i] = CreateWindow(TEXT("button"), button_labels[i], WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-			20 + kListWidth + 20, 20 + i * 40, kButtonHeight, kButtonWidth, hWnd, (HMENU)i, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+			20 + kListWidth + 20, 20 + i * 40, kButtonHeight, kButtonWidth, hWnd, (HMENU)i, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
 	}
 }
 
@@ -191,7 +191,7 @@ void HostWindow::OpenDialog() {
 	}
 }
 
-void HostWindow::SelectPlugin(unsigned i) {
+void HostWindow::SelectPlugin(size_t i) {
 	if (plugin_list) {
 		SendMessage(plugin_list, LB_SETCURSEL, i, 0);
 		SetFocus(plugin_list);
@@ -217,7 +217,7 @@ void HostWindow::SelectPlugin(unsigned i) {
 	}
 }
 
-unsigned HostWindow::GetPluginCount() {
+size_t HostWindow::GetPluginCount() {
 	return host.plugins.size();
 }
 

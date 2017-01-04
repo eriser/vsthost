@@ -187,7 +187,7 @@ void PluginVST2::CreateEditor(HWND hWnd) {
 	}
 }
 
-VstIntPtr VSTCALLBACK PluginVST2::HostCallbackWrapper(AEffect *effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt) {
+VstIntPtr VSTCALLBACK PluginVST2::HostCallbackWrapper(AEffect *effect, VstInt32 opcode, VstInt32 index, VstIntPtr value, void *ptr, float opt) {
 	if (opcode == AudioMasterOpcodes::audioMasterVersion)
 		return 2400;
 	PluginVST2* plugin = reinterpret_cast<PluginVST2*>(effect->resvd1);
@@ -386,7 +386,7 @@ VstIntPtr VSTCALLBACK PluginVST2::Dispatcher(VstInt32 opcode, VstInt32 index, Vs
 	return plugin->dispatcher(plugin.get(), opcode, index, value, ptr, opt);
 }
 
-VstIntPtr VSTCALLBACK PluginVST2::HostCallback(AEffect *effect, VstInt32 opcode, VstInt32 index, VstInt32 value, void *ptr, float opt) {
+VstIntPtr VSTCALLBACK PluginVST2::HostCallback(AEffect *effect, VstInt32 opcode, VstInt32 index, VstIntPtr value, void *ptr, float opt) {
 	switch (opcode) {
 		case AudioMasterOpcodes::audioMasterVersion:
 			return 2400;
