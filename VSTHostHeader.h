@@ -1,6 +1,4 @@
 #pragma once
-#define UNICODE_OFF
-
 #include "pluginterfaces/base/ipluginbase.h"
 #include "pluginterfaces/vst/ivsthostapplication.h"
 #include "pluginterfaces/vst/ivstcomponent.h"
