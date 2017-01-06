@@ -13,11 +13,10 @@ PresetVST2::PresetVST2(PluginVST2& p) : plugin(p), program(nullptr), fxprogram_s
 	program_chunks = 0 != (plugin.GetFlags() & VstAEffectFlags::effFlagsProgramChunks);
 	// set preset path
 	preset_file_path = Plugin::kPluginDirectory + plugin.GetPluginFileName();
-	bool dupa = SwapNeeded();
 	std::string::size_type pos = 0;
 	if ((pos = preset_file_path.find_last_of('.')) != std::string::npos)
 		preset_file_path = preset_file_path.substr(0, pos);
-	preset_file_path += kExtension;
+	preset_file_path += "." + kExtension;
 	// fxProgram struct
 	if (ProgramChunks()) {
 		char* chunk = nullptr;
@@ -66,8 +65,8 @@ void PresetVST2::LoadFromFile() {
 			SWAP_32(in.chunkMagic);
 			SWAP_32(in.byteSize);
 		}
-		if (file.good() && in.chunkMagic == cMagic && in.byteSize == fxprogram_size) {
-			file.read(reinterpret_cast<char*>((&in) + head_size), sizeof(fxProgram) - head_size - sizeof(in.content));
+		if (file.good() && in.chunkMagic == cMagic && in.byteSize == program->byteSize) {
+			file.read(reinterpret_cast<char*>(&in) + head_size, sizeof(fxProgram) - head_size - sizeof(in.content));
 			if (SwapNeeded()) {
 				SWAP_32(in.fxID);
 				SWAP_32(in.fxMagic);
@@ -75,7 +74,7 @@ void PresetVST2::LoadFromFile() {
 				SWAP_32(in.numParams);
 				SWAP_32(in.version);
 			}
-			if (file.good() && in.fxID == program->fxID && in.fxVersion == program->fxVersion
+			if (file.good() && in.fxID == program->fxID /*&& in.fxVersion == program->fxVersion*/
 				&& in.numParams == program->numParams && in.version == program->version) {
 				if (in.fxMagic == chunkPresetMagic) {
 					std::unique_ptr<char[]> in_chunk(new char[program->content.data.size]);
@@ -99,6 +98,7 @@ void PresetVST2::LoadFromFile() {
 							SWAP_32(params[i]);
 						++i;
 					}
+					file.get();
 					if (file.eof() && i == program->numParams) { // preset is valid, params can be loaded
 						for (i = 0; i < program->numParams; ++i)
 							program->content.params[i] = params[i];
@@ -126,7 +126,7 @@ void PresetVST2::GetState() {
 
 void PresetVST2::SaveToFile() {
 	GetState();
-	std::ofstream file(preset_file_path, std::ifstream::binary | std::ifstream::out | std::ifstream::trunc);
+	std::ofstream file(preset_file_path, std::ofstream::binary | std::ofstream::out | std::ofstream::trunc);
 	if (file.is_open()) {
 		if (SwapNeeded())
 			SwapProgram();
@@ -149,7 +149,7 @@ void PresetVST2::SwapProgram() {
 		SWAP_32(program->content.data.size);
 	}
 	else {
-		for (Steinberg::int32 i = 0; i < program->numParams; ++i) {
+		for (Steinberg::int32 i = 0; i < plugin.GetParameterCount(); ++i) {
 			SWAP_32(program->content.params[i]);
 		}
 	}
@@ -167,8 +167,8 @@ constexpr bool PresetVST2::SwapNeeded() {
 	static constexpr Steinberg::int32 magic = cMagic;
 	static constexpr char str1[] = "CcnK";
 	static constexpr char str2[] = { magic, magic >> 8, magic >> 16, magic >> 24 };
-	static constexpr bool swap_needed = str1[0] == str2[0] && str1[1] == str2[1]
-										&& str1[2] == str2[2] && str1[3] == str2[3];
+	static constexpr bool swap_needed = str1[0] == str2[3] && str1[1] == str2[2]
+										&& str1[2] == str2[1] && str1[3] == str2[0];
 	return swap_needed;
 }
 

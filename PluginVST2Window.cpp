@@ -1,7 +1,5 @@
 #include "PluginVST2Window.h"
 
-#include <new>
-
 #include "pluginterfaces\vst2.x\aeffectx.h"
 
 #include "PluginVST2.h"

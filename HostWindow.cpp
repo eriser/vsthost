@@ -178,7 +178,7 @@ void HostWindow::OpenDialog() {
 		ofn->lpstrFile = filename;
 		ofn->nMaxFile = sizeof(filename);
 		ofn->lpstrInitialDir = ".\\";
-		ofn->Flags = OFN_FILEMUSTEXIST;
+		ofn->Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 	}
 	ofn->lpstrFile[0] = '\0';
 	if (::GetOpenFileNameA(ofn.get())) {

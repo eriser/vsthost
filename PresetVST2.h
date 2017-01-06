@@ -6,7 +6,7 @@
 
 #include "Preset.h"
 
-#ifndef __cpp_constexpr // msvc doesnt support constexpr
+#ifndef __cpp_constexpr // msvc 13 doesn't support constexpr it seems
 #define constexpr
 #endif
 
