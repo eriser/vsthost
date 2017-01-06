@@ -14,8 +14,8 @@ extern "C" {
 }
 
 namespace VSTHost {
-PluginLoader::PluginLoader(std::wstring path) {
-	auto module = ::LoadLibraryW(path.c_str()); // unicode pending
+PluginLoader::PluginLoader(std::string path) {
+	auto module = ::LoadLibraryA(path.c_str()); // unicode pending
 	if (module) {
 		auto proc = ::GetProcAddress(module, "GetPluginFactory");
 		if (proc) { // the library is a vst3 plugin

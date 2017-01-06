@@ -15,15 +15,15 @@ namespace VSTHost {
 class PluginVST3;
 class PresetVST3 : public Preset {
 public:
-	PresetVST3(PluginVST3& p, std::basic_string<TCHAR> n);
+	PresetVST3(PluginVST3& p);
 	~PresetVST3();
-	bool SetState();
+	void SetState();
 	void LoadFromFile();
 	void GetState();
 	void SaveToFile();
 private:
 	Steinberg::MemoryStream edit_stream, processor_stream;
-	std::basic_string<TCHAR> name;
+	static const std::string kExtension;
 	PluginVST3& plugin;
 };
 } // namespace

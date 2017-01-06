@@ -22,7 +22,7 @@ public:
 	virtual bool IsValid() = 0;
 	virtual void Initialize() = 0;
 	virtual std::basic_string<TCHAR> GetPluginName() = 0;
-	std::wstring GetPluginFileName();
+	std::string GetPluginFileName();
 	virtual void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) = 0;
 	virtual void UpdateBlockSize() = 0;
 	virtual void UpdateSampleRate() = 0;
@@ -56,7 +56,7 @@ public:
 	void LoadStateFromFile();
 
 	virtual void PrintInfo() = 0;
-	const static std::wstring Plugin::kPluginDirectory;
+	const static std::string Plugin::kPluginDirectory;
 protected:
 	virtual void Resume() = 0;
 	virtual void Suspend() = 0;

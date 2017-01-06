@@ -38,7 +38,7 @@ private:
 	HFONT font;
 	HWND plugin_list;
 	HWND buttons[Items::BUTTON_COUNT];
-	std::unique_ptr<OPENFILENAMEW> ofn;
+	std::unique_ptr<OPENFILENAMEA> ofn;
 	Host& host;
 };
 } // namespace

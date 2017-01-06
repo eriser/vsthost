@@ -7,7 +7,7 @@ namespace VSTHost {
 class Plugin;
 class PluginLoader {
 public:
-	PluginLoader(std::wstring path);
+	PluginLoader(std::string path);
 	~PluginLoader();
 	Plugin* GetPlugin();
 private:

@@ -12,7 +12,7 @@
 #include "PluginLoader.h"
 
 namespace VSTHost {
-const std::wstring Host::kPluginList{ L"vsthost.ini" };
+const std::string Host::kPluginList{ "vsthost.ini" };
 
 void Host::test() {
 	std::thread gui_thread(&Host::CreateGUI, this);
@@ -39,16 +39,16 @@ Host::~Host() {
 	FreeBuffers();
 }
 
-bool Host::LoadPlugin(std::wstring path) {
+bool Host::LoadPlugin(std::string path) {
 	PluginLoader loader(path);
 	auto plugin = loader.GetPlugin();
 	if (plugin) { // host now owns what plugin points at
-		std::wcout << "Loaded " << path << "." << std::endl;
+		std::cout << "Loaded " << path << "." << std::endl;
 		plugins.emplace_back(plugin);
 		plugin->Initialize();
 		return true;	
 	}
-	std::wcout << "Could not load " << path << "." << std::endl;
+	std::cout << "Could not load " << path << "." << std::endl;
 	return false;
 }
 
@@ -151,21 +151,21 @@ void Host::CreateGUI() {
 }
 
 void Host::LoadPluginList() {
-	std::wstring line;
-	std::wifstream list(kPluginList);
+	std::string line;
+	std::ifstream list(kPluginList);
 	if (list.is_open()) {
 		while (getline(list, line)) {
 			if (!line.empty())
 				LoadPlugin(line);
 			else
-				std::wcout << "Could not open " << kPluginList << '.' << std::endl;
+				std::cout << "Could not open " << kPluginList << '.' << std::endl;
 		}
 		list.close();
 	}
 }
 
 void Host::SavePluginList() {
-	std::wofstream list(kPluginList);
+	std::ofstream list(kPluginList);
 	if (list.is_open()) {
 		for (auto& p : plugins) {
 			list << Plugin::kPluginDirectory + p->GetPluginFileName() << std::endl;

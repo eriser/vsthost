@@ -169,21 +169,21 @@ void HostWindow::SetFont() {
 }
 
 void HostWindow::OpenDialog() {
-	wchar_t filename[256]{};
+	char filename[256]{};
 	if (!ofn) {
-		ofn = std::unique_ptr<OPENFILENAMEW>(new OPENFILENAMEW());
+		ofn = std::unique_ptr<OPENFILENAMEA>(new OPENFILENAMEA());
 		ofn->lStructSize = sizeof(*ofn);
 		ofn->hwndOwner = wnd;
-		ofn->lpstrFilter = L"VST Plugins (*.dll, *.vst3)\0*.dll;*.vst3\0VST2 Plugins (*.dll)\0*.dll\0VST3 Plugins (*.vst3)\0*.vst3\0";
+		ofn->lpstrFilter = "VST Plugins (*.dll, *.vst3)\0*.dll;*.vst3\0VST2 Plugins (*.dll)\0*.dll\0VST3 Plugins (*.vst3)\0*.vst3\0";
 		ofn->lpstrFile = filename;
 		ofn->nMaxFile = sizeof(filename);
-		ofn->lpstrInitialDir = L".\\";
+		ofn->lpstrInitialDir = ".\\";
 		ofn->Flags = OFN_FILEMUSTEXIST;
 	}
 	ofn->lpstrFile[0] = '\0';
-	if (::GetOpenFileNameW(ofn.get())) {
+	if (::GetOpenFileNameA(ofn.get())) {
 		auto count = GetPluginCount();
-		if (host.LoadPlugin(std::wstring(filename))) {
+		if (host.LoadPlugin(std::string(filename))) {
 			host.plugins.back()->CreateEditor(wnd);
 			PopulatePluginList();
 			SelectPlugin(count);

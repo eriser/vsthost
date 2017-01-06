@@ -4,7 +4,7 @@
 #include "PluginWindow.h"
 
 namespace VSTHost {
-const std::wstring Plugin::kPluginDirectory{ L".\\..\\plugins\\" };
+const std::string Plugin::kPluginDirectory{ ".\\..\\plugins\\" };
 Steinberg::Vst::TSamples Plugin::block_size = 128;
 Steinberg::Vst::SampleRate Plugin::sample_rate = 44100.0;
 Steinberg::Vst::SpeakerArrangement Plugin::speaker_arrangement = Steinberg::Vst::SpeakerArr::kStereo;
@@ -18,12 +18,12 @@ Plugin::~Plugin() {
 		::FreeLibrary(module);
 }
 
-std::wstring Plugin::GetPluginFileName() {
-	wchar_t buf[MAX_PATH] = { 0 };
-	::GetModuleFileNameW(module, buf, MAX_PATH);
-	std::wstring ret(buf);
-	std::wstring::size_type pos = 0;
-	if ((pos = ret.find_last_of('\\')) != std::basic_string<TCHAR>::npos)
+std::string Plugin::GetPluginFileName() {
+	char buf[MAX_PATH] = { 0 };
+	::GetModuleFileNameA(module, buf, MAX_PATH);
+	std::string ret(buf);
+	std::string::size_type pos = 0;
+	if ((pos = ret.find_last_of('\\')) != std::string::npos)
 		ret = ret.substr(pos + 1);
 	return ret;
 }

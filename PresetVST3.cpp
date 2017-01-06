@@ -5,7 +5,9 @@
 #include "PluginVST3.h"
 
 namespace VSTHost {
-	PresetVST3::PresetVST3(PluginVST3& p, std::basic_string<TCHAR> n) : plugin(p), name(n) {
+const std::string PresetVST3::kExtension{ "vstpreset" };
+
+PresetVST3::PresetVST3(PluginVST3& p) : plugin(p) {
 
 }
 
@@ -13,7 +15,7 @@ PresetVST3::~PresetVST3() {
 
 }
 
-bool PresetVST3::SetState() {
+void PresetVST3::SetState() {
 	if (processor_stream.getSize() > 0) {
 		plugin.processorComponent->setState(&processor_stream);
 		processor_stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
@@ -23,7 +25,6 @@ bool PresetVST3::SetState() {
 	}
 	edit_stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
 	processor_stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
-	return true;
 }
 
 void PresetVST3::LoadFromFile() {

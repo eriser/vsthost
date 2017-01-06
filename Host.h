@@ -23,7 +23,7 @@ class Host : public Steinberg::FObject, Steinberg::Vst::IHostApplication {
 public:
 	Host(std::int64_t block_size, double sample_rate, bool stereo = true);
 	~Host();
-	bool LoadPlugin(std::wstring path);
+	bool LoadPlugin(std::string path);
 	void Process(float** input, float** output);
 	void Process(char* input, char* output);
 	void Process(std::int8_t* input, std::int8_t* output);
@@ -43,7 +43,7 @@ public:
 	END_DEFINE_INTERFACES(FObject)
 
 	void test();
-	const static std::wstring kPluginList;
+	const static std::string kPluginList;
 private:
 	void SwapPlugins(unsigned i, unsigned j);
 	void DeletePlugin(unsigned i);

@@ -206,7 +206,7 @@ void PluginVST3::Initialize() {
 	}
 
 	// create plugin state module
-	state = std::unique_ptr<Preset>(new PresetVST3(*this, GetPluginName()));
+	state = std::unique_ptr<Preset>(new PresetVST3(*this));
 }
 
 std::basic_string<TCHAR> PluginVST3::GetPluginName() {

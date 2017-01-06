@@ -8,7 +8,7 @@ namespace VSTHost {
 PluginVST2Window::PluginVST2Window(PluginVST2& p) : PluginWindow(100, 100, p) {}
 
 void PluginVST2Window::SetRect() {
-	ERect *erect = new ERect;
+	ERect* erect = new ERect;
 	if (dynamic_cast<PluginVST2&>(plugin).Dispatcher(AEffectOpcodes::effEditGetRect, 0, 0, &erect)) {
 		rect.left = erect->left;
 		rect.right = erect->right;
@@ -32,6 +32,7 @@ void PluginVST2Window::SetRect() {
 		rect.bottom = 300;
 	}
 	ApplyOffset();
+	delete erect;
 }
 
 bool PluginVST2Window::Initialize(HWND parent) {

@@ -1,126 +1,168 @@
 #include "PresetVST2.h"
 
+#include <fstream>
+
 #include "PluginVST2.h"
 
 namespace VSTHost {
-PresetVST2::PresetVST2(PluginVST2& p) : plugin(p), isSaved(false), chunk(NULL) {
-	path[0] = '.';
-	path[1] = '\\';
-	plugin.Dispatcher(AEffectXOpcodes::effGetEffectName, 0, 0, (void *)(path + 2));
-	AddExtension();
+const size_t PresetVST2::kProgramUnionSize = 8; // in bytes
+const std::string PresetVST2::kExtension{ "fxp" };
 
-	info.version = 1;
-	info.pluginUniqueID = plugin.plugin->uniqueID;
-	info.pluginVersion = plugin.GetVSTVersion();
-	info.numElements = plugin.GetParameterCount();
+PresetVST2::PresetVST2(PluginVST2& p) : plugin(p), program(nullptr), fxprogram_size(0) {
+	// is program data handled in formatless chunks
+	program_chunks = 0 != (plugin.GetFlags() & VstAEffectFlags::effFlagsProgramChunks);
+	// set preset path
+	preset_file_path = Plugin::kPluginDirectory + plugin.GetPluginFileName();
+	std::string::size_type pos = 0;
+	if ((pos = preset_file_path.find_last_of('.')) != std::string::npos)
+		preset_file_path = preset_file_path.substr(0, pos);
+	preset_file_path += kExtension;
+	// fxProgram struct
 	if (ProgramChunks()) {
-		size = sizeof(fxProgram);
-		program = (fxProgram *)malloc(size);
-		program->fxMagic = chunkPresetMagic;
-	}
+		char* chunk = nullptr;
+		auto chunk_size = plugin.Dispatcher(AEffectOpcodes::effGetChunk, 1, 0, &chunk); // plugin allocates the data
+		fxprogram_size = sizeof(fxProgram) - kProgramUnionSize + sizeof(VstInt32) + chunk_size;
+		program = reinterpret_cast<fxProgram*>(new char[fxprogram_size]{});
+		program->content.data.size = chunk_size;
+		if (chunk)
+			free(chunk);
+	}	// size of the union is 8 bytes
 	else {
-		size = sizeof(fxProgram)+(plugin.GetParameterCount() - 2) * sizeof(float); // 0 element juz jest wliczony w strukture
-		program = (fxProgram *)malloc(size);	// union ma size 8 wiec params[1] tez wliczony.  ? wiec -2
-		program->fxMagic = fMagic;
+		fxprogram_size = sizeof(fxProgram) - kProgramUnionSize + plugin.GetParameterCount() * sizeof(float);
+		program = reinterpret_cast<fxProgram*>(new char[fxprogram_size]{});
 	}
+	program->version = 1;
+	program->fxID = plugin.plugin->uniqueID;
+	program->fxVersion = plugin.GetVSTVersion();
+	program->numParams = plugin.GetParameterCount();
+	program->fxMagic = ProgramChunks() ? chunkPresetMagic : fMagic;
+	program->byteSize = fxprogram_size - sizeof(program->byteSize) - sizeof(program->chunkMagic);
 	program->chunkMagic = cMagic;
-	program->byteSize = -1;
-	program->version = info.version;
-	program->fxID = info.pluginUniqueID;
-	program->fxVersion = info.pluginVersion;
-	program->numParams = info.numElements;
-	strcpy(program->prgName, "Custom");
+	strcpy(program->prgName, "VSTHost Preset");
+	GetState();
 }
 
 PresetVST2::~PresetVST2() {
-	if (ProgramChunks() && chunk) free(chunk);
-	if (program) free(program);
+	if (program)
+		delete[] reinterpret_cast<char*>(program);
 }
 
-bool PresetVST2::SetState() {
-	if (isSaved) {	// wczytuje wszystkie parametry w zaleznosci czy w postaci chunk czy tablicy
-		if (ProgramChunks()) {
-			plugin.Dispatcher(effSetChunk, 1, chunkSize, &chunk);
-		}
-		else {
-			for (int i = 0; i < plugin.GetParameterCount(); i++){
-				plugin.SetParameter(i, program->content.params[i]);
-			}
-		}
-		return true;
-	}
-	else {	// jezeli nie ma stanu zaladowanego jeszcze, to sprawdzam czy plik jest legit
-		FILE *file = fopen(path, "r");
-		if (file) {
-			VstInt32 test;
-			fread(&test, sizeof(VstInt32), 1, file);
-			fclose(file);
-			if (test == cMagic) {
-				LoadFromFile();
-				return true;
-			}
-			else return false;
-		}
-		else return false;
-	}
+void PresetVST2::SetState() {
+	if (ProgramChunks())
+		plugin.Dispatcher(AEffectOpcodes::effSetChunk, 1, program->content.data.size, &program->content.data.chunk);
+	else
+		for (Steinberg::int32 i = 0; i < plugin.GetParameterCount(); i++)
+			plugin.SetParameter(i, program->content.params[i]);
 }
 
 void PresetVST2::LoadFromFile() {
-	FILE *file = fopen(path, "r");
-	fread(program, size, 1, file);
-	if (ProgramChunks()) {
-		chunkSize = program->content.data.size;
-		chunk = (char *)malloc(chunkSize * sizeof(char));
-		chunk[0] = program->content.data.chunk[0];
-		fread(chunk + 1, chunkSize - 1, 1, file);
+	std::ifstream file(preset_file_path, std::ifstream::binary | std::ifstream::in);
+	if (file.is_open()) {
+		fxProgram in{};
+		auto const head_size = sizeof(in.chunkMagic) + sizeof(in.byteSize);
+		file.read(reinterpret_cast<char*>(&in), head_size);
+		if (SwapNeeded()) {
+			SWAP_32(in.chunkMagic);
+			SWAP_32(in.byteSize);
+		}
+		if (file.good() && in.chunkMagic == cMagic && in.byteSize == fxprogram_size) {
+			file.read(reinterpret_cast<char*>((&in) + head_size), sizeof(fxProgram) - head_size - sizeof(in.content));
+			if (SwapNeeded()) {
+				SWAP_32(in.fxID);
+				SWAP_32(in.fxMagic);
+				SWAP_32(in.fxVersion);
+				SWAP_32(in.numParams);
+				SWAP_32(in.version);
+			}
+			if (file.good() && in.fxID == program->fxID && in.fxVersion == program->fxVersion
+				&& in.numParams == program->numParams && in.version == program->version) {
+				if (in.fxMagic == chunkPresetMagic) {
+					std::unique_ptr<char[]> in_chunk(new char[program->content.data.size]);
+					Steinberg::int32 in_chunk_size;
+					file.read(reinterpret_cast<char*>(&in_chunk_size), sizeof(in_chunk_size));
+					if (file.good() && in_chunk_size == program->content.data.size) {
+						file.read(in_chunk.get(), program->content.data.size);
+						if (file.eof()) { // preset file is valid, can be loaded
+							memcpy(program->content.data.chunk, in_chunk.get(), program->content.data.size);
+							memcpy(program->prgName, in.prgName, sizeof(program->prgName));
+							SetState();
+						}
+					}
+				}
+				else if (in.fxMagic == fMagic) {
+					std::unique_ptr<float[]> params(new float[program->numParams]);
+					Steinberg::int32 i = 0;
+					while (i < program->numParams && file.good()) {
+						file.read(reinterpret_cast<char*>(params.get() + i), sizeof(params[0]));
+						if (SwapNeeded())
+							SWAP_32(params[i]);
+						++i;
+					}
+					if (file.eof() && i == program->numParams) { // preset is valid, params can be loaded
+						for (i = 0; i < program->numParams; ++i)
+							program->content.params[i] = params[i];
+						SetState();
+					}
+				}
+			}
+		}
+		file.close();
 	}
-	fclose(file);
-	isSaved = true;
-	SetState();
 }
 
 void PresetVST2::GetState() {
 	if (ProgramChunks()) {
-		if (chunk) free(chunk);
-		chunkSize = plugin.Dispatcher(effGetChunk, 1, 0, &chunk);
-		program->content.data.size = chunkSize;
-		// program->content.data.chunk = chunk;	// todo: zapisac do struktury tablice a nie 1 element tylko
-		program->content.data.chunk[0] = chunk[0];
-		//chunk++;	// chunkmagic i byteSize nie liczac ponizej
-		program->byteSize = sizeof(fxProgram) - 2 * sizeof(VstInt32) + chunkSize;
+		char* chunk = nullptr;
+		plugin.Dispatcher(AEffectOpcodes::effGetChunk, 1, 0, &chunk);
+		memcpy(program->content.data.chunk, chunk, program->content.data.size);
+		if (chunk)
+			free(chunk);
 	}
-	else {
-		chunkSize = (plugin.GetParameterCount() - 1) * sizeof(float);
-		program->byteSize += program->byteSize = sizeof(fxProgram) - 2 * sizeof(VstInt32) + chunkSize;
-		for (int i = 0; i < plugin.GetParameterCount(); i++) {
+	else
+		for (Steinberg::int32 i = 0; i < plugin.GetParameterCount(); i++)
 			program->content.params[i] = plugin.GetParameter(i);
-		}
-	}
-	isSaved = true;
-	SaveToFile();
 }
 
 void PresetVST2::SaveToFile() {
-	FILE *file;
-	file = fopen(path, "w");
-	fwrite(program, size, 1, file);
-	if (ProgramChunks()) {
-		fwrite(chunk + 1, chunkSize - 1, 1, file);
+	GetState();
+	std::ofstream file(preset_file_path, std::ifstream::binary | std::ifstream::out | std::ifstream::trunc);
+	if (file.is_open()) {
+		if (SwapNeeded())
+			SwapProgram();
+		file.write(reinterpret_cast<char*>(program), fxprogram_size);
+		if (SwapNeeded())
+			SwapProgram();
+		file.close();
 	}
-	fclose(file);
 }
 
-void PresetVST2::AddExtension() {
-	int pos = 0;
-	while (path[pos] != '\0') pos++;
-	path[pos] = '.';
-	path[pos + 1] = 'f';
-	path[pos + 2] = 'x';
-	path[pos + 3] = 'p';
-	path[pos + 4] = '\0';
+void PresetVST2::SwapProgram() {
+	SWAP_32(program->chunkMagic);
+	SWAP_32(program->byteSize);
+	SWAP_32(program->fxMagic);
+	SWAP_32(program->version);
+	SWAP_32(program->fxID);
+	SWAP_32(program->fxVersion);
+	SWAP_32(program->numParams);
+	if (ProgramChunks()) {
+		SWAP_32(program->content.data.size);
+	}
+	else {
+		for (Steinberg::int32 i = 0; i < program->numParams; ++i) {
+			SWAP_32(program->content.params[i]);
+		}
+	}
 }
 
 bool PresetVST2::ProgramChunks() {
-	return 0 != (plugin.GetFlags() & VstAEffectFlags::effFlagsProgramChunks);
+	return program_chunks;
 }
+
+bool PresetVST2::SwapNeeded() {
+	static Steinberg::int32 magic = cMagic;
+	static char str[] = "CcnK";
+	static bool swap_needed = memcpy(str, &magic, sizeof(magic)) != 0;
+	return swap_needed;		// maybe make this constexpr instead?
+}
+
 } // namespace
