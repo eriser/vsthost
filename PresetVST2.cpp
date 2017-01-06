@@ -13,6 +13,7 @@ PresetVST2::PresetVST2(PluginVST2& p) : plugin(p), program(nullptr), fxprogram_s
 	program_chunks = 0 != (plugin.GetFlags() & VstAEffectFlags::effFlagsProgramChunks);
 	// set preset path
 	preset_file_path = Plugin::kPluginDirectory + plugin.GetPluginFileName();
+	bool dupa = SwapNeeded();
 	std::string::size_type pos = 0;
 	if ((pos = preset_file_path.find_last_of('.')) != std::string::npos)
 		preset_file_path = preset_file_path.substr(0, pos);
@@ -158,11 +159,17 @@ bool PresetVST2::ProgramChunks() {
 	return program_chunks;
 }
 
-bool PresetVST2::SwapNeeded() {
-	static Steinberg::int32 magic = cMagic;
-	static char str[] = "CcnK";
-	static bool swap_needed = memcpy(str, &magic, sizeof(magic)) != 0;
-	return swap_needed;		// maybe make this constexpr instead?
+#ifndef __cpp_constexpr
+#define constexpr
+#endif
+
+constexpr bool PresetVST2::SwapNeeded() {
+	static constexpr Steinberg::int32 magic = cMagic;
+	static constexpr char str1[] = "CcnK";
+	static constexpr char str2[] = { magic, magic >> 8, magic >> 16, magic >> 24 };
+	static constexpr bool swap_needed = str1[0] == str2[0] && str1[1] == str2[1]
+										&& str1[2] == str2[2] && str1[3] == str2[3];
+	return swap_needed;
 }
 
 } // namespace

@@ -1,12 +1,14 @@
 #ifndef PRESETVST2_H
 #define PRESETVST2_H
 
-#include <string>
-
 #include "pluginterfaces\vst2.x\aeffectx.h"
 #include "pluginterfaces\vst2.x\vstfxstore.h"
 
 #include "Preset.h"
+
+#ifndef __cpp_constexpr // msvc doesnt support constexpr
+#define constexpr
+#endif
 
 namespace VSTHost {
 class PluginVST2;
@@ -21,10 +23,9 @@ public:
 private:
 	void SwapProgram();
 	bool ProgramChunks();
-	static bool SwapNeeded();
-	static const size_t kProgramUnionSize;
+	static constexpr bool SwapNeeded();
+	static const size_t kProgramUnionSize;	// sizeof(fxProgram::content)
 	static const std::string kExtension;
-	std::string preset_file_path;
 	fxProgram* program;
 	size_t fxprogram_size; // size of fxprogram in this particular instance, without 2 first values
 	bool program_chunks;
