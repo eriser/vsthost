@@ -23,7 +23,7 @@ class HostWindow : public Window {
 	void SetFont();
 	void SelectPlugin(size_t i);
 	size_t GetPluginCount();
-	LRESULT GetPluginSelection();
+	size_t GetPluginSelection();
 public:
 	HostWindow(Host& h);
 	~HostWindow();

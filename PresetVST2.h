@@ -22,7 +22,7 @@ public:
 	void SaveToFile();
 private:
 	void SwapProgram();
-	bool ProgramChunks();
+	bool ProgramChunks() const;
 	static constexpr bool SwapNeeded();
 	static const size_t kProgramUnionSize;	// sizeof(fxProgram::content)
 	static const std::string kExtension;

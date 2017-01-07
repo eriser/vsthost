@@ -220,7 +220,7 @@ size_t HostWindow::GetPluginCount() {
 	return host.plugins.size();
 }
 
-LRESULT HostWindow::GetPluginSelection() {
+size_t HostWindow::GetPluginSelection() {
 	if (plugin_list)
 		return SendMessage(plugin_list, LB_GETCURSEL, NULL, NULL);
 	else 

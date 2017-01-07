@@ -19,10 +19,10 @@ public:
 	// basic plugin interface
 	Plugin(HMODULE m);
 	virtual ~Plugin();
-	virtual bool IsValid() = 0;
+	virtual bool IsValid() const = 0;
 	virtual void Initialize() = 0;
-	virtual std::basic_string<TCHAR> GetPluginName() = 0;
-	std::string GetPluginFileName();
+	virtual std::basic_string<TCHAR> GetPluginName() const = 0;
+	std::string GetPluginFileName() const;
 	virtual void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) = 0;
 	virtual void UpdateBlockSize() = 0;
 	virtual void UpdateSampleRate() = 0;
@@ -31,20 +31,20 @@ public:
 	static void SetSampleRate(Steinberg::Vst::SampleRate sr);
 	static void SetSpeakerArrangement(Steinberg::Vst::SpeakerArrangement sa);
 	// presets
-	virtual Steinberg::int32 GetProgramCount() = 0;
+	virtual Steinberg::int32 GetProgramCount() const = 0;
 	virtual void SetProgram(Steinberg::int32 id) = 0;
 	// parameters
-	virtual Steinberg::int32 GetParameterCount() = 0;
-	virtual Steinberg::Vst::ParamValue GetParameter(Steinberg::Vst::ParamID id) = 0;
+	virtual Steinberg::int32 GetParameterCount() const = 0;
+	virtual Steinberg::Vst::ParamValue GetParameter(Steinberg::Vst::ParamID id) const = 0;
 	virtual void SetParameter(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value) = 0;
 	// active and bypass flags
 	void SetActive(bool active_);
 	bool IsActive();
 	bool IsBypassed();
 	virtual void SetBypass(bool bypass_) = 0;
-	virtual bool BypassProcess() = 0;
+	virtual bool BypassProcess() const = 0;
 	// editor
-	virtual bool HasEditor() = 0;
+	virtual bool HasEditor() const = 0;
 	virtual void CreateEditor(HWND hWnd) = 0;
 	void ShowEditor();
 	void HideEditor();
@@ -55,7 +55,7 @@ public:
 	void SaveStateToFile();
 	void LoadStateFromFile();
 
-	virtual void PrintInfo() = 0;
+	virtual void PrintInfo() const = 0;
 	const static std::string Plugin::kPluginDirectory;
 protected:
 	virtual void Resume() = 0;

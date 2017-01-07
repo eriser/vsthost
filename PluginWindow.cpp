@@ -28,7 +28,7 @@ bool PluginWindow::RegisterWC(const TCHAR* class_name) {
 	return registered;
 }
 
-bool PluginWindow::IsActive() {
+bool PluginWindow::IsActive() const {
 	return is_active;
 }
 

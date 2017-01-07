@@ -98,7 +98,7 @@ PluginVST3::~PluginVST3() {
 		static_cast<VST3ExitProc>(exitProc)();
 }
 
-bool PluginVST3::IsValid() {
+bool PluginVST3::IsValid() const {
 	Steinberg::IPluginFactory2* factory2 = nullptr;
 	factory->queryInterface(Steinberg::IPluginFactory2::iid, reinterpret_cast<void**>(&factory2));
 	if (factory2) {
@@ -208,7 +208,7 @@ void PluginVST3::Initialize() {
 	state = std::unique_ptr<Preset>(new PresetVST3(*this));
 }
 
-std::basic_string<TCHAR> PluginVST3::GetPluginName() {
+std::basic_string<TCHAR> PluginVST3::GetPluginName() const {
 	Steinberg::PClassInfo ci;
 	factory->getClassInfo(class_index, &ci);
 #ifdef UNICODE // for some reason ci.name is single byte ASCII too
@@ -269,7 +269,7 @@ void PluginVST3::UpdateSpeakerArrangement() {
 		SetActive(true);
 }
 
-Steinberg::int32 PluginVST3::GetProgramCount() {
+Steinberg::int32 PluginVST3::GetProgramCount() const {
 	return program_count;
 }
 
@@ -285,11 +285,11 @@ void PluginVST3::SetProgram(Steinberg::int32 id) {
 	}
 }
 
-Steinberg::int32 PluginVST3::GetParameterCount() {
+Steinberg::int32 PluginVST3::GetParameterCount() const {
 	return editController->getParameterCount();
 }
 
-Steinberg::Vst::ParamValue PluginVST3::GetParameter(Steinberg::Vst::ParamID id) {
+Steinberg::Vst::ParamValue PluginVST3::GetParameter(Steinberg::Vst::ParamID id) const {
 	return 0;
 }
 
@@ -311,11 +311,11 @@ void PluginVST3::SetBypass(bool bypass_) {
 	}
 }
 
-bool PluginVST3::BypassProcess() {			// wywolanie process omijaj tylko wtedy, jak
+bool PluginVST3::BypassProcess() const {			// wywolanie process omijaj tylko wtedy, jak
 	return bypass && bypass_param_id == -1;	// bypass == true i nie znaleziono parametru "bypass"
 }
 
-bool PluginVST3::HasEditor() {
+bool PluginVST3::HasEditor() const {
 	return has_editor;
 }
 
@@ -329,7 +329,7 @@ void PluginVST3::CreateEditor(HWND hWnd) {
 	}
 }
 
-void PluginVST3::PrintFactory() {
+void PluginVST3::PrintFactory() const {
 	Steinberg::PFactoryInfo factoryInfo;
 	factory->getFactoryInfo(&factoryInfo);
 	std::cout << "  Factory Info:\n\tvendor = " << factoryInfo.vendor
@@ -351,18 +351,18 @@ void PluginVST3::PrintFactory() {
 		factory2->release();
 }
 
-void PluginVST3::PrintClass(const Steinberg::PClassInfo &ci, int i) {
+void PluginVST3::PrintClass(const Steinberg::PClassInfo &ci, int i) const {
 	std::cout << "  Class Info " << i << ":\n\tname = " << ci.name
 		<< "\n\tcategory = " << ci.category << std::endl;
 }
 
-void PluginVST3::PrintClass2(const Steinberg::PClassInfo2 &ci, int i) {
+void PluginVST3::PrintClass2(const Steinberg::PClassInfo2 &ci, int i) const {
 	std::cout << "  Class Info " << i << ":\n\tname = " << ci.name
 		<< "\n\tcategory = " << ci.category << std::endl
 		<< "\tsubCategory = " << ci.subCategories << std::endl;
 }
 
-void PluginVST3::PrintBusInfo() {
+void PluginVST3::PrintBusInfo() const {
 	if (processorComponent) {
 		std::cout << "-----------BUSES------------" << std::endl;
 		Steinberg::Vst::BusInfo bi;
@@ -387,7 +387,7 @@ void PluginVST3::PrintBusInfo() {
 	}
 }
 
-void PluginVST3::PrintParameters() {
+void PluginVST3::PrintParameters() const {
 	if (editController) {
 		Steinberg::Vst::ParameterInfo pi;
 		for (Steinberg::int32 i = 0; i < editController->getParameterCount() - 20; ++i) {
@@ -404,7 +404,7 @@ void PluginVST3::PrintParameters() {
 	}
 }
 
-void PluginVST3::PrintInfo() {
+void PluginVST3::PrintInfo() const {
 
 }
 

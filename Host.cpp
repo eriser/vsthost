@@ -174,7 +174,7 @@ void Host::SavePluginList() {
 	}
 }
 
-Steinberg::uint32 Host::GetChannelCount() {
+Steinberg::uint32 Host::GetChannelCount() const {
 	return static_cast<Steinberg::uint32>(Steinberg::Vst::SpeakerArr::getChannelCount(speaker_arrangement));
 }
 
@@ -249,13 +249,13 @@ void Host::ConvertTo16Bits(float** input, std::int16_t* output) {
 				output[out_i] = static_cast<std::int16_t>(input[j][i] * std::numeric_limits<std::int16_t>::max());
 }
 
-void Host::SwapPlugins(unsigned i, unsigned j) {
+void Host::SwapPlugins(size_t i, size_t j) {
 	if (i < plugins.size() && j < plugins.size()) {
 		std::swap(plugins[i], plugins[j]);
 	}
 }
 
-void Host::DeletePlugin(unsigned i) {
+void Host::DeletePlugin(size_t i) {
 	if (i < plugins.size())
 		plugins.erase(plugins.begin() + i);
 }

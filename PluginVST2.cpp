@@ -21,7 +21,7 @@ PluginVST2::~PluginVST2() {
 	plugin.release();
 }
 
-bool PluginVST2::IsValid() {
+bool PluginVST2::IsValid() const {
 	if (plugin) {
 		VstPlugCategory c = static_cast<VstPlugCategory>(Dispatcher(effGetPlugCategory));
 		return plugin->magic == kEffectMagic && c != kPlugCategSynth && c >= kPlugCategUnknown && c <= kPlugCategRestoration;
@@ -40,7 +40,7 @@ void PluginVST2::Initialize() {
 	SetActive(true);
 }
 
-std::basic_string<TCHAR> PluginVST2::GetPluginName() {
+std::basic_string<TCHAR> PluginVST2::GetPluginName() const {
 	char name[kVstMaxProductStrLen] = { 0 }; // vst2 does not support unicode
 	if (Dispatcher(effGetEffectName, 0, 0, reinterpret_cast<void*>(name)) || 
 		Dispatcher(effGetProductString, 0, 0, reinterpret_cast<void*>(name))) {
@@ -142,7 +142,7 @@ void PluginVST2::UpdateSpeakerArrangement() {
 		SetActive(true);
 }
 
-Steinberg::int32 PluginVST2::GetProgramCount() {
+Steinberg::int32 PluginVST2::GetProgramCount() const {
 	return plugin->numPrograms;
 }
 
@@ -152,11 +152,11 @@ void PluginVST2::SetProgram(Steinberg::int32 id) {
 	Dispatcher(AEffectXOpcodes::effEndSetProgram);
 }
 
-Steinberg::int32 PluginVST2::GetParameterCount() {
+Steinberg::int32 PluginVST2::GetParameterCount() const {
 	return plugin->numParams;
 }
 
-Steinberg::Vst::ParamValue PluginVST2::GetParameter(Steinberg::Vst::ParamID id) {
+Steinberg::Vst::ParamValue PluginVST2::GetParameter(Steinberg::Vst::ParamID id) const {
 	return plugin->getParameter(plugin.get(), id);
 }
 
@@ -172,11 +172,11 @@ void PluginVST2::SetBypass(bool bypass_) {
 	}
 }
 
-bool PluginVST2::BypassProcess() {	// wywolanie process omijaj tylko wtedy, jak
+bool PluginVST2::BypassProcess() const {	// wywolanie process omijaj tylko wtedy, jak
 	return bypass && !soft_bypass;	// bypass == true i wtyczka nie obsluguje soft bypass
 }
 
-bool PluginVST2::HasEditor() {
+bool PluginVST2::HasEditor() const {
 	return static_cast<bool>(plugin->flags & effFlagsHasEditor);
 }
 
@@ -196,7 +196,7 @@ VstIntPtr VSTCALLBACK PluginVST2::HostCallbackWrapper(AEffect *effect, VstInt32 
 	return 0;
 }
 
-void PluginVST2::PrintPrograms() {
+void PluginVST2::PrintPrograms() const {
 	char ProgramName[kVstMaxProgNameLen + 1] = { 0 };
 	int currentProgram = Dispatcher(AEffectOpcodes::effGetProgram);
 	bool programChanged = false;
@@ -211,7 +211,7 @@ void PluginVST2::PrintPrograms() {
 	if (programChanged) Dispatcher(AEffectOpcodes::effSetProgram, 0, currentProgram);
 }
 
-void PluginVST2::PrintParameters() {	// + 1, bo wyjatki wyrzucalo
+void PluginVST2::PrintParameters() const {	// + 1, bo wyjatki wyrzucalo
 	char ParamLabel[kVstMaxParamStrLen + 1] = { 0 };
 	char ParamDisplay[kVstMaxParamStrLen + 1] = { 0 };
 	char ParamName[kVstMaxParamStrLen + 1] = { 0 };
@@ -286,7 +286,7 @@ void PluginVST2::PrintParameters() {	// + 1, bo wyjatki wyrzucalo
 	}
 }
 
-void PluginVST2::PrintCanDos() {
+void PluginVST2::PrintCanDos() const {
 	char *PlugCanDos[] = { "sendVstEvents", "sendVstMidiEvent", "receiveVstEvents", "receiveVstMidiEvent",
 		"receiveVstTimeInfo", "offline", "midiProgramNames", "bypass" };
 	for (int i = 0; i < (sizeof(PlugCanDos) / sizeof(char *)); i++) {
@@ -294,7 +294,7 @@ void PluginVST2::PrintCanDos() {
 	}
 }
 
-void PluginVST2::PrintInfo() {
+void PluginVST2::PrintInfo() const {
 	char *separator = "================\n";
 	char EffectName[kVstMaxEffectNameLen + 1] = { 0 };
 	char VendorString[kVstMaxVendorStrLen + 1] = { 0 };
@@ -382,7 +382,7 @@ void PluginVST2::StopProcessing() {
 	Dispatcher(AEffectXOpcodes::effStopProcess);
 }
 
-VstIntPtr VSTCALLBACK PluginVST2::Dispatcher(VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt) {
+VstIntPtr VSTCALLBACK PluginVST2::Dispatcher(VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt) const {
 	return plugin->dispatcher(plugin.get(), opcode, index, value, ptr, opt);
 }
 
@@ -482,19 +482,19 @@ VstIntPtr VSTCALLBACK PluginVST2::HostCallback(AEffect *effect, VstInt32 opcode,
 	}
 }
 
-bool PluginVST2::CanDo(const char *canDo) {
+bool PluginVST2::CanDo(const char *canDo) const {
 	return (Dispatcher(effCanDo, 0, 0, (void *)canDo) != 0);
 }
 
-int PluginVST2::GetVendorVersion() {
+Steinberg::int32 PluginVST2::GetVendorVersion() const {
 	return Dispatcher(effGetVendorVersion);
 }
 
-int PluginVST2::GetVSTVersion() {
+Steinberg::int32 PluginVST2::GetVSTVersion() const {
 	return Dispatcher(effGetVstVersion);
 }
 
-Steinberg::int32 PluginVST2::GetFlags() {
+Steinberg::int32 PluginVST2::GetFlags() const {
 	return plugin->flags;
 }
 } // namespace

@@ -61,7 +61,7 @@ void PluginVST3Window::Hide() {
 	}
 }
 
-HMENU PluginVST3Window::CreateMenu() {
+HMENU PluginVST3Window::CreateMenu() const {
 	HMENU hmenu = ::CreateMenu();
 	// plugin submenu
 	HMENU hplugin = ::CreateMenu();

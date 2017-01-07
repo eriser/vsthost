@@ -155,7 +155,7 @@ void PresetVST2::SwapProgram() {
 	}
 }
 
-bool PresetVST2::ProgramChunks() {
+bool PresetVST2::ProgramChunks() const {
 	return program_chunks;
 }
 

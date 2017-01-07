@@ -11,7 +11,7 @@ public:
 	PluginVST2Window(PluginVST2& p);
 	~PluginVST2Window() {}
 	bool Initialize(HWND parent);
-	HMENU CreateMenu();
+	HMENU CreateMenu() const;
 	void Show();
 	void Hide();
 	void SetRect();

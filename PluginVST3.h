@@ -28,33 +28,33 @@ public:
 	// basic plugin interface
 	PluginVST3(HMODULE m, Steinberg::IPluginFactory* f);
 	~PluginVST3();
-	bool IsValid();
+	bool IsValid() const;
 	void Initialize();
-	std::basic_string<TCHAR> GetPluginName();
+	std::basic_string<TCHAR> GetPluginName() const;
 	void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output);
 	void UpdateBlockSize();
 	void UpdateSampleRate();
 	void UpdateSpeakerArrangement();
 	// presets
-	Steinberg::int32 GetProgramCount();
+	Steinberg::int32 GetProgramCount() const;
 	void SetProgram(Steinberg::int32 id);
 	// parameters
-	Steinberg::int32 GetParameterCount();
-	Steinberg::Vst::ParamValue GetParameter(Steinberg::Vst::ParamID id);
+	Steinberg::int32 GetParameterCount() const;
+	Steinberg::Vst::ParamValue GetParameter(Steinberg::Vst::ParamID id) const;
 	void SetParameter(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value);
 	// active and bypass flags
 	void SetBypass(bool bypass_);
-	bool BypassProcess();
+	bool BypassProcess() const;
 	// editor
-	bool HasEditor();
+	bool HasEditor() const;
 	void CreateEditor(HWND hWnd);
 
-	void PrintFactory();
-	void PrintClass(const Steinberg::PClassInfo& ci, int i);
-	void PrintClass2(const Steinberg::PClassInfo2 &ci, int i);
-	void PrintBusInfo();
-	void PrintParameters();
-	void PrintInfo();
+	void PrintFactory() const;
+	void PrintClass(const Steinberg::PClassInfo& ci, int i) const;
+	void PrintClass2(const Steinberg::PClassInfo2 &ci, int i) const;
+	void PrintBusInfo() const;
+	void PrintParameters() const;
+	void PrintInfo() const;
 
 	// vst3 specific
 	Steinberg::tresult PLUGIN_API beginEdit(Steinberg::Vst::ParamID id);

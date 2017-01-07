@@ -15,7 +15,7 @@ public:
 	PluginVST3Window(PluginVST3& p, Steinberg::IPlugView* pv);
 	~PluginVST3Window();
 	bool Initialize(HWND parent);
-	HMENU CreateMenu();
+	HMENU CreateMenu() const;
 	void Show();
 	void Hide();
 	void SetRect();

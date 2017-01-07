@@ -45,12 +45,12 @@ public:
 	void test();
 	const static std::string kPluginList;
 private:
-	void SwapPlugins(unsigned i, unsigned j);
-	void DeletePlugin(unsigned i);
+	void SwapPlugins(size_t i, size_t j);
+	void DeletePlugin(size_t i);
 	void CreateGUI();
 	void LoadPluginList();
 	void SavePluginList();
-	Steinberg::uint32 GetChannelCount();
+	Steinberg::uint32 GetChannelCount() const;
 	void AllocateBuffers();
 	void FreeBuffers();
 

@@ -11,7 +11,7 @@ public:
 	virtual ~PluginWindow();
 	virtual bool Initialize(HWND parent) = 0;
 	virtual void SetRect() = 0;
-	bool IsActive();
+	bool IsActive() const;
 protected:
 	enum MenuItem {
 		Bypass = 10000, Active, Close, 
@@ -19,7 +19,7 @@ protected:
 		Presets, Preset = 20000
 	};
 	void ApplyOffset();
-	virtual HMENU CreateMenu() = 0;
+	virtual HMENU CreateMenu() const = 0;
 	HMENU menu;
 	static const TCHAR* kClassName;
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

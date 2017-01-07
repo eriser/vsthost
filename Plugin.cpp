@@ -18,7 +18,7 @@ Plugin::~Plugin() {
 		::FreeLibrary(module);
 }
 
-std::string Plugin::GetPluginFileName() {
+std::string Plugin::GetPluginFileName() const {
 	char buf[MAX_PATH] = { 0 };
 	::GetModuleFileNameA(module, buf, MAX_PATH);
 	std::string ret(buf);

@@ -19,45 +19,45 @@ public:
 	// basic plugin interface
 	PluginVST2(HMODULE m, AEffect* p);
 	~PluginVST2();
-	bool IsValid();
+	bool IsValid() const;
 	void Initialize();
-	std::basic_string<TCHAR> GetPluginName();
+	std::basic_string<TCHAR> GetPluginName() const;
 	void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output);
 	void UpdateBlockSize();
 	void UpdateSampleRate();
 	void UpdateSpeakerArrangement();
 	// presets
-	Steinberg::int32 GetProgramCount();
+	Steinberg::int32 GetProgramCount() const;
 	void SetProgram(Steinberg::int32 id);
 	// parameters
-	Steinberg::int32 GetParameterCount();
-	Steinberg::Vst::ParamValue GetParameter(Steinberg::Vst::ParamID id);
+	Steinberg::int32 GetParameterCount() const;
+	Steinberg::Vst::ParamValue GetParameter(Steinberg::Vst::ParamID id) const;
 	void SetParameter(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value);
 	// active and bypass flags
 	void SetBypass(bool bypass_);
-	bool BypassProcess();
+	bool BypassProcess() const;
 	// editor
-	bool HasEditor();
+	bool HasEditor() const;
 	void CreateEditor(HWND hWnd);
 	// vst2 callback procedure wrapper
 	static VstIntPtr VSTCALLBACK HostCallbackWrapper(AEffect *effect, VstInt32 opcode, VstInt32 index, VstIntPtr value, void *ptr, float opt);
 	
-	void PrintPrograms();
-	void PrintParameters();
-	void PrintCanDos();
-	void PrintInfo();
+	void PrintPrograms() const;
+	void PrintParameters() const;
+	void PrintCanDos() const;
+	void PrintInfo() const;
 private:
 	void Resume();
 	void Suspend();
 	void StartProcessing();
 	void StopProcessing();
 	// vst2 specific
-	VstIntPtr VSTCALLBACK Dispatcher(VstInt32 opcode, VstInt32 index = 0, VstIntPtr value = 0, void* ptr = nullptr, float opt = 0.);
+	VstIntPtr VSTCALLBACK Dispatcher(VstInt32 opcode, VstInt32 index = 0, VstIntPtr value = 0, void* ptr = nullptr, float opt = 0.) const;
 	VstIntPtr VSTCALLBACK HostCallback(AEffect* effect, VstInt32 opcode, VstInt32 index, VstIntPtr value, void *ptr, float opt);
-	bool CanDo(const char *canDo);
-	int GetVendorVersion();
-	int GetVSTVersion();
-	Steinberg::int32 GetFlags();
+	bool CanDo(const char *canDo) const;
+	Steinberg::int32 GetVendorVersion() const;
+	Steinberg::int32 GetVSTVersion() const;
+	Steinberg::int32 GetFlags() const;
 	// soft bypass
 	bool soft_bypass{ false };
 	std::unique_ptr<AEffect> plugin;
