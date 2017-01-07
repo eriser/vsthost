@@ -30,7 +30,6 @@ PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), fac
 		if (result == Steinberg::kResultOk && plugin) {
 			result = plugin->queryInterface(Steinberg::Vst::IComponent::iid, reinterpret_cast<void**>(&processorComponent));
 			if (result == Steinberg::kResultOk && processorComponent) {
-				
 				result = plugin->queryInterface(Steinberg::Vst::IEditController::iid, reinterpret_cast<void**>(&editController));
 				if (result != Steinberg::kResultOk && processorComponent) {
 					Steinberg::FUID controllerCID;
