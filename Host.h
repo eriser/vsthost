@@ -42,13 +42,13 @@ public:
 	END_DEFINE_INTERFACES(FObject)
 
 	void CreateGUIThread();
+	void CreateGUI();
+	bool LoadPluginList(std::string path = kPluginList);
+	bool SavePluginList(std::string path = kPluginList);
 	const static std::string kPluginList;
 private:
 	void SwapPlugins(size_t i, size_t j);
 	void DeletePlugin(size_t i);
-	void CreateGUI();
-	void LoadPluginList();
-	void SavePluginList();
 	Steinberg::uint32 GetChannelCount() const;
 	void AllocateBuffers();
 	void FreeBuffers();

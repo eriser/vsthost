@@ -10,16 +10,16 @@
 
 namespace VSTHost {
 const TCHAR* HostWindow::button_labels[Items::BUTTON_COUNT] = { 
-	TEXT("Add"), TEXT("Delete"), TEXT("Move Up"), 
-	TEXT("Move Down"), TEXT("Show Editor"), TEXT("Hide Editor") };
+	TEXT("Add"), TEXT("Delete"), TEXT("Move Up"), TEXT("Move Down"), 
+	TEXT("Show Editor"), TEXT("Hide Editor"), TEXT("Save List") };
 const TCHAR* HostWindow::kClassName = TEXT("HostWindow");
 const TCHAR* HostWindow::kCaption = TEXT("HostWindow");
-const int HostWindow::kWindowWidth = 300;
-const int HostWindow::kWindowHeight = 500;
+const int HostWindow::kWindowWidth = 150;
+const int HostWindow::kWindowHeight = 160;
 const int HostWindow::kListWidth = 150;
 const int HostWindow::kListHeight = 250;
-const int HostWindow::kButtonWidth = 30;
-const int HostWindow::kButtonHeight = 120; // move to enum?
+const int HostWindow::kButtonWidth = 120;
+const int HostWindow::kButtonHeight = 30; // move to enum?
 bool HostWindow::registered = false;
 
 HostWindow::HostWindow(Host& h) : Window(kWindowWidth, kWindowHeight), font(NULL), host(h) { }
@@ -60,9 +60,12 @@ bool HostWindow::Initialize(HWND parent) {
 void HostWindow::OnCreate(HWND hWnd) {
 	plugin_list = CreateWindow(TEXT("listbox"), NULL, WS_CHILD | WS_VISIBLE | WS_BORDER | WS_HSCROLL | LBS_NOTIFY,
 		20, 20, kListWidth, kListHeight, hWnd, (HMENU)Items::PluginList, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
-	for (int i = Items::Add; i < Items::BUTTON_COUNT; ++i) {
+	buttons[Items::BUTTON_COUNT - 1] = CreateWindow(TEXT("button"), button_labels[Items::BUTTON_COUNT - 1], WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		20, 25 + kListHeight, kButtonWidth + 20 + kListWidth, kButtonHeight, hWnd, 
+		(HMENU)(Items::BUTTON_COUNT - 1), (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
+	for (int i = Items::Add; i < Items::BUTTON_COUNT - 1; ++i) {
 		buttons[i] = CreateWindow(TEXT("button"), button_labels[i], WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-			20 + kListWidth + 20, 20 + i * 40, kButtonHeight, kButtonWidth, hWnd, (HMENU)i, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
+			20 + kListWidth + 20, 20 + i * 40, kButtonWidth, kButtonHeight, hWnd, (HMENU)i, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
 	}
 }
 
@@ -130,6 +133,9 @@ LRESULT CALLBACK HostWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 						}
 					}
 					break;
+				case Items::Save:
+					if (HIWORD(wParam) == BN_CLICKED)
+						host.SavePluginList();
 				default:
 					break;
 			}

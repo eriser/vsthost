@@ -11,7 +11,7 @@ class Plugin;
 class PluginWindow;
 class HostWindow : public Window {
 	enum Items {
-		Add = 0, Delete, Up, Down, Show, Hide, BUTTON_COUNT, PluginList
+		Add = 0, Delete, Up, Down, Show, Hide, Save, BUTTON_COUNT, PluginList
 	};
 	static const TCHAR* button_labels[Items::BUTTON_COUNT];
 	static const TCHAR* kClassName;

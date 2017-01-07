@@ -80,8 +80,11 @@ void PresetVST2::LoadFromFile() {
 					std::unique_ptr<char[]> in_chunk(new char[program->content.data.size]);
 					Steinberg::int32 in_chunk_size;
 					file.read(reinterpret_cast<char*>(&in_chunk_size), sizeof(in_chunk_size));
+					if (SwapNeeded())
+						SWAP_32(in_chunk_size);
 					if (file.good() && in_chunk_size == program->content.data.size) {
 						file.read(in_chunk.get(), program->content.data.size);
+						file.get();
 						if (file.eof()) { // preset file is valid, can be loaded
 							memcpy(program->content.data.chunk, in_chunk.get(), program->content.data.size);
 							memcpy(program->prgName, in.prgName, sizeof(program->prgName));

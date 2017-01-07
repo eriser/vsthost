@@ -23,7 +23,6 @@ Host::Host(std::int64_t block_size, double sample_rate, bool stereo)
 	buffers[0] = nullptr;
 	buffers[1] = nullptr;
 	AllocateBuffers();
-	LoadPluginList();
 }
 
 Host::~Host() {
@@ -140,28 +139,33 @@ void Host::CreateGUI() {
 	gui->Go();
 }
 
-void Host::LoadPluginList() {
+bool Host::LoadPluginList(std::string path) {
 	std::string line;
-	std::ifstream list(kPluginList);
+	std::ifstream list(path);
 	if (list.is_open()) {
-		while (getline(list, line)) {
+		while (getline(list, line))
 			if (!line.empty())
 				LoadPlugin(line);
-			else
-				std::cout << "Could not open " << kPluginList << '.' << std::endl;
-		}
+		for (auto& p : plugins)
+			p->LoadStateFromFile();
 		list.close();
+		return true;
 	}
+	else
+		std::cout << "Could not open " << path << '.' << std::endl;
+	return false;
 }
 
-void Host::SavePluginList() {
-	std::ofstream list(kPluginList);
+bool Host::SavePluginList(std::string path) {
+	std::ofstream list(path, std::ofstream::out | std::ofstream::trunc);
 	if (list.is_open()) {
 		for (auto& p : plugins) {
 			list << Plugin::kPluginDirectory + p->GetPluginFileName() << std::endl;
 		}
 		list.close();
+		return true;
 	}
+	return false;
 }
 
 Steinberg::uint32 Host::GetChannelCount() const {

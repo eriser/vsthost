@@ -116,6 +116,7 @@ int main() {
 	double sample_rate = static_cast<double>(wave.GetSampleRate());
 	bool stereo = wave.IsStereo();
 	VSTHost::Host host(block_size, sample_rate, stereo);
+	host.LoadPluginList();
 	host.CreateGUIThread();
 
 	// this player is bad, because for small block_sizes it just doesn't work well
