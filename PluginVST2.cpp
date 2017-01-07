@@ -23,7 +23,7 @@ PluginVST2::~PluginVST2() {
 
 bool PluginVST2::IsValid() const {
 	if (plugin) {
-		VstPlugCategory c = static_cast<VstPlugCategory>(Dispatcher(effGetPlugCategory));
+		VstPlugCategory c = static_cast<VstPlugCategory>(plugin->dispatcher(plugin.get(), AEffectXOpcodes::effGetPlugCategory, 0, 0, nullptr, 0.));
 		return plugin->magic == kEffectMagic && c != kPlugCategSynth && c >= kPlugCategUnknown && c <= kPlugCategRestoration;
 	}
 	else
@@ -42,8 +42,8 @@ void PluginVST2::Initialize() {
 
 std::basic_string<TCHAR> PluginVST2::GetPluginName() const {
 	char name[kVstMaxProductStrLen] = { 0 }; // vst2 does not support unicode
-	if (Dispatcher(effGetEffectName, 0, 0, reinterpret_cast<void*>(name)) || 
-		Dispatcher(effGetProductString, 0, 0, reinterpret_cast<void*>(name))) {
+	if (plugin->dispatcher(plugin.get(), AEffectXOpcodes::effGetEffectName, 0, 0, reinterpret_cast<void*>(name), 0.) ||
+		plugin->dispatcher(plugin.get(), AEffectXOpcodes::effGetProductString, 0, 0, reinterpret_cast<void*>(name), 0.)) {
 #ifdef UNICODE	// if name is not single byte string, this will fail 
 		std::string tmp(name);	// (enabling unicode would be beneficial here)
 		return std::basic_string<TCHAR>(tmp.begin(), tmp.end());
@@ -196,172 +196,6 @@ VstIntPtr VSTCALLBACK PluginVST2::HostCallbackWrapper(AEffect *effect, VstInt32 
 	return 0;
 }
 
-void PluginVST2::PrintPrograms() const {
-	char ProgramName[kVstMaxProgNameLen + 1] = { 0 };
-	int currentProgram = Dispatcher(AEffectOpcodes::effGetProgram);
-	bool programChanged = false;
-	for (decltype(GetProgramCount()) i = 0; i < GetProgramCount(); i++) {
-		if (Dispatcher(effGetProgramNameIndexed, i, 0, ProgramName)) std::cout << ProgramName << std::endl;
-		else {
-			Dispatcher(AEffectOpcodes::effSetProgram, 0, i);
-			Dispatcher(AEffectOpcodes::effGetProgramName, 0, 0, ProgramName);
-			if (!programChanged) programChanged = true;
-		}
-	}
-	if (programChanged) Dispatcher(AEffectOpcodes::effSetProgram, 0, currentProgram);
-}
-
-void PluginVST2::PrintParameters() const {	// + 1, bo wyjatki wyrzucalo
-	char ParamLabel[kVstMaxParamStrLen + 1] = { 0 };
-	char ParamDisplay[kVstMaxParamStrLen + 1] = { 0 };
-	char ParamName[kVstMaxParamStrLen + 1] = { 0 };
-	VstParameterProperties properties;
-	for (decltype(GetParameterCount()) i = 0; i < GetParameterCount(); i++) {
-		Dispatcher(effGetParamLabel, i, 0, ParamLabel);
-		Dispatcher(effGetParamDisplay, i, 0, ParamDisplay);
-		Dispatcher(effGetParamName, i, 0, ParamName);
-		std::cout << "Parameter " << i << ":" << std::endl
-			<< "Label: " << ParamLabel << std::endl
-			<< "Display: " << ParamDisplay << std::endl
-			<< "Name: " << ParamName << std::endl
-			<< "Value: " << GetParameter(i) << std::endl;
-		if (Dispatcher(effGetParameterProperties, i, 0, &properties)) {
-			for (int j = 0; j <= 6; j++) {
-				std::cout << "Flag ";
-				switch (1 << i) {
-				case kVstParameterIsSwitch:
-					std::cout << "kVstParameterIsSwitch: " << (properties.flags & (1 << i) ? "Yes" : "No") << std::endl;
-					break;
-				case kVstParameterUsesIntegerMinMax:
-					std::cout << "kVstParameterUsesIntegerMinMax: ";
-					if (properties.flags & (1 << i)) {
-						std::cout << "Yes" << std::endl
-							<< "minInteger: " << properties.minInteger << std::endl
-							<< "maxInteger: " << properties.maxInteger << std::endl;
-					}
-					else std::cout << "No" << std::endl;
-					break;
-				case kVstParameterUsesFloatStep:
-					std::cout << "kVstParameterUsesFloatStep: ";
-					if (properties.flags & (1 << i)) {
-						std::cout << "Yes" << std::endl
-							<< "stepFloat: " << properties.stepFloat << std::endl
-							<< "smallStepFloat: " << properties.smallStepFloat << std::endl
-							<< "largeStepFloat: " << properties.largeStepFloat << std::endl;
-					}
-					else std::cout << "No" << std::endl;
-					break;
-				case kVstParameterUsesIntStep:
-					std::cout << "kVstParameterUsesIntStep: ";
-					if (properties.flags & (1 << i)) {
-						std::cout << "Yes" << std::endl
-							<< "largeStepInteger: " << properties.largeStepInteger << std::endl;
-					}
-					else std::cout << "No" << std::endl;
-					break;
-				case kVstParameterSupportsDisplayIndex:
-					std::cout << "kVstParameterSupportsDisplayIndex: ";
-					if (properties.flags & (1 << i)) {
-						std::cout << "Yes" << std::endl
-							<< "displayIndex: " << properties.displayIndex << std::endl;
-					}
-					else std::cout << "No" << std::endl;
-					break;
-				case kVstParameterSupportsDisplayCategory:
-					std::cout << "kVstParameterSupportsDisplayCategory: ";
-					if (properties.flags & (1 << i)) {
-						std::cout << "Yes" << std::endl
-							<< "category: " << properties.category << std::endl
-							<< "numParametersInCategory: " << properties.numParametersInCategory << std::endl
-							<< "categoryLabel: " << properties.categoryLabel << std::endl;
-					}
-					else std::cout << "No" << std::endl;
-					break;
-				case kVstParameterCanRamp:
-					std::cout << "kVstParameterCanRamps: " << (properties.flags & (1 << i) ? "Yes" : "No") << std::endl;
-					break;
-				}
-			}
-		}
-	}
-}
-
-void PluginVST2::PrintCanDos() const {
-	char *PlugCanDos[] = { "sendVstEvents", "sendVstMidiEvent", "receiveVstEvents", "receiveVstMidiEvent",
-		"receiveVstTimeInfo", "offline", "midiProgramNames", "bypass" };
-	for (int i = 0; i < (sizeof(PlugCanDos) / sizeof(char *)); i++) {
-		std::cout << PlugCanDos[i] << ": " << (CanDo(PlugCanDos[i]) ? "Yes" : "No") << std::endl;
-	}
-}
-
-void PluginVST2::PrintInfo() const {
-	char *separator = "================\n";
-	char EffectName[kVstMaxEffectNameLen + 1] = { 0 };
-	char VendorString[kVstMaxVendorStrLen + 1] = { 0 };
-	char ProductString[kVstMaxProductStrLen + 1] = { 0 };
-	Dispatcher(effGetEffectName, 0, 0, (void *)EffectName);
-	Dispatcher(effGetVendorString, 0, 0, (void *)VendorString);
-	Dispatcher(effGetProductString, 0, 0, (void *)ProductString);
-	VstInt32 VendorVersion = GetVendorVersion();
-	VstInt32 VSTVersion = GetVSTVersion();
-	std::cout << "VST Plugin " << EffectName << std::endl
-		<< "Version: " << GetVersion() << std::endl
-		<< "Vendor: " << VendorString << std::endl
-		<< "Product: " << ProductString << std::endl
-		<< "Vendor Version: " << VendorVersion << std::endl
-		<< "UniqueID: " << plugin->uniqueID << std::endl
-		<< "VST Version: " << VSTVersion << std::endl
-		<< separator << "Flags: " << std::endl;
-	for (int i = 0; i < 13; i++) {
-		if (i == 6 || i == 7) continue;
-		switch (1 << i) {
-		case effFlagsHasEditor:
-			std::cout << "effFlagsHasEditor: ";
-			break;
-		case effFlagsCanReplacing:
-			std::cout << "effFlagsCanReplacing: ";
-			break;
-		case effFlagsProgramChunks:
-			std::cout << "effFlagsProgramChunks: ";
-			break;
-		case effFlagsIsSynth:
-			std::cout << "effFlagsIsSynth: ";
-			break;
-		case effFlagsNoSoundInStop:
-			std::cout << "effFlagsNoSoundInStop: ";
-			break;
-		case effFlagsCanDoubleReplacing:
-			std::cout << "effFlagsCanDoubleReplacing (VST 2.4): ";
-			break;
-		case effFlagsHasClip:
-			std::cout << "effFlagsHasClip (Deprecated): ";
-			break;
-		case effFlagsHasVu:
-			std::cout << "effFlagsHasVu (Deprecated): ";
-			break;
-		case effFlagsCanMono:
-			std::cout << "effFlagsCanMono (Deprecated): ";
-			break;
-		case effFlagsExtIsAsync:
-			std::cout << "effFlagsExtIsAsync (Deprecated): ";
-			break;
-		case effFlagsExtHasBuffer:
-			std::cout << "effFlagsExtHasBuffer (Deprecated): ";
-			break;
-		}
-		std::cout << (plugin->flags & (1 << i) ? "Yes" : "No") << std::endl;
-	}
-	std::cout << separator << "Presets(" << GetProgramCount() << "):" << std::endl;
-	PrintPrograms();
-	std::cout << separator << "Parameters(" << GetParameterCount() << "):" << std::endl;
-	//PrintParameters();
-	std::cout << separator << "Inputs: " << plugin->numInputs << std::endl
-		<< "Outputs: " << plugin->numOutputs << std::endl
-		<< separator << "CanDo:" << std::endl;
-	PrintCanDos();
-	std::cout << separator;
-}
-
 void PluginVST2::Resume() {
 	Dispatcher(AEffectOpcodes::effMainsChanged, 0, true);
 	StopProcessing();
@@ -382,7 +216,7 @@ void PluginVST2::StopProcessing() {
 	Dispatcher(AEffectXOpcodes::effStopProcess);
 }
 
-VstIntPtr VSTCALLBACK PluginVST2::Dispatcher(VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt) const {
+VstIntPtr VSTCALLBACK PluginVST2::Dispatcher(VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt) {
 	return plugin->dispatcher(plugin.get(), opcode, index, value, ptr, opt);
 }
 
@@ -483,15 +317,15 @@ VstIntPtr VSTCALLBACK PluginVST2::HostCallback(AEffect *effect, VstInt32 opcode,
 }
 
 bool PluginVST2::CanDo(const char *canDo) const {
-	return (Dispatcher(effCanDo, 0, 0, (void *)canDo) != 0);
+	return (plugin->dispatcher(plugin.get(), AEffectXOpcodes::effCanDo, 0, 0, (void *)canDo, 0.) != 0);
 }
 
 Steinberg::int32 PluginVST2::GetVendorVersion() const {
-	return Dispatcher(effGetVendorVersion);
+	return plugin->dispatcher(plugin.get(), AEffectXOpcodes::effGetVendorVersion, 0, 0, nullptr, 0.);
 }
 
 Steinberg::int32 PluginVST2::GetVSTVersion() const {
-	return Dispatcher(effGetVstVersion);
+	return plugin->dispatcher(plugin.get(), AEffectXOpcodes::effGetVstVersion, 0, 0, nullptr, 0.);
 }
 
 Steinberg::int32 PluginVST2::GetFlags() const {

@@ -55,7 +55,6 @@ public:
 	void SaveStateToFile();
 	void LoadStateFromFile();
 
-	virtual void PrintInfo() const = 0;
 	const static std::string Plugin::kPluginDirectory;
 protected:
 	virtual void Resume() = 0;

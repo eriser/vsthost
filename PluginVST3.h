@@ -49,13 +49,6 @@ public:
 	bool HasEditor() const;
 	void CreateEditor(HWND hWnd);
 
-	void PrintFactory() const;
-	void PrintClass(const Steinberg::PClassInfo& ci, int i) const;
-	void PrintClass2(const Steinberg::PClassInfo2 &ci, int i) const;
-	void PrintBusInfo() const;
-	void PrintParameters() const;
-	void PrintInfo() const;
-
 	// vst3 specific
 	Steinberg::tresult PLUGIN_API beginEdit(Steinberg::Vst::ParamID id);
 	Steinberg::tresult PLUGIN_API performEdit(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue valueNormalized);
