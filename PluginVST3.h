@@ -84,9 +84,9 @@ private:
 	Steinberg::FUnknown* UnknownCast();
 	Steinberg::IPluginFactory* factory;
 	Steinberg::FObject* plugin;
-	Steinberg::Vst::IComponent* processorComponent;
+	Steinberg::Vst::IComponent* processor_component;
 	Steinberg::Vst::IEditController* editController;
-	bool processorComponent_initialized{ false };
+	bool processor_component_initialized{ false };
 	bool editController_initialized{ false };
 	Steinberg::Vst::IConnectionPoint* iConnectionPointComponent{ nullptr };
 	Steinberg::Vst::IConnectionPoint* iConnectionPointController{ nullptr };

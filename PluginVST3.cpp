@@ -28,28 +28,28 @@ PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), fac
 		factory->getClassInfo(class_index, &ci);
 		result = factory->createInstance(ci.cid, FUnknown::iid, reinterpret_cast<void**>(&plugin));
 		if (result == Steinberg::kResultOk && plugin) {
-			result = plugin->queryInterface(Steinberg::Vst::IComponent::iid, reinterpret_cast<void**>(&processorComponent));
-			if (result == Steinberg::kResultOk && processorComponent) {
+			result = plugin->queryInterface(Steinberg::Vst::IComponent::iid, reinterpret_cast<void**>(&processor_component));
+			if (result == Steinberg::kResultOk && processor_component) {
 				result = plugin->queryInterface(Steinberg::Vst::IEditController::iid, reinterpret_cast<void**>(&editController));
-				if (result != Steinberg::kResultOk && processorComponent) {
+				if (result != Steinberg::kResultOk && processor_component) {
 					Steinberg::FUID controllerCID;
-					if (processorComponent->getControllerClassId(controllerCID) == Steinberg::kResultTrue && controllerCID.isValid())
+					if (processor_component->getControllerClassId(controllerCID) == Steinberg::kResultTrue && controllerCID.isValid())
 						result = factory->createInstance(controllerCID, Steinberg::Vst::IEditController::iid, (void**)&editController);
 				}
 				if (result == Steinberg::kResultOk)
-					if (initialized = (processorComponent->initialize(UnknownCast()) == Steinberg::kResultOk)) {
-						result = processorComponent->queryInterface(Steinberg::Vst::IAudioProcessor::iid, reinterpret_cast<void**>(&audio));
-						processorComponent_initialized = true;
+					if (initialized = (processor_component->initialize(UnknownCast()) == Steinberg::kResultOk)) {
+						result = processor_component->queryInterface(Steinberg::Vst::IAudioProcessor::iid, reinterpret_cast<void**>(&audio));
+						processor_component_initialized = true;
 					}
 			}
 		}
 		if (IsValid() && result == Steinberg::kResultOk)
 			break;
 		if (initialized) {
-			processorComponent->terminate();
-			processorComponent_initialized = false;
+			processor_component->terminate();
+			processor_component_initialized = false;
 		}
-		processorComponent = nullptr;
+		processor_component = nullptr;
 		editController = nullptr;
 		audio = nullptr;
 		initialized = false;
@@ -78,10 +78,10 @@ PluginVST3::~PluginVST3() {
 		audio->release();
 	if (unit_info)
 		unit_info->release();
-	if (processorComponent) {
-		if (processorComponent_initialized)
-			processorComponent->terminate();
-		processorComponent->release();
+	if (processor_component) {
+		if (processor_component_initialized)
+			processor_component->terminate();
+		processor_component->release();
 	}
 	if (editController) {
 		if (editController_initialized)
@@ -106,7 +106,7 @@ bool PluginVST3::IsValid() const {
 		factory2->getClassInfo2(class_index, &ci2);
 		factory2->release();
 		if (!std::strcmp(ci2.category, "Audio Module Class") && ci2.subCategories[0] == 'F' && ci2.subCategories[1] == 'x'
-			&& editController && audio && processorComponent)
+			&& editController && audio && processor_component)
 			return true;
 	}
 	return false;
@@ -192,14 +192,14 @@ void PluginVST3::Initialize() {
 	SetActive(true);
 
 	// synchronize controller and processor
-	processorComponent->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&iConnectionPointComponent);
+	processor_component->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&iConnectionPointComponent);
 	editController->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&iConnectionPointController);
 	if (iConnectionPointComponent && iConnectionPointController) {
 		iConnectionPointComponent->connect(iConnectionPointController);
 		iConnectionPointController->connect(iConnectionPointComponent);
 	}
 	Steinberg::MemoryStream stream;
-	if (processorComponent->getState(&stream) == Steinberg::kResultTrue) {
+	if (processor_component->getState(&stream) == Steinberg::kResultTrue) {
 		stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
 		editController->setComponentState(&stream);
 	}
@@ -290,7 +290,7 @@ Steinberg::int32 PluginVST3::GetParameterCount() const {
 }
 
 Steinberg::Vst::ParamValue PluginVST3::GetParameter(Steinberg::Vst::ParamID id) const {
-	return 0;
+	return editController->getParamNormalized(id);
 }
 
 void PluginVST3::SetParameter(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value) {
@@ -307,7 +307,6 @@ void PluginVST3::SetBypass(bool bypass_) {
 			Steinberg::Vst::ParamValue value = static_cast<Steinberg::Vst::ParamValue>(bypass);
 			SetParameter(bypass_param_id, value);
 		}
-
 	}
 }
 
@@ -352,14 +351,14 @@ Steinberg::tresult PLUGIN_API PluginVST3::restartComponent(Steinberg::int32 flag
 }
 
 void PluginVST3::Resume() {
-	processorComponent->setActive(true);
+	processor_component->setActive(true);
 	StartProcessing();
 	active = true;
 }
 
 void PluginVST3::Suspend() {
 	StopProcessing();
-	processorComponent->setActive(false);
+	processor_component->setActive(false);
 	active = false;
 }
 
