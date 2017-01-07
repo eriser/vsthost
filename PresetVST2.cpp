@@ -24,9 +24,9 @@ PresetVST2::PresetVST2(PluginVST2& p) : plugin(p), program(nullptr), fxprogram_s
 		fxprogram_size = sizeof(fxProgram) - kProgramUnionSize + sizeof(VstInt32) + chunk_size;
 		program = reinterpret_cast<fxProgram*>(new char[fxprogram_size]{});
 		program->content.data.size = chunk_size;
-		if (chunk)
-			free(chunk);
-	}	// size of the union is 8 bytes
+		//if (chunk)
+		//	free(chunk);
+	}
 	else {
 		fxprogram_size = sizeof(fxProgram) - kProgramUnionSize + plugin.GetParameterCount() * sizeof(float);
 		program = reinterpret_cast<fxProgram*>(new char[fxprogram_size]{});
@@ -116,8 +116,8 @@ void PresetVST2::GetState() {
 		char* chunk = nullptr;
 		plugin.Dispatcher(AEffectOpcodes::effGetChunk, 1, 0, &chunk);
 		memcpy(program->content.data.chunk, chunk, program->content.data.size);
-		if (chunk)
-			free(chunk);
+		//if (chunk)
+		//	free(chunk);
 	}
 	else
 		for (Steinberg::int32 i = 0; i < plugin.GetParameterCount(); i++)
@@ -158,10 +158,6 @@ void PresetVST2::SwapProgram() {
 bool PresetVST2::ProgramChunks() {
 	return program_chunks;
 }
-
-#ifndef __cpp_constexpr
-#define constexpr
-#endif
 
 constexpr bool PresetVST2::SwapNeeded() {
 	static constexpr Steinberg::int32 magic = cMagic;

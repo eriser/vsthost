@@ -24,6 +24,7 @@ public:
 private:
 	Steinberg::MemoryStream edit_stream, processor_stream;
 	static const std::string kExtension;
+	Steinberg::FUID fuid;
 	PluginVST3& plugin;
 };
 } // namespace

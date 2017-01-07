@@ -2,13 +2,20 @@
 
 #include <fstream>
 
+#include "public.sdk/source/vst/vstpresetfile.h"
+
 #include "PluginVST3.h"
 
 namespace VSTHost {
 const std::string PresetVST3::kExtension{ "vstpreset" };
 
-PresetVST3::PresetVST3(PluginVST3& p) : plugin(p) {
-
+PresetVST3::PresetVST3(PluginVST3& p) : plugin(p), fuid(plugin.processorComponent->iid) {
+	// preset file path
+	preset_file_path = plugin.GetPluginFileName(); 
+	std::string::size_type pos = 0;
+	if ((pos = preset_file_path.find_last_of('.')) != std::string::npos)
+		preset_file_path = preset_file_path.substr(0, pos);
+	preset_file_path = Plugin::kPluginDirectory + preset_file_path + "." + kExtension;
 }
 
 PresetVST3::~PresetVST3() {
@@ -28,28 +35,17 @@ void PresetVST3::SetState() {
 }
 
 void PresetVST3::LoadFromFile() {
-	std::ifstream file(/*name*/std::string("justfornow") + ".fxp", std::ifstream::binary | std::ifstream::in);
+	std::ifstream file(preset_file_path, std::ifstream::binary | std::ifstream::in);
 	if (file.is_open()) {
-		decltype(processor_stream.getSize()) size;
-		Steinberg::int32 read;
-		//file.read(reinterpret_cast<char*>(&size), sizeof(size));
-		file >> size;
-		char* data = new char[size];
-		file.read(data, size);
-		processor_stream.setSize(0);
-		processor_stream.write(static_cast<void*>(data), size, &read);
-		delete[] data;
-		//file.read(reinterpret_cast<char*>(&size), sizeof(size));
-		file >> size;
-		if (size > 0) {
-			char* data = new char[size];
-			file.read(data, size);
-			edit_stream.setSize(0);
-			edit_stream.write(static_cast<void*>(data), size, &read);
+		std::vector<char> v;
+		while (file.good()) {
+			char c;
+			if (file.get(c))
+				v.push_back(c);
 		}
-		edit_stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
-		processor_stream.seek(0, Steinberg::IBStream::kIBSeekSet, 0);
-		SetState();
+		Steinberg::MemoryStream in(&v[0], v.size());
+		if (Steinberg::Vst::PresetFile::loadPreset(&in, fuid, plugin.processorComponent, plugin.editController))
+			GetState(); // preset was loaded successfully, so i update the state of this object
 		file.close();
 	}
 }
@@ -64,14 +60,14 @@ void PresetVST3::GetState() {
 }
 
 void PresetVST3::SaveToFile() {
-	std::ofstream file(/*name*/std::string("justfornow") + ".fxp", std::ofstream::binary | std::ofstream::out | std::ofstream::trunc);
-	if (file.is_open()) {
-		GetState();
-		file << processor_stream.getSize();
-		file.write(reinterpret_cast<char*>(processor_stream.getData()), processor_stream.getSize());
-		file << edit_stream.getSize();
-		file.write(reinterpret_cast<char*>(edit_stream.getData()), edit_stream.getSize());
-		file.close();
+	GetState();
+	Steinberg::MemoryStream out;
+	if (Steinberg::Vst::PresetFile::savePreset(&out, fuid, plugin.processorComponent, plugin.editController)) {
+		std::ofstream file(preset_file_path, std::ofstream::binary | std::ofstream::out | std::ofstream::trunc);
+		if (file.is_open()) {
+			file.write(out.getData(), out.getSize());
+			file.close();
+		}
 	}
 }
 } // namespace
