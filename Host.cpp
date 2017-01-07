@@ -14,11 +14,6 @@
 namespace VSTHost {
 const std::string Host::kPluginList{ "vsthost.ini" };
 
-void Host::test() {
-	std::thread gui_thread(&Host::CreateGUI, this);
-	gui_thread.detach();
-}
-
 Host::Host(std::int64_t block_size, double sample_rate, bool stereo)
 	: block_size(block_size), sample_rate(sample_rate) {
 	speaker_arrangement = stereo ? Steinberg::Vst::SpeakerArr::kStereo : Steinberg::Vst::SpeakerArr::kMono;
@@ -29,10 +24,6 @@ Host::Host(std::int64_t block_size, double sample_rate, bool stereo)
 	buffers[1] = nullptr;
 	AllocateBuffers();
 	LoadPluginList();
-	//gui = new HostWindow(*this);
-	//std::thread gui_thread(&Host::CreateGUI, this);
-	//for (auto p : plugins)
-	//	p->CreateEditor();
 }
 
 Host::~Host() {
@@ -127,12 +118,6 @@ void Host::SetSpeakerArrangement(std::uint64_t sa) {
 	}
 }
 
-void Host::SetActive(bool ia) {
-	is_active = ia;
-	//for (p : plugins);
-
-}
-
 Steinberg::tresult PLUGIN_API Host::getName(Steinberg::Vst::String128 name) {
 	Steinberg::String str("VSTHost");
 	str.copyTo16(name, 0, 7);
@@ -142,6 +127,11 @@ Steinberg::tresult PLUGIN_API Host::getName(Steinberg::Vst::String128 name) {
 Steinberg::tresult PLUGIN_API Host::createInstance(Steinberg::TUID cid, Steinberg::TUID iid, void** obj) {
 	*obj = nullptr;
 	return Steinberg::kResultFalse;
+}
+
+void Host::CreateGUIThread() {
+	std::thread gui_thread(&Host::CreateGUI, this);
+	gui_thread.detach();
 }
 
 void Host::CreateGUI() {

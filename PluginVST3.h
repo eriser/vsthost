@@ -85,9 +85,9 @@ private:
 	Steinberg::IPluginFactory* factory;
 	Steinberg::FObject* plugin;
 	Steinberg::Vst::IComponent* processor_component;
-	Steinberg::Vst::IEditController* editController;
+	Steinberg::Vst::IEditController* edit_controller;
 	bool processor_component_initialized{ false };
-	bool editController_initialized{ false };
+	bool edit_controller_initialized{ false };
 	Steinberg::Vst::IConnectionPoint* iConnectionPointComponent{ nullptr };
 	Steinberg::Vst::IConnectionPoint* iConnectionPointController{ nullptr };
 	// audio related

@@ -31,7 +31,6 @@ public:
 	void SetSampleRate(Steinberg::Vst::SampleRate sr);
 	void SetBlockSize(Steinberg::Vst::TSamples bs);
 	void SetSpeakerArrangement(Steinberg::Vst::SpeakerArrangement sa);
-	void SetActive(bool ia);
 
 	Steinberg::tresult PLUGIN_API getName(Steinberg::Vst::String128 name);
 	Steinberg::tresult PLUGIN_API createInstance(Steinberg::TUID cid, Steinberg::TUID iid, void** obj);
@@ -42,7 +41,7 @@ public:
 		DEF_INTERFACE(IHostApplication)
 	END_DEFINE_INTERFACES(FObject)
 
-	void test();
+	void CreateGUIThread();
 	const static std::string kPluginList;
 private:
 	void SwapPlugins(size_t i, size_t j);
@@ -67,7 +66,6 @@ private:
 	Steinberg::Vst::SampleRate sample_rate;
 	Steinberg::Vst::SpeakerArrangement speaker_arrangement;
 	Steinberg::Vst::Sample32** buffers[2];
-	bool is_active{ false };
 };
 }
 
