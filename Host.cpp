@@ -43,17 +43,38 @@ bool Host::LoadPlugin(std::string path) {
 }
 
 void Host::Process(float** input, float** output) {
-	if (plugins.size() == 1)
+	if (plugins.size() == 1 && !plugins.front()->BypassProcess())
 		plugins.front()->Process(input, output);
 	else if (plugins.size() > 1) {
-		plugins.front()->Process(input, buffers[1]);
+		if (!plugins.front()->BypassProcess())
+			plugins.front()->Process(input, buffers[1]);
+		else
+			for (unsigned i = 0; i < GetChannelCount(); ++i)
+				std::memcpy(input, buffers[1], sizeof(input[0][0]) * block_size);
 		unsigned i, last_processed = 1;
 		for (i = 1; i < plugins.size() - 1; i++)
 			if (!plugins[i]->BypassProcess()) {
 				last_processed = (i + 1) % 2;
 				plugins[i]->Process(buffers[i % 2], buffers[last_processed]);
 			}
-		plugins.back()->Process(buffers[last_processed], output);
+		if (!plugins.back()->BypassProcess())
+			plugins.back()->Process(buffers[last_processed], output);
+		else
+			for (unsigned i = 0; i < GetChannelCount(); ++i)
+				std::memcpy(buffers[last_processed], output, sizeof(input[0][0]) * block_size);
+		/* clearer version, but with copying over all buffers every time
+		for (unsigned i = 0; i < GetChannelCount(); ++i)
+			std::memcpy(input, buffers[0], sizeof(input[0][0]) * block_size);
+		unsigned i, last_processed = 0;
+		for (i = 0; i < plugins.size() - 1; i++)
+			if (!plugins[i]->BypassProcess()) {
+				last_processed = (i + 1) % 2;
+				plugins[i]->Process(buffers[i % 2], buffers[last_processed]);
+			}
+		}
+		for (unsigned i = 0; i < GetChannelCount(); ++i)
+		std::memcpy(buffers[last_processed], output, sizeof(input[0][0]) * block_size);
+		*/
 	}
 	else
 		for (unsigned i = 0; i < GetChannelCount(); ++i)
@@ -71,8 +92,8 @@ void Host::Process(std::int8_t* input, std::int8_t* output) {
 
 void Host::Process(std::int16_t* input, std::int16_t* output) {
 	ConvertFrom16Bits(input, buffers[0]);
-	if (plugins.size() == 1) {
-		plugins.front()->Process(buffers[0], buffers[1]);
+	if (plugins.size() == 1 && !plugins.front()->BypassProcess()) {
+		plugins.front()->Process(buffers[0], buffers[1]); // if bypassprocess is true it will just go to memcpy at the bottom
 		ConvertTo16Bits(buffers[1], output);
 	}
 	else if (plugins.size() > 1) {

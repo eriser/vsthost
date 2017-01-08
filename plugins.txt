@@ -1,3 +1,0 @@
-.\..\plugins\HarmoniEQ.vst3
-.\..\plugins\FreeverbToo.dll
-.\..\plugins\BLOCKFISH.dll
