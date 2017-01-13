@@ -73,7 +73,7 @@ void Host::Process(float** input, float** output) {
 			}
 		}
 		for (unsigned i = 0; i < GetChannelCount(); ++i)
-		std::memcpy(buffers[last_processed], output, sizeof(input[0][0]) * block_size);
+			std::memcpy(buffers[last_processed], output, sizeof(input[0][0]) * block_size);
 		*/
 	}
 	else

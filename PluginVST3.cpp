@@ -19,7 +19,6 @@ PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), fac
 	pd.outputs = nullptr;
 	pd.inputParameterChanges = nullptr;
 	pd.outputParameterChanges = nullptr;
-	factory->addRef();
 	Steinberg::PClassInfo ci;
 	Steinberg::tresult result;
 	bool initialized = false;

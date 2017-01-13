@@ -1,6 +1,7 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
 
+#define NOMINMAX
 #include <Windows.h>
 #include <memory>
 #include <string>

@@ -6,10 +6,6 @@
 
 #include "Preset.h"
 
-#ifndef __cpp_constexpr // msvc 13 doesn't support constexpr it seems
-#define constexpr
-#endif
-
 namespace VSTHost {
 class PluginVST2;
 class PresetVST2 : public Preset {
@@ -23,7 +19,7 @@ public:
 private:
 	void SwapProgram();
 	bool ProgramChunks() const;
-	static constexpr bool SwapNeeded();
+	static bool SwapNeeded();
 	static const size_t kProgramUnionSize;	// sizeof(fxProgram::content)
 	static const std::string kExtension;
 	fxProgram* program;

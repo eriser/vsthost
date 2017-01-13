@@ -1,6 +1,9 @@
 #ifndef PLUGINVST3_H
 #define PLUGINVST3_H
 
+#undef max
+#include <limits>
+
 #ifndef UNICODE
 #define UNICODE_OFF
 #endif
@@ -66,9 +69,9 @@ private:
 	void StopProcessing();
 
 	// soft bypass
-	Steinberg::Vst::ParamID bypass_param_id{ -1 };
+	Steinberg::Vst::ParamID bypass_param_id{ std::numeric_limits<std::uint32_t>::max() };
 	// vst3 presets handling
-	Steinberg::Vst::ParamID program_change_param_id{ -1 };
+	Steinberg::Vst::ParamID program_change_param_id{ std::numeric_limits<std::uint32_t>::max() };
 	Steinberg::int32 program_change_param_idx{ -1 };
 	Steinberg::Vst::IUnitInfo* unit_info{ nullptr };
 	Steinberg::int32 program_count{ 0 };

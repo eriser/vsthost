@@ -162,12 +162,10 @@ bool PresetVST2::ProgramChunks() const {
 	return program_chunks;
 }
 
-constexpr bool PresetVST2::SwapNeeded() {
-	static constexpr Steinberg::int32 magic = cMagic;
-	static constexpr char str1[] = "CcnK";
-	static constexpr char str2[] = { magic, magic >> 8, magic >> 16, magic >> 24 };
-	static constexpr bool swap_needed = str1[0] == str2[3] && str1[1] == str2[2]
-										&& str1[2] == str2[1] && str1[3] == str2[0];
+bool PresetVST2::SwapNeeded() {
+	static Steinberg::int32 magic = cMagic;
+	static char str[] = "CcnK";
+	static bool swap_needed = memcpy(str, &magic, sizeof(magic)) != 0;
 	return swap_needed;
 }
 
