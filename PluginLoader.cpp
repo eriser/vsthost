@@ -25,7 +25,7 @@ PluginLoader::PluginLoader(std::string path) {
 			Steinberg::IPluginFactory* factory = nullptr;
 			GetFactoryProc getFactory = reinterpret_cast<GetFactoryProc>(proc);
 			factory = getFactory(); // retrieving factory pointer from factory proc
-			plugin = new PluginVST3(module, factory);
+			plugin = new PluginVST3(module, factory, 128, 44100.);
 		}
 		else {
 			proc = ::GetProcAddress(module, "PluginVST2Main");
@@ -35,7 +35,7 @@ PluginLoader::PluginLoader(std::string path) {
 				AEffect* effect = nullptr;
 				VSTInitProc init_proc = reinterpret_cast<VSTInitProc>(proc);
 				effect = init_proc(PluginVST2::HostCallbackWrapper);
-				plugin = new PluginVST2(module, effect);
+				plugin = new PluginVST2(module, effect, 128, 44100.);
 			}
 		}
 	}

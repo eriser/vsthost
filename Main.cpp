@@ -114,8 +114,7 @@ int main() {
 	int bs_all_channels = block_size * wave.GetChannelCount();
 	int bs_all_channels_bytes = bs_all_channels * (wave.GetBitDepth() / 8);
 	double sample_rate = static_cast<double>(wave.GetSampleRate());
-	bool stereo = wave.IsStereo();
-	VSTHost::Host host(block_size, sample_rate, stereo);
+	VSTHost::Host host(block_size, sample_rate);
 	host.LoadPluginList();
 	host.CreateGUIThread();
 

@@ -18,19 +18,15 @@ class Preset;
 class Plugin {
 public:
 	// basic plugin interface
-	Plugin(HMODULE m);
+	Plugin(HMODULE m, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
 	virtual ~Plugin();
 	virtual bool IsValid() const = 0;
 	virtual void Initialize() = 0;
 	virtual std::basic_string<TCHAR> GetPluginName() const = 0;
 	std::string GetPluginFileName() const;
 	virtual void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) = 0;
-	virtual void UpdateBlockSize() = 0;
-	virtual void UpdateSampleRate() = 0;
-	virtual void UpdateSpeakerArrangement() = 0;
-	static void SetBlockSize(Steinberg::Vst::TSamples bs);;
-	static void SetSampleRate(Steinberg::Vst::SampleRate sr);
-	static void SetSpeakerArrangement(Steinberg::Vst::SpeakerArrangement sa);
+	virtual void SetBlockSize(Steinberg::Vst::TSamples bs) = 0;
+	virtual void SetSampleRate(Steinberg::Vst::SampleRate sr) = 0;
 	// presets
 	virtual Steinberg::int32 GetProgramCount() const = 0;
 	virtual void SetProgram(Steinberg::int32 id) = 0;
@@ -40,8 +36,8 @@ public:
 	virtual void SetParameter(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue value) = 0;
 	// active and bypass flags
 	void SetActive(bool active_);
-	bool IsActive();
-	bool IsBypassed();
+	bool IsActive() const;
+	bool IsBypassed() const;
 	virtual void SetBypass(bool bypass_) = 0;
 	virtual bool BypassProcess() const = 0;
 	// editor
@@ -49,7 +45,7 @@ public:
 	virtual void CreateEditor(HWND hWnd) = 0;
 	void ShowEditor();
 	void HideEditor();
-	bool IsEditorVisible();
+	bool IsEditorVisible() const;
 	// state
 	void SaveState();
 	void LoadState();
@@ -68,9 +64,8 @@ protected:
 	std::mutex processing; // locked when plugin is processing or setting itself (in)active
 	bool active{ false };
 	bool bypass{ false };
-	static Steinberg::Vst::TSamples block_size;
-	static Steinberg::Vst::SampleRate sample_rate;
-	static Steinberg::Vst::SpeakerArrangement speaker_arrangement;
+	Steinberg::Vst::TSamples block_size;
+	Steinberg::Vst::SampleRate sample_rate;
 	std::unique_ptr<Preset> state;
 	std::unique_ptr<PluginWindow> gui;
 };

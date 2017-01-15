@@ -14,7 +14,8 @@
 extern "C" typedef bool (PLUGIN_API *VST3ExitProc)();
 
 namespace VSTHost {
-PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f) : Plugin(m), factory(f), class_index(0) {
+PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr)
+	: Plugin(m, bs, sr), factory(f), class_index(0) {
 	pd.inputs = nullptr;
 	pd.outputs = nullptr;
 	pd.inputParameterChanges = nullptr;
@@ -178,9 +179,9 @@ void PluginVST3::Initialize() {
 	pd.numInputs = 1;
 	pd.numOutputs = 1;
 	pd.inputs = new Steinberg::Vst::AudioBusBuffers;
-	pd.inputs->numChannels = Steinberg::Vst::SpeakerArr::getChannelCount(speaker_arrangement);
+	pd.inputs->numChannels = GetChannelCount();
 	pd.outputs = new Steinberg::Vst::AudioBusBuffers;
-	pd.outputs->numChannels = Steinberg::Vst::SpeakerArr::getChannelCount(speaker_arrangement);
+	pd.outputs->numChannels = GetChannelCount();
 
 	// create parameter changes
 	if (edit_controller) {
@@ -237,33 +238,26 @@ void PluginVST3::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sampl
 	}
 }
 
-void PluginVST3::UpdateBlockSize() {
+void PluginVST3::SetBlockSize(Steinberg::Vst::TSamples bs) {
 	bool was_active;
 	if (was_active = IsActive())
 		SetActive(false);
+	block_size = bs;
 	pd.numSamples = block_size;
 	if (was_active)
 		SetActive(true);
 }
 
-void PluginVST3::UpdateSampleRate() {
+void PluginVST3::SetSampleRate(Steinberg::Vst::SampleRate sr) {
 	bool was_active;
 	if (was_active = IsActive())
 		SetActive(false);
+	sample_rate = sr;
 	Steinberg::Vst::ProcessSetup ps;
 	ps.symbolicSampleSize = Steinberg::Vst::kSample32;
 	ps.processMode = Steinberg::Vst::kRealtime;
 	ps.sampleRate = sample_rate;
 	audio->setupProcessing(ps);
-	if (was_active)
-		SetActive(true);
-}
-
-void PluginVST3::UpdateSpeakerArrangement() {
-	bool was_active;
-	if (was_active = IsActive())
-		SetActive(false);
-	audio->setBusArrangements(&speaker_arrangement, 1, &speaker_arrangement, 1);
 	if (was_active)
 		SetActive(true);
 }

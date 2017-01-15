@@ -29,15 +29,14 @@ class PluginVST3 : public Plugin, public Steinberg::FObject, public Steinberg::V
 	friend class PresetVST3;
 public:
 	// basic plugin interface
-	PluginVST3(HMODULE m, Steinberg::IPluginFactory* f);
+	PluginVST3(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::TSamples bs = 128, Steinberg::Vst::SampleRate sr = 44100.0);
 	~PluginVST3();
 	bool IsValid() const;
 	void Initialize();
 	std::basic_string<TCHAR> GetPluginName() const;
 	void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output);
-	void UpdateBlockSize();
-	void UpdateSampleRate();
-	void UpdateSpeakerArrangement();
+	void SetBlockSize(Steinberg::Vst::TSamples bs);
+	void SetSampleRate(Steinberg::Vst::SampleRate sr);
 	// presets
 	Steinberg::int32 GetProgramCount() const;
 	void SetProgram(Steinberg::int32 id);

@@ -14,12 +14,8 @@
 namespace VSTHost {
 const std::string Host::kPluginList{ "vsthost.ini" };
 
-Host::Host(std::int64_t block_size, double sample_rate, bool stereo)
+Host::Host(std::int64_t block_size, double sample_rate)
 	: block_size(block_size), sample_rate(sample_rate) {
-	speaker_arrangement = stereo ? Steinberg::Vst::SpeakerArr::kStereo : Steinberg::Vst::SpeakerArr::kMono;
-	Plugin::SetBlockSize(block_size);
-	Plugin::SetSampleRate(sample_rate);
-	Plugin::SetSpeakerArrangement(speaker_arrangement);
 	buffers[0] = nullptr;
 	buffers[1] = nullptr;
 	AllocateBuffers();
@@ -111,9 +107,8 @@ void Host::Process(std::int16_t* input, std::int16_t* output) {
 
 void Host::SetSampleRate(double sr) {
 	sample_rate = sr;
-	Plugin::SetSampleRate(sample_rate);
 	for (auto& p : plugins)
-		p->UpdateSampleRate();
+		p->SetSampleRate(sample_rate);
 }
 
 void Host::SetBlockSize(std::int64_t bs) {
@@ -121,20 +116,8 @@ void Host::SetBlockSize(std::int64_t bs) {
 		block_size = bs;
 		FreeBuffers();
 		AllocateBuffers();
-		Plugin::SetBlockSize(block_size);
 		for (auto& p : plugins)
-			p->UpdateBlockSize();
-	}
-}
-
-void Host::SetSpeakerArrangement(std::uint64_t sa) {
-	if (sa != speaker_arrangement) {
-		FreeBuffers();
-		speaker_arrangement = sa;
-		AllocateBuffers();
-		Plugin::SetSpeakerArrangement(speaker_arrangement);
-		for (auto& p : plugins)
-			p->UpdateSpeakerArrangement();
+			p->SetBlockSize(block_size);
 	}
 }
 
@@ -190,7 +173,7 @@ bool Host::SavePluginList(std::string path) {
 }
 
 Steinberg::uint32 Host::GetChannelCount() const {
-	return static_cast<Steinberg::uint32>(Steinberg::Vst::SpeakerArr::getChannelCount(speaker_arrangement));
+	return 2u;
 }
 
 void Host::AllocateBuffers() {

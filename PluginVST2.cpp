@@ -8,7 +8,8 @@
 #include "PluginVST2Window.h"
 
 namespace VSTHost {
-PluginVST2::PluginVST2(HMODULE m, AEffect* p) : Plugin(m), plugin(p) {
+PluginVST2::PluginVST2(HMODULE m, AEffect* p, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr)
+	: Plugin(m, bs, sr), plugin(p) {
 	plugin->resvd1 = reinterpret_cast<VstIntPtr>(this);
 }
 
@@ -32,9 +33,8 @@ bool PluginVST2::IsValid() const {
 
 void PluginVST2::Initialize() {
 	Dispatcher(AEffectOpcodes::effOpen);
-	SetSampleRate(sample_rate);
-	SetBlockSize(block_size);
-	UpdateSpeakerArrangement();
+	Dispatcher(AEffectOpcodes::effSetSampleRate, 0, static_cast<float>(sample_rate));
+	Dispatcher(AEffectOpcodes::effSetBlockSize, 0, static_cast<VstIntPtr>(block_size));
 	state = std::unique_ptr<Preset>(new PresetVST2(*this));
 	soft_bypass = CanDo("bypass");
 	SetActive(true);
@@ -81,63 +81,22 @@ void PluginVST2::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sampl
 	}
 }
 
-void PluginVST2::UpdateBlockSize() {
+void PluginVST2::SetBlockSize(Steinberg::Vst::TSamples bs) {
 	bool was_active;
 	if (was_active = IsActive())
 		SetActive(false);
+	block_size = bs;
 	Dispatcher(AEffectOpcodes::effSetBlockSize, 0, static_cast<int>(block_size));
 	if (was_active)
 		SetActive(true);
 }
 
-void PluginVST2::UpdateSampleRate() {
+void PluginVST2::SetSampleRate(Steinberg::Vst::SampleRate sr) {
 	bool was_active;
 	if (was_active = IsActive())
 		SetActive(false);
+	sample_rate = sr;
 	Dispatcher(AEffectOpcodes::effSetSampleRate, 0, static_cast<float>(sample_rate));
-	if (was_active)
-		SetActive(true);
-}
-
-void PluginVST2::UpdateSpeakerArrangement() {
-	if (GetVSTVersion() < 2300)
-		return;
-	bool was_active;
-	if (was_active = IsActive())
-		SetActive(false);
-	VstSpeakerArrangement in{}, out{};
-	if (speaker_arrangement == Steinberg::Vst::SpeakerArr::kMono) {
-		in.numChannels = 1;
-		in.type = VstSpeakerArrangementType::kSpeakerArrMono;
-		in.speakers[0].type = VstSpeakerType::kSpeakerM;
-		in.speakers[0].name[0] = 'M';
-		in.speakers[0].name[1] = '\0';
-		out.numChannels = 1;
-		out.type = VstSpeakerArrangementType::kSpeakerArrMono;
-		out.speakers[0].type = VstSpeakerType::kSpeakerM;
-		out.speakers[0].name[0] = 'M';
-		out.speakers[0].name[1] = '\0';
-	}
-	else {
-		in.numChannels = 2;
-		in.type = VstSpeakerArrangementType::kSpeakerArrStereo;
-		in.speakers[0].type = VstSpeakerType::kSpeakerL;
-		in.speakers[0].name[0] = 'L';
-		in.speakers[0].name[1] = '\0';
-		in.speakers[1].type = VstSpeakerType::kSpeakerR;
-		in.speakers[1].name[0] = 'R';
-		in.speakers[1].name[1] = '\0';
-		out.numChannels = 2;
-		out.type = VstSpeakerArrangementType::kSpeakerArrStereo;
-		out.speakers[0].type = VstSpeakerType::kSpeakerL;
-		out.speakers[0].name[0] = 'L';
-		out.speakers[0].name[1] = '\0';
-		out.speakers[1].type = VstSpeakerType::kSpeakerR;
-		out.speakers[1].name[0] = 'R';
-		out.speakers[1].name[1] = '\0';
-
-	}
-	Dispatcher(AEffectXOpcodes::effSetSpeakerArrangement, 0, reinterpret_cast<Steinberg::int32>(&in), &out);
 	if (was_active)
 		SetActive(true);
 }

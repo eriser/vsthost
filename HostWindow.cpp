@@ -19,7 +19,7 @@ const int HostWindow::kWindowHeight = 160;
 const int HostWindow::kListWidth = 150;
 const int HostWindow::kListHeight = 250;
 const int HostWindow::kButtonWidth = 120;
-const int HostWindow::kButtonHeight = 30; // move to enum?
+const int HostWindow::kButtonHeight = 30;
 bool HostWindow::registered = false;
 
 HostWindow::HostWindow(Host& h) : Window(kWindowWidth, kWindowHeight), font(NULL), host(h) { }

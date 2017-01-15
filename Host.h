@@ -21,7 +21,7 @@ class HostWindow;
 class Host : public Steinberg::FObject, Steinberg::Vst::IHostApplication {
 	friend class HostWindow;
 public:
-	Host(std::int64_t block_size, double sample_rate, bool stereo = true);
+	Host(std::int64_t block_size, double sample_rate);
 	~Host();
 	bool LoadPlugin(std::string path);
 	void Process(float** input, float** output);
@@ -30,7 +30,6 @@ public:
 	void Process(std::int16_t* input, std::int16_t* output);
 	void SetSampleRate(Steinberg::Vst::SampleRate sr);
 	void SetBlockSize(Steinberg::Vst::TSamples bs);
-	void SetSpeakerArrangement(Steinberg::Vst::SpeakerArrangement sa);
 
 	Steinberg::tresult PLUGIN_API getName(Steinberg::Vst::String128 name);
 	Steinberg::tresult PLUGIN_API createInstance(Steinberg::TUID cid, Steinberg::TUID iid, void** obj);
@@ -64,7 +63,6 @@ private:
 
 	Steinberg::Vst::TSamples block_size;
 	Steinberg::Vst::SampleRate sample_rate;
-	Steinberg::Vst::SpeakerArrangement speaker_arrangement;
 	Steinberg::Vst::Sample32** buffers[2];
 };
 }

@@ -17,15 +17,14 @@ class PluginVST2 : public Plugin {
 	friend class PresetVST2;
 public:
 	// basic plugin interface
-	PluginVST2(HMODULE m, AEffect* p);
+	PluginVST2(HMODULE m, AEffect* p, Steinberg::Vst::TSamples bs = 128, Steinberg::Vst::SampleRate sr = 44100.0);
 	~PluginVST2();
 	bool IsValid() const;
 	void Initialize();
 	std::basic_string<TCHAR> GetPluginName() const;
 	void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output);
-	void UpdateBlockSize();
-	void UpdateSampleRate();
-	void UpdateSpeakerArrangement();
+	void SetBlockSize(Steinberg::Vst::TSamples bs);
+	void SetSampleRate(Steinberg::Vst::SampleRate sr);
 	// presets
 	Steinberg::int32 GetProgramCount() const;
 	void SetProgram(Steinberg::int32 id);

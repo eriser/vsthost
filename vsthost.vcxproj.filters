@@ -177,7 +177,4 @@
       <Filter>VST3 SDK\base</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="plugins.txt" />
-  </ItemGroup>
 </Project>

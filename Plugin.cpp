@@ -5,11 +5,8 @@
 
 namespace VSTHost {
 const std::string Plugin::kPluginDirectory{ ".\\..\\plugins\\" };
-Steinberg::Vst::TSamples Plugin::block_size = 128;
-Steinberg::Vst::SampleRate Plugin::sample_rate = 44100.0;
-Steinberg::Vst::SpeakerArrangement Plugin::speaker_arrangement = Steinberg::Vst::SpeakerArr::kStereo;
 
-Plugin::Plugin(HMODULE m) : module(m) {
+Plugin::Plugin(HMODULE m, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr) : module(m), block_size(bs), sample_rate(sr) {
 
 }
 
@@ -28,18 +25,6 @@ std::string Plugin::GetPluginFileName() const {
 	return ret;
 }
 
-void Plugin::SetBlockSize(Steinberg::Vst::TSamples bs) {
-	block_size = bs;
-}
-
-void Plugin::SetSampleRate(Steinberg::Vst::SampleRate sr) {
-	sample_rate = sr;
-}
-
-void Plugin::SetSpeakerArrangement(Steinberg::Vst::SpeakerArrangement sa) {
-	speaker_arrangement = sa;
-}
-
 void Plugin::SetActive(bool active_) {
 	if (active != active_) {
 		std::lock_guard<std::mutex> lock(processing);
@@ -50,15 +35,15 @@ void Plugin::SetActive(bool active_) {
 	}
 }
 
-bool Plugin::IsActive() {
+bool Plugin::IsActive() const {
 	return active;
 }
 
-bool Plugin::IsBypassed() {
+bool Plugin::IsBypassed() const {
 	return bypass;
 }
 
-bool Plugin::IsEditorVisible() {
+bool Plugin::IsEditorVisible() const {
 	if (gui)
 		return gui->IsActive();
 	else
@@ -96,6 +81,6 @@ void Plugin::LoadStateFromFile() {
 }
 
 Steinberg::uint32 Plugin::GetChannelCount() {
-	return static_cast<Steinberg::uint32>(Steinberg::Vst::SpeakerArr::getChannelCount(speaker_arrangement));
+	return 2u;
 }
 } // namespace
