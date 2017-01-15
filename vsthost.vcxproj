@@ -133,6 +133,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\VST3 SDK\base\source\baseiids.cpp" />
+    <ClCompile Include="..\VST3 SDK\base\source\fatomic.cpp" />
+    <ClCompile Include="..\VST3 SDK\base\source\fbuffer.cpp" />
+    <ClCompile Include="..\VST3 SDK\base\source\fdebug.cpp" />
+    <ClCompile Include="..\VST3 SDK\base\source\fobject.cpp" />
+    <ClCompile Include="..\VST3 SDK\base\source\fstring.cpp" />
+    <ClCompile Include="..\VST3 SDK\base\source\fthread.cpp" />
+    <ClCompile Include="..\VST3 SDK\pluginterfaces\base\conststringtable.cpp" />
+    <ClCompile Include="..\VST3 SDK\pluginterfaces\base\funknown.cpp" />
     <ClCompile Include="..\VST3 SDK\public.sdk\source\common\memorystream.cpp" />
     <ClCompile Include="..\VST3 SDK\public.sdk\source\vst\hosting\parameterchanges.cpp" />
     <ClCompile Include="..\VST3 SDK\public.sdk\source\vst\vstpresetfile.cpp" />
@@ -150,6 +159,16 @@
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\VST3 SDK\base\source\basefwd.h" />
+    <ClInclude Include="..\VST3 SDK\base\source\fatomic.h" />
+    <ClInclude Include="..\VST3 SDK\base\source\fbuffer.h" />
+    <ClInclude Include="..\VST3 SDK\base\source\fdebug.h" />
+    <ClInclude Include="..\VST3 SDK\base\source\fobject.h" />
+    <ClInclude Include="..\VST3 SDK\base\source\fstring.h" />
+    <ClInclude Include="..\VST3 SDK\base\source\fthread.h" />
+    <ClInclude Include="..\VST3 SDK\pluginterfaces\base\conststringtable.h" />
+    <ClInclude Include="..\VST3 SDK\pluginterfaces\base\funknown.h" />
+    <ClInclude Include="..\VST3 SDK\pluginterfaces\base\pluginbasefwd.h" />
     <ClInclude Include="..\VST3 SDK\public.sdk\source\common\memorystream.h" />
     <ClInclude Include="..\VST3 SDK\public.sdk\source\vst\hosting\parameterchanges.h" />
     <ClInclude Include="..\VST3 SDK\public.sdk\source\vst\vstpresetfile.h" />

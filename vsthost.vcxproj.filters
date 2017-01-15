@@ -16,6 +16,9 @@
     <Filter Include="VST3 SDK">
       <UniqueIdentifier>{e8a58493-b589-4e6c-84b9-7ad8f5e19ade}</UniqueIdentifier>
     </Filter>
+    <Filter Include="VST3 SDK\base">
+      <UniqueIdentifier>{9352d127-a3b1-41c7-bce3-15d8df00d3eb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Host.cpp">
@@ -62,6 +65,33 @@
     </ClCompile>
     <ClCompile Include="..\VST3 SDK\public.sdk\source\vst\vstpresetfile.cpp">
       <Filter>VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VST3 SDK\base\source\fobject.cpp">
+      <Filter>VST3 SDK\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VST3 SDK\pluginterfaces\base\conststringtable.cpp">
+      <Filter>VST3 SDK\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VST3 SDK\pluginterfaces\base\funknown.cpp">
+      <Filter>VST3 SDK\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VST3 SDK\base\source\baseiids.cpp">
+      <Filter>VST3 SDK\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VST3 SDK\base\source\fstring.cpp">
+      <Filter>VST3 SDK\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VST3 SDK\base\source\fatomic.cpp">
+      <Filter>VST3 SDK\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VST3 SDK\base\source\fdebug.cpp">
+      <Filter>VST3 SDK\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VST3 SDK\base\source\fbuffer.cpp">
+      <Filter>VST3 SDK\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VST3 SDK\base\source\fthread.cpp">
+      <Filter>VST3 SDK\base</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -115,6 +145,36 @@
     </ClInclude>
     <ClInclude Include="..\VST3 SDK\public.sdk\source\vst\vstpresetfile.h">
       <Filter>VST3 SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VST3 SDK\base\source\fobject.h">
+      <Filter>VST3 SDK\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VST3 SDK\pluginterfaces\base\conststringtable.h">
+      <Filter>VST3 SDK\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VST3 SDK\pluginterfaces\base\funknown.h">
+      <Filter>VST3 SDK\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VST3 SDK\pluginterfaces\base\pluginbasefwd.h">
+      <Filter>VST3 SDK\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VST3 SDK\base\source\basefwd.h">
+      <Filter>VST3 SDK\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VST3 SDK\base\source\fstring.h">
+      <Filter>VST3 SDK\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VST3 SDK\base\source\fatomic.h">
+      <Filter>VST3 SDK\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VST3 SDK\base\source\fdebug.h">
+      <Filter>VST3 SDK\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VST3 SDK\base\source\fbuffer.h">
+      <Filter>VST3 SDK\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VST3 SDK\base\source\fthread.h">
+      <Filter>VST3 SDK\base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
