@@ -8,6 +8,7 @@
 #include "pluginterfaces\vst2.x\aeffect.h"
 
 #include "Plugin.h"
+#include "PluginLoader.h"
 
 namespace VSTHost {
 class PluginVST2Window;
@@ -15,10 +16,11 @@ class PresetVST3;
 class PluginVST2 : public Plugin {
 	friend class PluginVST2Window;
 	friend class PresetVST2;
+	friend std::unique_ptr<Plugin> PluginLoader::Load(const std::string& path, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
+	PluginVST2(HMODULE m, AEffect* p, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
 public:
-	// basic plugin interface
-	PluginVST2(HMODULE m, AEffect* p, Steinberg::Vst::TSamples bs = 128, Steinberg::Vst::SampleRate sr = 44100.0);
 	~PluginVST2();
+	// basic plugin interface
 	bool IsValid() const;
 	void Initialize();
 	std::basic_string<TCHAR> GetPluginName() const;

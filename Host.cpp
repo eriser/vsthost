@@ -26,12 +26,11 @@ Host::~Host() {
 }
 
 bool Host::LoadPlugin(std::string path) {
-	PluginLoader loader(path);
-	auto plugin = loader.GetPlugin();
+	auto plugin = PluginLoader::Load(path, block_size, sample_rate);
 	if (plugin) { // host now owns what plugin points at
 		std::cout << "Loaded " << path << "." << std::endl;
-		plugins.emplace_back(plugin);
 		plugin->Initialize();
+		plugins.push_back(std::move(plugin));
 		return true;	
 	}
 	std::cout << "Could not load " << path << "." << std::endl;
@@ -173,7 +172,7 @@ bool Host::SavePluginList(std::string path) {
 }
 
 Steinberg::uint32 Host::GetChannelCount() const {
-	return 2u;
+	return 2;
 }
 
 void Host::AllocateBuffers() {
@@ -200,16 +199,6 @@ void Host::FreeBuffers() {
 
 void Host::ConvertFrom16Bits(std::int8_t* input, float** output) {
 	ConvertFrom16Bits(reinterpret_cast<std::int16_t*>(input), output);
-	/*
-	std::int16_t* input16 = reinterpret_cast<std::int16_t*>(input);
-	for (unsigned i = 0, in_i = 0; i < block_size; ++i) {
-		for (unsigned j = 0; j < GetChannelCount(); ++j, ++in_i) {
-			//SWAP_16(input16[in_i]);
-			output[j][i] = input16[in_i] / static_cast<float>(std::numeric_limits<std::int16_t>::max());
-			//SWAP_16(input16[in_i]);
-		}
-	}
-	*/
 }
 
 void Host::ConvertFrom16Bits(std::int16_t* input, float** output) {
@@ -220,20 +209,6 @@ void Host::ConvertFrom16Bits(std::int16_t* input, float** output) {
 
 void Host::ConvertTo16Bits(float** input, std::int8_t* output) {
 	ConvertTo16Bits(input, reinterpret_cast<std::int16_t*>(output));
-	/*
-	std::int16_t* output16 = reinterpret_cast<std::int16_t*>(output);
-	for (unsigned i = 0, out_i = 0; i < block_size; ++i) {
-		for (unsigned j = 0; j < GetChannelCount(); ++j, ++out_i) {
-			if (input[j][i] > 1)
-				output16[out_i] = std::numeric_limits<std::int16_t>::max();
-			else if (input[j][i] < -1)
-				output16[out_i] = std::numeric_limits<std::int16_t>::min();
-			else
-				output16[out_i] = static_cast<std::int16_t>(input[j][i] * std::numeric_limits<std::int16_t>::max());
-			//SWAP_16(output16[out_i]);
-		}
-	}
-	*/
 }
 
 void Host::ConvertTo16Bits(float** input, std::int16_t* output) {

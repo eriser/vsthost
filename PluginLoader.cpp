@@ -14,8 +14,9 @@ extern "C" {
 }
 
 namespace VSTHost {
-PluginLoader::PluginLoader(std::string path) {
-	auto module = ::LoadLibraryA(path.c_str()); // unicode pending
+std::unique_ptr<Plugin> PluginLoader::Load(const std::string& path, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr) {
+	Plugin* plugin = nullptr;
+	auto module = ::LoadLibraryA(path.c_str());
 	if (module) {
 		auto proc = ::GetProcAddress(module, "GetPluginFactory");
 		if (proc) { // the library is a vst3 plugin
@@ -25,7 +26,7 @@ PluginLoader::PluginLoader(std::string path) {
 			Steinberg::IPluginFactory* factory = nullptr;
 			GetFactoryProc getFactory = reinterpret_cast<GetFactoryProc>(proc);
 			factory = getFactory(); // retrieving factory pointer from factory proc
-			plugin = new PluginVST3(module, factory, 128, 44100.);
+			plugin = new PluginVST3(module, factory, bs, sr);
 		}
 		else {
 			proc = ::GetProcAddress(module, "PluginVST2Main");
@@ -35,23 +36,12 @@ PluginLoader::PluginLoader(std::string path) {
 				AEffect* effect = nullptr;
 				VSTInitProc init_proc = reinterpret_cast<VSTInitProc>(proc);
 				effect = init_proc(PluginVST2::HostCallbackWrapper);
-				plugin = new PluginVST2(module, effect, 128, 44100.);
+				plugin = new PluginVST2(module, effect, bs, sr);
 			}
 		}
 	}
-}
-
-PluginLoader::~PluginLoader() {
-	if (plugin)
-		delete plugin;
-}
-
-Plugin* PluginLoader::GetPlugin() {
-	Plugin* ret = nullptr;
-	if (plugin && plugin->IsValid()) {
-		ret = plugin;
+	if (plugin && !plugin->IsValid())
 		plugin = nullptr;
-	}
-	return ret;
+	return std::unique_ptr<Plugin>(plugin);
 }
 } // namespace

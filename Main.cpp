@@ -20,7 +20,8 @@ public:
 			char tmp[4 * 5] = { 0 };
 			file.read(tmp, 4 * 5);
 			DWORD Subchunk1Size = *reinterpret_cast<DWORD*>(tmp + 4 * 4);
-			if (!std::string(tmp, 4u).compare("RIFF") && !std::string(tmp + 8, 4u).compare("WAVE") && !std::string(tmp + 12, 4u).compare("fmt ") && Subchunk1Size == 16 && file.good()) {
+			if (!std::string(tmp, 4u).compare("RIFF") && !std::string(tmp + 8, 4u).compare("WAVE") 
+				&& !std::string(tmp + 12, 4u).compare("fmt ") && Subchunk1Size == 16 && file.good()) {
 				file.read(reinterpret_cast<char *>(&fmt), sizeof(fmt));
 				fmt.cbSize = 0; 
 				file.unget(); // read two bytes too many
@@ -117,6 +118,8 @@ int main() {
 	VSTHost::Host host(block_size, sample_rate);
 	host.LoadPluginList();
 	host.CreateGUIThread();
+	//host.SetSampleRate(48000);
+	//host.SetBlockSize(1422);
 
 	// this player is bad, because for small block_sizes it just doesn't work well
 	init_player(bs_all_channels_bytes);

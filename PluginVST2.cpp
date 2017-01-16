@@ -33,8 +33,8 @@ bool PluginVST2::IsValid() const {
 
 void PluginVST2::Initialize() {
 	Dispatcher(AEffectOpcodes::effOpen);
-	Dispatcher(AEffectOpcodes::effSetSampleRate, 0, static_cast<float>(sample_rate));
-	Dispatcher(AEffectOpcodes::effSetBlockSize, 0, static_cast<VstIntPtr>(block_size));
+	//Dispatcher(AEffectOpcodes::effSetSampleRate, 0, static_cast<float>(sample_rate));
+	//Dispatcher(AEffectOpcodes::effSetBlockSize, 0, static_cast<VstIntPtr>(block_size));
 	state = std::unique_ptr<Preset>(new PresetVST2(*this));
 	soft_bypass = CanDo("bypass");
 	SetActive(true);
@@ -86,7 +86,7 @@ void PluginVST2::SetBlockSize(Steinberg::Vst::TSamples bs) {
 	if (was_active = IsActive())
 		SetActive(false);
 	block_size = bs;
-	Dispatcher(AEffectOpcodes::effSetBlockSize, 0, static_cast<int>(block_size));
+	//Dispatcher(AEffectOpcodes::effSetBlockSize, 0, static_cast<VstIntPtr>(block_size));
 	if (was_active)
 		SetActive(true);
 }
@@ -96,7 +96,7 @@ void PluginVST2::SetSampleRate(Steinberg::Vst::SampleRate sr) {
 	if (was_active = IsActive())
 		SetActive(false);
 	sample_rate = sr;
-	Dispatcher(AEffectOpcodes::effSetSampleRate, 0, static_cast<float>(sample_rate));
+	//Dispatcher(AEffectOpcodes::effSetSampleRate, 0, static_cast<float>(sample_rate));
 	if (was_active)
 		SetActive(true);
 }

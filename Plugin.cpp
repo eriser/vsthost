@@ -81,6 +81,6 @@ void Plugin::LoadStateFromFile() {
 }
 
 Steinberg::uint32 Plugin::GetChannelCount() {
-	return 2u;
+	return 2;
 }
 } // namespace

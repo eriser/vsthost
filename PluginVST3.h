@@ -15,6 +15,7 @@
 #include "public.sdk/source/vst/hosting/parameterchanges.h"
 
 #include "Plugin.h"
+#include "PluginLoader.h"
 
 namespace VSTHost {
 class PluginVST3Window;
@@ -27,9 +28,10 @@ class Steinberg::Vst::IConnectionPoint;
 class PluginVST3 : public Plugin, public Steinberg::FObject, public Steinberg::Vst::IComponentHandler {
 	friend class PluginVST3Window;
 	friend class PresetVST3;
+	friend std::unique_ptr<Plugin> PluginLoader::Load(const std::string& path, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
 public:
 	// basic plugin interface
-	PluginVST3(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::TSamples bs = 128, Steinberg::Vst::SampleRate sr = 44100.0);
+	PluginVST3(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
 	~PluginVST3();
 	bool IsValid() const;
 	void Initialize();

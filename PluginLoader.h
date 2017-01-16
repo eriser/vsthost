@@ -2,16 +2,18 @@
 #define PLUGINLOADER_H
 
 #include <string>
+#include <memory>
+
+#ifndef UNICODE
+#define UNICODE_OFF
+#endif
+#include "pluginterfaces/vst/vsttypes.h"
 
 namespace VSTHost {
 class Plugin;
 class PluginLoader {
 public:
-	PluginLoader(std::string path);
-	~PluginLoader();
-	Plugin* GetPlugin();
-private:
-	Plugin* plugin = { nullptr };
+	static std::unique_ptr<Plugin> Load(const std::string& path, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
 };
 } // namespace
 
