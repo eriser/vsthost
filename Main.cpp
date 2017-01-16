@@ -116,7 +116,7 @@ int main() {
 	int bs_all_channels_bytes = bs_all_channels * (wave.GetBitDepth() / 8);
 	double sample_rate = static_cast<double>(wave.GetSampleRate());
 	VSTHost::Host host(block_size, sample_rate);
-	host.LoadPluginList();
+	host.LoadPluginList("test");
 	host.CreateGUIThread();
 	//host.SetSampleRate(48000);
 	//host.SetBlockSize(1422);

@@ -5,8 +5,9 @@
 #include <vector>
 #include <memory>
 
+#include "Host.h"
+
 namespace VSTHost {
-class Host;
 class Plugin;
 class PluginWindow;
 class HostWindow : public Window {
@@ -25,7 +26,7 @@ class HostWindow : public Window {
 	size_t GetPluginCount();
 	size_t GetPluginSelection();
 public:
-	HostWindow(Host& h);
+	HostWindow(/*Host::HostImpl& h*/);
 	~HostWindow();
 	bool Initialize(HWND parent);
 	void CreateEditors();
@@ -39,7 +40,7 @@ private:
 	HWND plugin_list;
 	HWND buttons[Items::BUTTON_COUNT];
 	std::unique_ptr<OPENFILENAMEA> ofn;
-	Host& host;
+	//Host::HostImpl& host;
 };
 } // namespace
 
