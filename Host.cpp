@@ -1,5 +1,6 @@
 #include "Host.h"
 
+#define NOMINMAX // kolizja makra MAX z windows.h oraz std::numeric_limits<T>::max()
 #include <limits>
 #include <cstring>
 #include <fstream>
@@ -18,6 +19,7 @@
 #include "Plugin.h"
 #include "HostWindow.h"
 #include "PluginLoader.h"
+#include "PluginManager.h"
 
 namespace VSTHost {
 const std::string Host::kPluginList{ "vsthost.ini" };
@@ -25,7 +27,8 @@ const std::string Host::kPluginList{ "vsthost.ini" };
 class Host::HostImpl : public Steinberg::FObject, Steinberg::Vst::IHostApplication {
 friend class HostWindow;
 public:
-	HostImpl(std::int64_t block_size, double sample_rate) : block_size(block_size), sample_rate(sample_rate) {
+	HostImpl(std::int64_t block_size, double sample_rate)
+		: block_size(block_size), sample_rate(sample_rate), plugins(block_size, sample_rate) {
 		buffers[0] = nullptr;
 		buffers[1] = nullptr;
 		AllocateBuffers();
@@ -36,22 +39,22 @@ public:
 	}
 
 	void Process(float** input, float** output) {
-		if (plugins.size() == 1 && !plugins.front()->BypassProcess())
-			plugins.front()->Process(input, output);
-		else if (plugins.size() > 1) {
-			if (!plugins.front()->BypassProcess())
-				plugins.front()->Process(input, buffers[1]);
+		if (plugins.Size() == 1 && !plugins.Front().BypassProcess())
+			plugins.Front().Process(input, output);
+		else if (plugins.Size() > 1) {
+			if (!plugins.Front().BypassProcess())
+				plugins.Front().Process(input, buffers[1]);
 			else
 				for (unsigned i = 0; i < GetChannelCount(); ++i)
 					std::memcpy(input, buffers[1], sizeof(input[0][0]) * block_size);
 			unsigned i, last_processed = 1;
-			for (i = 1; i < plugins.size() - 1; i++)
-				if (!plugins[i]->BypassProcess()) {
+			for (i = 1; i < plugins.Size() - 1; i++)
+				if (!plugins[i].BypassProcess()) {
 					last_processed = (i + 1) % 2;
-					plugins[i]->Process(buffers[i % 2], buffers[last_processed]);
+					plugins[i].Process(buffers[i % 2], buffers[last_processed]);
 				}
-			if (!plugins.back()->BypassProcess())
-				plugins.back()->Process(buffers[last_processed], output);
+			if (!plugins.Back().BypassProcess())
+				plugins.Back().Process(buffers[last_processed], output);
 			else
 				for (unsigned i = 0; i < GetChannelCount(); ++i)
 					std::memcpy(buffers[last_processed], output, sizeof(input[0][0]) * block_size);
@@ -85,16 +88,16 @@ public:
 
 	void Process(std::int16_t* input, std::int16_t* output) {
 		ConvertFrom16Bits(input, buffers[0]);
-		if (plugins.size() == 1 && !plugins.front()->BypassProcess()) {
-			plugins.front()->Process(buffers[0], buffers[1]); // if bypassprocess is true it will just go to memcpy at the bottom
+		if (plugins.Size() == 1 && !plugins.Front().BypassProcess()) {
+			plugins.Front().Process(buffers[0], buffers[1]); // if bypassprocess is true it will just go to memcpy at the bottom
 			ConvertTo16Bits(buffers[1], output);
 		}
-		else if (plugins.size() > 1) {
+		else if (plugins.Size() > 1) {
 			unsigned i, last_processed = 0;			// remember where the most recently processed buffer is,
-			for (i = 0; i < plugins.size(); i++)	// so that it could be moved to output.
-				if (!plugins[i]->BypassProcess()) { // check whether i can bypass calling process,
+			for (i = 0; i < plugins.Size(); i++)	// so that it could be moved to output.
+				if (!plugins[i].BypassProcess()) { // check whether i can bypass calling process,
 					last_processed = (i + 1) % 2;	// so that i can omit memcpying the buffers.
-					plugins[i]->Process(buffers[i % 2], buffers[last_processed]);
+					plugins[i].Process(buffers[i % 2], buffers[last_processed]);
 				}
 			ConvertTo16Bits(buffers[last_processed], output);
 		}
@@ -104,17 +107,19 @@ public:
 
 	void SetSampleRate(Steinberg::Vst::SampleRate sr) {
 		sample_rate = sr;
-		for (auto& p : plugins)
-			p->SetSampleRate(sample_rate);
+		plugins.SetSampleRate(sample_rate);
+		for (decltype(plugins.Size()) i = 0; i < plugins.Size(); ++i)
+			plugins.GetAt(i).SetSampleRate(sample_rate);
 	}
 
 	void SetBlockSize(Steinberg::Vst::TSamples bs) {
 		if (bs != block_size) {
 			block_size = bs;
+			plugins.SetBlockSize(block_size);
 			FreeBuffers();
 			AllocateBuffers();
-			for (auto& p : plugins)
-				p->SetBlockSize(block_size);
+			for (decltype(plugins.Size()) i = 0; i < plugins.Size(); ++i)
+				plugins[i].SetBlockSize(block_size);
 		}
 	}
 
@@ -135,9 +140,9 @@ public:
 		if (list.is_open()) {
 			while (getline(list, line))
 				if (!line.empty())
-					LoadPlugin(line);
-			for (auto& p : plugins)
-				p->LoadStateFromFile();
+					plugins.Add(line);
+			for (decltype(plugins.Size()) i = 0; i < plugins.Size(); ++i)
+				plugins[i].LoadStateFromFile();
 			list.close();
 			return true;
 		}
@@ -149,8 +154,8 @@ public:
 	bool SavePluginList(std::string path) {
 		std::ofstream list(path, std::ofstream::out | std::ofstream::trunc);
 		if (list.is_open()) {
-			for (auto& p : plugins) {
-				list << Plugin::kPluginDirectory + p->GetPluginFileName() << std::endl;
+			for (decltype(plugins.Size()) i = 0; i < plugins.Size(); ++i) {
+				list << Plugin::kPluginDirectory + plugins[i].GetPluginFileName() << std::endl;
 			}
 			list.close();
 			return true;
@@ -176,29 +181,6 @@ public:
 	END_DEFINE_INTERFACES(FObject)
 
 private:
-	bool LoadPlugin(std::string path) {
-		auto plugin = PluginLoader::Load(path, block_size, sample_rate);
-		if (plugin) { // host now owns what plugin points at
-			std::cout << "Loaded " << path << "." << std::endl;
-			plugin->Initialize();
-			plugins.push_back(std::move(plugin));
-			return true;
-		}
-		std::cout << "Could not load " << path << "." << std::endl;
-		return false;
-	}
-
-	void SwapPlugins(size_t i, size_t j) {
-		if (i < plugins.size() && j < plugins.size()) {
-			std::swap(plugins[i], plugins[j]);
-		}
-	}
-
-	void DeletePlugin(size_t i) {
-		if (i < plugins.size())
-			plugins.erase(plugins.begin() + i);
-	}
-
 	Steinberg::uint32 GetChannelCount() const {
 		return 2;
 	}
@@ -250,7 +232,7 @@ private:
 					output[out_i] = static_cast<std::int16_t>(input[j][i] * std::numeric_limits<std::int16_t>::max());
 	}
 
-	std::vector<std::unique_ptr<Plugin>> plugins;
+	PluginManager plugins;
 	std::unique_ptr<HostWindow> gui;
 	std::thread ui_thread;
 

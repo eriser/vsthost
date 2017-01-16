@@ -4,8 +4,6 @@
 #include <string>
 #include <memory>
 
-#define NOMINMAX // kolizja makra MAX z windows.h oraz std::numeric_limits<T>::max()
-
 namespace VSTHost {
 class Host {
 public:

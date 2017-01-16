@@ -93,6 +93,9 @@
     <ClCompile Include="..\VST3 SDK\base\source\fthread.cpp">
       <Filter>VST3 SDK\base</Filter>
     </ClCompile>
+    <ClCompile Include="PluginManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Host.h">
@@ -175,6 +178,9 @@
     </ClInclude>
     <ClInclude Include="..\VST3 SDK\base\source\fthread.h">
       <Filter>VST3 SDK\base</Filter>
+    </ClInclude>
+    <ClInclude Include="PluginManager.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

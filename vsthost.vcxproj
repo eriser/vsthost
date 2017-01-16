@@ -148,6 +148,7 @@
     <ClCompile Include="Host.cpp" />
     <ClCompile Include="HostWindow.cpp" />
     <ClCompile Include="Plugin.cpp" />
+    <ClCompile Include="PluginManager.cpp" />
     <ClCompile Include="PluginWindow.cpp" />
     <ClCompile Include="PluginLoader.cpp" />
     <ClCompile Include="PluginVST3.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="..\VST3 SDK\public.sdk\source\vst\vstpresetfile.h" />
     <ClInclude Include="Host.h" />
     <ClInclude Include="HostWindow.h" />
+    <ClInclude Include="PluginManager.h" />
     <ClInclude Include="VSTHostHeader.h" />
     <ClInclude Include="Plugin.h" />
     <ClInclude Include="PluginWindow.h" />
