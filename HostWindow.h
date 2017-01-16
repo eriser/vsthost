@@ -10,6 +10,7 @@
 namespace VSTHost {
 class Plugin;
 class PluginWindow;
+class PluginManager;
 class HostWindow : public Window {
 	enum Items {
 		Add = 0, Delete, Up, Down, Show, Hide, Save, BUTTON_COUNT, PluginList
@@ -23,10 +24,9 @@ class HostWindow : public Window {
 	void OnCreate(HWND hWnd);
 	void SetFont();
 	void SelectPlugin(size_t i);
-	size_t GetPluginCount();
 	size_t GetPluginSelection();
 public:
-	HostWindow(/*Host::HostImpl& h*/);
+	HostWindow(PluginManager& pm);
 	~HostWindow();
 	bool Initialize(HWND parent);
 	void CreateEditors();
@@ -40,7 +40,7 @@ private:
 	HWND plugin_list;
 	HWND buttons[Items::BUTTON_COUNT];
 	std::unique_ptr<OPENFILENAMEA> ofn;
-	//Host::HostImpl& host;
+	PluginManager& plugins;
 };
 } // namespace
 

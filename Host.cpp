@@ -22,8 +22,6 @@
 #include "PluginManager.h"
 
 namespace VSTHost {
-const std::string Host::kPluginList{ "vsthost.ini" };
-
 class Host::HostImpl : public Steinberg::FObject, Steinberg::Vst::IHostApplication {
 friend class HostWindow;
 public:
@@ -129,38 +127,25 @@ public:
 	}
 
 	void CreateGUI() {
-		gui = std::unique_ptr<HostWindow>(new HostWindow(/**this*/));
+		gui = std::unique_ptr<HostWindow>(new HostWindow(plugins));
 		gui->Initialize(NULL);
 		gui->Go();
 	}
 
-	bool LoadPluginList(std::string path) {
-		std::string line;
-		std::ifstream list(path);
-		if (list.is_open()) {
-			while (getline(list, line))
-				if (!line.empty())
-					plugins.Add(line);
-			for (decltype(plugins.Size()) i = 0; i < plugins.Size(); ++i)
-				plugins[i].LoadStateFromFile();
-			list.close();
-			return true;
-		}
-		else
-			std::cout << "Could not open " << path << '.' << std::endl;
-		return false;
+	bool LoadPluginList(const std::string& path) {
+		return plugins.LoadPluginList(path);
 	}
 
-	bool SavePluginList(std::string path) {
-		std::ofstream list(path, std::ofstream::out | std::ofstream::trunc);
-		if (list.is_open()) {
-			for (decltype(plugins.Size()) i = 0; i < plugins.Size(); ++i) {
-				list << Plugin::kPluginDirectory + plugins[i].GetPluginFileName() << std::endl;
-			}
-			list.close();
-			return true;
-		}
-		return false;
+	bool SavePluginList(const std::string& path) {
+		return plugins.SavePluginList(path);
+	}
+
+	bool LoadPluginList() {
+		return plugins.LoadPluginList();
+	}
+
+	bool SavePluginList() {
+		return plugins.SavePluginList();
 	}
 
 	Steinberg::tresult PLUGIN_API getName(Steinberg::Vst::String128 name) {
@@ -289,7 +274,11 @@ bool Host::SavePluginList(const std::string& path) {
 	return impl->SavePluginList(path);
 }
 
-const std::string& Host::GetDefaultPluginListPath() {
-	return kPluginList;
+bool Host::LoadPluginList() {
+	return impl->LoadPluginList();
+}
+
+bool Host::SavePluginList() {
+	return impl->SavePluginList();
 }
 } // namespace

@@ -1,11 +1,14 @@
 #include "PluginManager.h"
 
 #include <iostream>
+#include <fstream>
 
 #include "Plugin.h"
 #include "PluginLoader.h"
 
 namespace VSTHost {
+const std::string PluginManager::kPluginList{ "vsthost.ini" };
+
 PluginManager::PluginManager(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr)
 	: def_block_size(bs), def_sample_rate(sr) {
 
@@ -52,6 +55,39 @@ void PluginManager::Delete(IndexType i) {
 void PluginManager::Swap(IndexType i, IndexType j) {
 	if (i < Size() && j < Size())
 		std::swap(plugins[i], plugins[j]);
+}
+
+const std::string& PluginManager::GetDefaultPluginListPath() {
+	return kPluginList;
+}
+
+bool PluginManager::LoadPluginList(const std::string& path) {
+	std::string line;
+	std::ifstream list(path);
+	if (list.is_open()) {
+		while (getline(list, line))
+			if (!line.empty())
+				Add(line);
+		for (decltype(Size()) i = 0; i < Size(); ++i)
+			GetAt(i).LoadStateFromFile();
+		list.close();
+		return true;
+	}
+	else
+		std::cout << "Could not open " << path << '.' << std::endl;
+	return false;
+}
+
+bool PluginManager::SavePluginList(const std::string& path) const {
+	std::ofstream list(path, std::ofstream::out | std::ofstream::trunc);
+	if (list.is_open()) {
+		for (decltype(Size()) i = 0; i < Size(); ++i) {
+			list << Plugin::kPluginDirectory + GetAt(i).GetPluginFileName() << std::endl;
+		}
+		list.close();
+		return true;
+	}
+	return false;
 }
 
 void PluginManager::SetBlockSize(Steinberg::Vst::TSamples bs) {

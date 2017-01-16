@@ -17,12 +17,12 @@ public:
 	void SetBlockSize(std::int64_t bs);
 	void CreateGUIThread();
 	void CreateGUI();
-	bool LoadPluginList(const std::string& path = kPluginList);
-	bool SavePluginList(const std::string& path = kPluginList);
-	const std::string& GetDefaultPluginListPath();
+	bool LoadPluginList(const std::string& path);
+	bool SavePluginList(const std::string& path);
+	bool LoadPluginList();
+	bool SavePluginList();
 private:
 	class HostImpl;
-	const static std::string kPluginList;
 	std::unique_ptr<HostImpl> impl;
 };
 } // namespace

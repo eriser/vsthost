@@ -23,8 +23,14 @@ public:
 	void Delete(IndexType i);
 	void Swap(IndexType i, IndexType j);
 
+	const std::string& GetDefaultPluginListPath();
+	bool LoadPluginList(const std::string& path = kPluginList);
+	bool SavePluginList(const std::string& path = kPluginList) const;
+
 	void SetBlockSize(Steinberg::Vst::TSamples bs);
 	void SetSampleRate(Steinberg::Vst::SampleRate sr);
+
+	const static std::string kPluginList;
 private:
 	Steinberg::Vst::TSamples def_block_size;		// default block size & sample rate
 	Steinberg::Vst::SampleRate def_sample_rate;		// for new plugins
