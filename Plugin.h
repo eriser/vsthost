@@ -24,7 +24,7 @@ public:
 	virtual void Initialize() = 0;
 	virtual std::basic_string<TCHAR> GetPluginName() const = 0;
 	std::string GetPluginFileName() const;
-	virtual void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) = 0;
+	virtual void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output, Steinberg::Vst::TSamples block_size) = 0;
 	virtual void SetBlockSize(Steinberg::Vst::TSamples bs) = 0;
 	virtual void SetSampleRate(Steinberg::Vst::SampleRate sr) = 0;
 	// presets

@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "VSTHostHeader.h"
+#include "Host.h"
 
 class WAVFile {
 public:

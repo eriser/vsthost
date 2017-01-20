@@ -3,10 +3,6 @@
 #define NOMINMAX // kolizja makra MAX z windows.h oraz std::numeric_limits<T>::max()
 #include <limits>
 #include <cstring>
-#include <fstream>
-#include <iostream>
-#include <cstdint>
-#include <vector>
 #include <thread>
 
 #ifndef UNICODE
@@ -16,14 +12,12 @@
 #include "base/source/fobject.h"
 #include "pluginterfaces/vst/ivsthostapplication.h"
 
-#include "Plugin.h"
 #include "HostWindow.h"
-#include "PluginLoader.h"
+#include "Plugin.h"
 #include "PluginManager.h"
 
 namespace VSTHost {
 class Host::HostImpl : public Steinberg::FObject, Steinberg::Vst::IHostApplication {
-friend class HostWindow;
 public:
 	HostImpl(std::int64_t block_size, double sample_rate)
 		: block_size(block_size), sample_rate(sample_rate), plugins(block_size, sample_rate) {
@@ -36,12 +30,12 @@ public:
 		FreeBuffers();
 	}
 
-	void Process(float** input, float** output) {
+	void Process(float** input, float** output, std::int64_t block_size) {
 		if (plugins.Size() == 1 && !plugins.Front().BypassProcess())
-			plugins.Front().Process(input, output);
+			plugins.Front().Process(input, output, block_size);
 		else if (plugins.Size() > 1) {
 			if (!plugins.Front().BypassProcess())
-				plugins.Front().Process(input, buffers[1]);
+				plugins.Front().Process(input, buffers[1], block_size);
 			else
 				for (unsigned i = 0; i < GetChannelCount(); ++i)
 					std::memcpy(input, buffers[1], sizeof(input[0][0]) * block_size);
@@ -49,10 +43,10 @@ public:
 			for (i = 1; i < plugins.Size() - 1; i++)
 				if (!plugins[i].BypassProcess()) {
 					last_processed = (i + 1) % 2;
-					plugins[i].Process(buffers[i % 2], buffers[last_processed]);
+					plugins[i].Process(buffers[i % 2], buffers[last_processed], block_size);
 				}
 			if (!plugins.Back().BypassProcess())
-				plugins.Back().Process(buffers[last_processed], output);
+				plugins.Back().Process(buffers[last_processed], output, block_size);
 			else
 				for (unsigned i = 0; i < GetChannelCount(); ++i)
 					std::memcpy(buffers[last_processed], output, sizeof(input[0][0]) * block_size);
@@ -87,7 +81,7 @@ public:
 	void Process(std::int16_t* input, std::int16_t* output) {
 		ConvertFrom16Bits(input, buffers[0]);
 		if (plugins.Size() == 1 && !plugins.Front().BypassProcess()) {
-			plugins.Front().Process(buffers[0], buffers[1]); // if bypassprocess is true it will just go to memcpy at the bottom
+			plugins.Front().Process(buffers[0], buffers[1], block_size); // if bypassprocess is true it will just go to memcpy at the bottom
 			ConvertTo16Bits(buffers[1], output);
 		}
 		else if (plugins.Size() > 1) {
@@ -95,7 +89,7 @@ public:
 			for (i = 0; i < plugins.Size(); i++)	// so that it could be moved to output.
 				if (!plugins[i].BypassProcess()) { // check whether i can bypass calling process,
 					last_processed = (i + 1) % 2;	// so that i can omit memcpying the buffers.
-					plugins[i].Process(buffers[i % 2], buffers[last_processed]);
+					plugins[i].Process(buffers[i % 2], buffers[last_processed], block_size);
 				}
 			ConvertTo16Bits(buffers[last_processed], output);
 		}
@@ -167,7 +161,7 @@ public:
 
 private:
 	Steinberg::uint32 GetChannelCount() const {
-		return 2;
+		return 2; // only stereo
 	}
 
 	void AllocateBuffers() {
@@ -234,8 +228,8 @@ Host::~Host() {
 
 }
 
-void Host::Process(float** input, float** output) {
-	impl->Process(input, output);
+void Host::Process(float** input, float** output, std::int64_t block_size) {
+	impl->Process(input, output, block_size);
 }
 
 void Host::Process(char* input, char* output) {

@@ -36,7 +36,7 @@ PresetVST2::PresetVST2(PluginVST2& p) : plugin(p), program(nullptr), fxprogram_s
 	program->fxVersion = plugin.GetVSTVersion();
 	program->numParams = plugin.GetParameterCount();
 	program->fxMagic = ProgramChunks() ? chunkPresetMagic : fMagic;
-	program->byteSize = fxprogram_size - sizeof(program->byteSize) - sizeof(program->chunkMagic);
+	program->byteSize = static_cast<VstInt32>(fxprogram_size - sizeof(program->byteSize) - sizeof(program->chunkMagic));
 	program->chunkMagic = cMagic;
 	strcpy(program->prgName, "VSTHost Preset");
 	GetState();

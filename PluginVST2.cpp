@@ -64,11 +64,11 @@ std::basic_string<TCHAR> PluginVST2::GetPluginName() const {
 	}
 }
 
-void PluginVST2::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output) {
+void PluginVST2::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output, Steinberg::Vst::TSamples block_size) {
 	if (IsActive()) {
 		if (BypassProcess()) // hard bypass
 		for (unsigned i = 0; i < GetChannelCount(); ++i)
-			std::memcpy(static_cast<void*>(output[i]), static_cast<void*>(input[i]), sizeof(input[0][0]));
+			std::memcpy(static_cast<void*>(output[i]), static_cast<void*>(input[i]), sizeof(input[0][0]) * block_size);
 		else {
 			std::lock_guard<std::mutex> lock(processing);
 			StartProcessing();

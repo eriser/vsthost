@@ -3,11 +3,14 @@
 #include <iostream>
 #include <fstream>
 
+//temp:
+#include <stdlib.h>
+
 #include "Plugin.h"
 #include "PluginLoader.h"
 
 namespace VSTHost {
-const std::string PluginManager::kPluginList{ "vsthost.ini" };
+const std::string PluginManager::kPluginList{ ".\\..\\..\\..\\vsthost\\vsthost.ini" };
 
 PluginManager::PluginManager(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr)
 	: def_block_size(bs), def_sample_rate(sr) {
@@ -36,6 +39,12 @@ Plugin& PluginManager::Back() const {
 
 
 bool PluginManager::Add(const std::string& path) {
+	/*
+	MessageBoxA(NULL, path.c_str(), NULL, NULL);
+	char a[MAX_PATH]{};
+	_fullpath(a, path.c_str(), MAX_PATH);
+	MessageBoxA(NULL, a, NULL, NULL);
+	*/
 	auto plugin = PluginLoader::Load(path, def_block_size, def_sample_rate);
 	if (plugin) { // host now owns what plugin points at
 		std::cout << "Loaded " << path << "." << std::endl;

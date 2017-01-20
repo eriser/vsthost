@@ -3,13 +3,14 @@
 
 #include <string>
 #include <memory>
+#include <cstdint>
 
 namespace VSTHost {
 class Host {
 public:
 	Host(std::int64_t block_size, double sample_rate);
 	~Host();
-	void Process(float** input, float** output);
+	void Process(float** input, float** output, std::int64_t block_size);
 	void Process(char* input, char* output);
 	void Process(std::int8_t* input, std::int8_t* output);
 	void Process(std::int16_t* input, std::int16_t* output);

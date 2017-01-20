@@ -40,8 +40,10 @@ std::unique_ptr<Plugin> PluginLoader::Load(const std::string& path, Steinberg::V
 			}
 		}
 	}
-	if (plugin && !plugin->IsValid())
+	if (plugin && !plugin->IsValid()) {
+		delete plugin;
 		plugin = nullptr;
+	}
 	return std::unique_ptr<Plugin>(plugin);
 }
 } // namespace

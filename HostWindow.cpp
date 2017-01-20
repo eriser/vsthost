@@ -2,7 +2,6 @@
 
 #include <iostream>
 
-#include "Host.h"
 #include "PluginVST2.h"
 #include "PluginVST3.h"
 #include "PluginVST3Window.h"
@@ -65,8 +64,10 @@ void HostWindow::OnCreate(HWND hWnd) {
 		20, 25 + kListHeight, kButtonWidth + 20 + kListWidth, kButtonHeight, hWnd, 
 		(HMENU)(Items::BUTTON_COUNT - 1), (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
 	for (int i = Items::Add; i < Items::BUTTON_COUNT - 1; ++i) {
+		HMENU idx{};
+		idx += i; // otherwise the compiler warned about invalid conversion
 		buttons[i] = CreateWindow(TEXT("button"), button_labels[i], WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-			20 + kListWidth + 20, 20 + i * 40, kButtonWidth, kButtonHeight, hWnd, (HMENU)i, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
+			20 + kListWidth + 20, 20 + i * 40, kButtonWidth, kButtonHeight, hWnd, idx, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
 	}
 }
 

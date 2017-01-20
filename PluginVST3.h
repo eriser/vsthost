@@ -36,7 +36,7 @@ public:
 	bool IsValid() const;
 	void Initialize();
 	std::basic_string<TCHAR> GetPluginName() const;
-	void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output);
+	void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output, Steinberg::Vst::TSamples block_size);
 	void SetBlockSize(Steinberg::Vst::TSamples bs);
 	void SetSampleRate(Steinberg::Vst::SampleRate sr);
 	// presets

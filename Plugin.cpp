@@ -4,7 +4,7 @@
 #include "PluginWindow.h"
 
 namespace VSTHost {
-const std::string Plugin::kPluginDirectory{ ".\\..\\plugins\\" };
+const std::string Plugin::kPluginDirectory{ ".\\..\\..\\..\\vsthost\\plugins\\" };
 
 Plugin::Plugin(HMODULE m, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr) : module(m), block_size(bs), sample_rate(sr) {
 
