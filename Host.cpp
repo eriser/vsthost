@@ -31,42 +31,26 @@ public:
 	}
 
 	void Process(float** input, float** output, std::int64_t block_size) {
-		if (plugins.Size() == 1 && !plugins.Front().BypassProcess())
+		std::lock_guard<std::mutex> lock(processing_lock);
+		if (plugins.Size() == 1) {
 			plugins.Front().Process(input, output, block_size);
+		}
 		else if (plugins.Size() > 1) {
-			if (!plugins.Front().BypassProcess())
-				plugins.Front().Process(input, buffers[1], block_size);
-			else
-				for (unsigned i = 0; i < GetChannelCount(); ++i)
-					std::memcpy(input, buffers[1], sizeof(input[0][0]) * block_size);
+			plugins.Front().Process(input, buffers[1], block_size);
 			unsigned i, last_processed = 1;
-			for (i = 1; i < plugins.Size() - 1; i++)
+			for (i = 1; i < plugins.Size() - 1; i++) {
 				if (!plugins[i].BypassProcess()) {
 					last_processed = (i + 1) % 2;
 					plugins[i].Process(buffers[i % 2], buffers[last_processed], block_size);
 				}
-			if (!plugins.Back().BypassProcess())
-				plugins.Back().Process(buffers[last_processed], output, block_size);
-			else
-				for (unsigned i = 0; i < GetChannelCount(); ++i)
-					std::memcpy(buffers[last_processed], output, sizeof(input[0][0]) * block_size);
-			/* clearer version, but with copying over all buffers every time
-			for (unsigned i = 0; i < GetChannelCount(); ++i)
-			std::memcpy(input, buffers[0], sizeof(input[0][0]) * block_size);
-			unsigned i, last_processed = 0;
-			for (i = 0; i < plugins.size() - 1; i++)
-			if (!plugins[i]->BypassProcess()) {
-			last_processed = (i + 1) % 2;
-			plugins[i]->Process(buffers[i % 2], buffers[last_processed]);
 			}
-			}
-			for (unsigned i = 0; i < GetChannelCount(); ++i)
-			std::memcpy(buffers[last_processed], output, sizeof(input[0][0]) * block_size);
-			*/
+			plugins.Back().Process(buffers[last_processed], output, block_size);
 		}
-		else
-			for (unsigned i = 0; i < GetChannelCount(); ++i)
+		else {
+			for (unsigned i = 0; i < GetChannelCount(); ++i) {
 				std::memcpy(output[i], input[i], sizeof(input[0][0]) * block_size);
+			}
+		}
 	}
 
 	void Process(char* input, char* output) { // char != int8_t
@@ -78,10 +62,15 @@ public:
 		Process(reinterpret_cast<std::int16_t*>(input), reinterpret_cast<std::int16_t*>(output));
 	}
 
-	void Process(std::int16_t* input, std::int16_t* output) {
+	void Process(std::int16_t* input, std::int16_t* output) { // todo: wheres block size?
+		std::lock_guard<std::mutex> lock(processing_lock);
+		if (plugins.Size() == 0) {
+			std::memcpy(output, input, block_size * 2 * GetChannelCount());
+			return;
+		}
 		ConvertFrom16Bits(input, buffers[0]);
-		if (plugins.Size() == 1 && !plugins.Front().BypassProcess()) {
-			plugins.Front().Process(buffers[0], buffers[1], block_size); // if bypassprocess is true it will just go to memcpy at the bottom
+		if (plugins.Size() == 1) {
+			plugins.Front().Process(buffers[0], buffers[1], block_size);
 			ConvertTo16Bits(buffers[1], output);
 		}
 		else if (plugins.Size() > 1) {
@@ -93,8 +82,6 @@ public:
 				}
 			ConvertTo16Bits(buffers[last_processed], output);
 		}
-		else
-			std::memcpy(output, input, sizeof(input[0]) * block_size * GetChannelCount());
 	}
 
 	void SetSampleRate(Steinberg::Vst::SampleRate sr) {
@@ -121,7 +108,7 @@ public:
 	}
 
 	void CreateGUI() {
-		gui = std::unique_ptr<HostWindow>(new HostWindow(plugins));
+		gui = std::unique_ptr<HostWindow>(new HostWindow(plugins, processing_lock));
 		gui->Initialize(NULL);
 		gui->Go();
 	}
@@ -214,6 +201,7 @@ private:
 	PluginManager plugins;
 	std::unique_ptr<HostWindow> gui;
 	std::thread ui_thread;
+	std::mutex processing_lock;
 
 	Steinberg::Vst::TSamples block_size;
 	Steinberg::Vst::SampleRate sample_rate;

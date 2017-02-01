@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <memory>
+#include <mutex>
 
 #include "Host.h"
 
@@ -26,7 +27,7 @@ class HostWindow : public Window {
 	void SelectPlugin(size_t i);
 	size_t GetPluginSelection();
 public:
-	HostWindow(PluginManager& pm);
+	HostWindow(PluginManager& pm, std::mutex& m);
 	~HostWindow();
 	bool Initialize(HWND parent);
 	void CreateEditors();
@@ -41,6 +42,7 @@ private:
 	HWND buttons[Items::BUTTON_COUNT];
 	std::unique_ptr<OPENFILENAMEA> ofn;
 	PluginManager& plugins;
+	std::mutex& lock;
 };
 } // namespace
 

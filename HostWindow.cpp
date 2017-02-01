@@ -22,7 +22,7 @@ const int HostWindow::kButtonWidth = 120;
 const int HostWindow::kButtonHeight = 30;
 bool HostWindow::registered = false;
 
-HostWindow::HostWindow(PluginManager& pm) : Window(kWindowWidth, kWindowHeight), font(NULL), plugins(pm) { }
+HostWindow::HostWindow(PluginManager& pm, std::mutex& m) : Window(kWindowWidth, kWindowHeight), font(NULL), plugins(pm), lock(m) { }
 
 HostWindow::~HostWindow() {
 	if (font)
@@ -64,10 +64,10 @@ void HostWindow::OnCreate(HWND hWnd) {
 		20, 25 + kListHeight, kButtonWidth + 20 + kListWidth, kButtonHeight, hWnd, 
 		(HMENU)(Items::BUTTON_COUNT - 1), (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
 	for (int i = Items::Add; i < Items::BUTTON_COUNT - 1; ++i) {
-		HMENU idx{};
-		idx += i; // otherwise the compiler warned about invalid conversion
+		//HMENU idx{};
+		//idx += i; // otherwise the compiler warned about invalid conversion
 		buttons[i] = CreateWindow(TEXT("button"), button_labels[i], WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-			20 + kListWidth + 20, 20 + i * 40, kButtonWidth, kButtonHeight, hWnd, idx, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
+			20 + kListWidth + 20, 20 + i * 40, kButtonWidth, kButtonHeight, hWnd, (HMENU)i, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
 	}
 }
 
@@ -87,7 +87,10 @@ LRESULT CALLBACK HostWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 					if (HIWORD(wParam) == BN_CLICKED) {
 						auto sel = GetPluginSelection();
 						auto count = plugins.Size();
-						plugins.Delete(sel);
+						{
+							std::lock_guard<std::mutex> lock(lock);
+							plugins.Delete(sel);
+						}
 						PopulatePluginList();
 						if (sel == count - 1)
 							SelectPlugin(sel - 1);

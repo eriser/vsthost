@@ -12,6 +12,7 @@ class Plugin;
 class PluginLoader;
 class PluginManager {
 	using IndexType = std::vector<std::unique_ptr<Plugin>>::size_type;
+	class PluginIterator;
 public:
 	PluginManager(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
 	IndexType Size() const;

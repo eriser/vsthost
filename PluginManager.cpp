@@ -10,7 +10,7 @@
 #include "PluginLoader.h"
 
 namespace VSTHost {
-const std::string PluginManager::kPluginList{ ".\\..\\..\\..\\vsthost\\vsthost.ini" };
+const std::string PluginManager::kPluginList{ "vsthost.ini" };
 
 PluginManager::PluginManager(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr)
 	: def_block_size(bs), def_sample_rate(sr) {
