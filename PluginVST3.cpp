@@ -1,6 +1,7 @@
 #include "PluginVST3.h"
 
-#include <iostream>
+#include <string>
+#include <cstring>
 
 #include "public.sdk/source/common/memorystream.h"
 #include "pluginterfaces/gui/iplugview.h"
@@ -105,7 +106,8 @@ bool PluginVST3::IsValid() const {
 		Steinberg::PClassInfo2 ci2;
 		factory2->getClassInfo2(class_index, &ci2);
 		factory2->release();
-		if (!std::strcmp(ci2.category, "Audio Module Class") && ci2.subCategories[0] == 'F' && ci2.subCategories[1] == 'x'
+		std::string subcategory(ci2.subCategories, ci2.kSubCategoriesSize);
+		if (!std::strcmp(ci2.category, "Audio Module Class") && subcategory.find("Fx") != std::string::npos
 			&& edit_controller && audio && processor_component)
 			return true;
 	}
@@ -182,6 +184,9 @@ void PluginVST3::Initialize() {
 	pd.inputs->numChannels = GetChannelCount();
 	pd.outputs = new Steinberg::Vst::AudioBusBuffers;
 	pd.outputs->numChannels = GetChannelCount();
+	//pd.inputEvents = reinterpret_cast<Steinberg::Vst::IEventList*>(1);
+	//pd.outputEvents = reinterpret_cast<Steinberg::Vst::IEventList*>(2);
+	//pd.processContext = reinterpret_cast<Steinberg::Vst::ProcessContext*>(3);
 
 	// create parameter changes
 	if (edit_controller) {

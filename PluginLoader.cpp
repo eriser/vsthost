@@ -29,7 +29,7 @@ std::unique_ptr<Plugin> PluginLoader::Load(const std::string& path, Steinberg::V
 			plugin = new PluginVST3(module, factory, bs, sr);
 		}
 		else {
-			proc = ::GetProcAddress(module, "PluginVST2Main");
+			proc = ::GetProcAddress(module, "VSTPluginMain");
 			if (!proc)
 				proc = ::GetProcAddress(module, "main"); // older than vst2.4
 			if (proc) { // the library is a vst2 plugin
