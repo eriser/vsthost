@@ -226,10 +226,12 @@ void PluginVST3::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sampl
 		pd.outputs->channelBuffers32 = output;
 		pd.numSamples = block_size;
 		audio->process(pd);
-		ProcessOutputParameterChanges();
-		dynamic_cast<Steinberg::Vst::ParameterChanges*>(pd.inputParameterChanges)->clearQueue();
-		current_queue = nullptr;
-		current_param_idx = -1;
+		if (!bypass) {
+			ProcessOutputParameterChanges();
+			dynamic_cast<Steinberg::Vst::ParameterChanges*>(pd.inputParameterChanges)->clearQueue();
+			current_queue = nullptr;
+			current_param_idx = -1;
+		}
 	}
 	else {
 		for (unsigned i = 0; i < GetChannelCount(); ++i)
