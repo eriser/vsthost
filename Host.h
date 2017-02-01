@@ -8,9 +8,9 @@
 namespace VSTHost {
 class Host {
 public:
-	Host(std::int64_t max_num_samples, double sample_rate); // block_size is maximum number of samples per channel
+	Host(std::int64_t max_num_samples, double sample_rate); // max_num_samples is maximum number of samples per channel
 	~Host();
-	void Process(float** input, float** output, std::int64_t num_samples);
+	void Process(float** input, float** output, std::int64_t num_samples); // num_samples - samples per channel
 	void Process(char* input, char* output, std::int64_t num_samples);
 	void Process(std::int16_t* input, std::int16_t* output, std::int64_t num_samples);
 	void SetSampleRate(double sr);

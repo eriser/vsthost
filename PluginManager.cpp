@@ -12,6 +12,12 @@
 namespace VSTHost {
 const std::string PluginManager::kPluginList{ "vsthost.ini" };
 
+PluginManager::PluginIterator::PluginIterator(std::vector<std::unique_ptr<Plugin>>::iterator i) : it(i) {}
+bool PluginManager::PluginIterator::operator!=(PluginIterator& i) { return it != i.it; }
+PluginManager::PluginIterator PluginManager::PluginIterator::operator++() { return PluginIterator(++it); }
+PluginManager::PluginIterator PluginManager::PluginIterator::operator++(int) { return PluginIterator(it++); }
+Plugin& PluginManager::PluginIterator::operator*() { return *(*it); }
+
 PluginManager::PluginManager(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr)
 	: def_block_size(bs), def_sample_rate(sr) {
 
@@ -37,6 +43,17 @@ Plugin& PluginManager::Back() const {
 	return *plugins[Size() - 1]; // same
 }
 
+std::mutex& PluginManager::GetLock() {
+	return manager_lock;
+}
+
+PluginManager::PluginIterator PluginManager::Begin() {
+	return PluginIterator(plugins.begin());
+}
+
+PluginManager::PluginIterator PluginManager::End() {
+	return PluginIterator(plugins.end());
+}
 
 bool PluginManager::Add(const std::string& path) {
 	/*
@@ -57,8 +74,10 @@ bool PluginManager::Add(const std::string& path) {
 }
 
 void PluginManager::Delete(IndexType i) {
-	if (i < Size())
+	if (i < Size()) {
+		std::lock_guard<std::mutex> lock(manager_lock);
 		plugins.erase(plugins.begin() + i);
+	}
 }
 
 void PluginManager::Swap(IndexType i, IndexType j) {

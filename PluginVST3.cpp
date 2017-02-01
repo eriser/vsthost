@@ -221,7 +221,7 @@ std::basic_string<TCHAR> PluginVST3::GetPluginName() const {
 
 void PluginVST3::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output, Steinberg::Vst::TSamples block_size) {
 	if (IsActive() && !BypassProcess()) {
-		std::lock_guard<std::mutex> lock(processing);
+		std::lock_guard<std::mutex> lock(plugin_lock);
 		pd.inputs->channelBuffers32 = input;
 		pd.outputs->channelBuffers32 = output;
 		pd.numSamples = block_size;

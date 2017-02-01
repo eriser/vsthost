@@ -61,7 +61,7 @@ protected:
 	static Steinberg::uint32 GetChannelCount();
 
 	HMODULE module;
-	std::mutex processing; // locked when plugin is processing or setting itself (in)active
+	std::mutex plugin_lock; // locked when plugin is processing or setting itself (in)active
 	bool active{ false };
 	bool bypass{ false };
 	Steinberg::Vst::TSamples block_size;

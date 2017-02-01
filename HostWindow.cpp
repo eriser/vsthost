@@ -22,7 +22,7 @@ const int HostWindow::kButtonWidth = 120;
 const int HostWindow::kButtonHeight = 30;
 bool HostWindow::registered = false;
 
-HostWindow::HostWindow(PluginManager& pm, std::mutex& m) : Window(kWindowWidth, kWindowHeight), font(NULL), plugins(pm), lock(m) { }
+HostWindow::HostWindow(PluginManager& pm) : Window(kWindowWidth, kWindowHeight), font(NULL), plugins(pm) { }
 
 HostWindow::~HostWindow() {
 	if (font)
@@ -87,10 +87,7 @@ LRESULT CALLBACK HostWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 					if (HIWORD(wParam) == BN_CLICKED) {
 						auto sel = GetPluginSelection();
 						auto count = plugins.Size();
-						{
-							std::lock_guard<std::mutex> lock(lock);
-							plugins.Delete(sel);
-						}
+						plugins.Delete(sel);
 						PopulatePluginList();
 						if (sel == count - 1)
 							SelectPlugin(sel - 1);

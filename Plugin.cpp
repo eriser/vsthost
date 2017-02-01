@@ -27,7 +27,7 @@ std::string Plugin::GetPluginFileName() const {
 
 void Plugin::SetActive(bool active_) {
 	if (active != active_) {
-		std::lock_guard<std::mutex> lock(processing);
+		std::lock_guard<std::mutex> lock(plugin_lock);
 		if (active = active_)
 			Resume();
 		else

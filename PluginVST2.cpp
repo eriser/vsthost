@@ -66,7 +66,7 @@ std::basic_string<TCHAR> PluginVST2::GetPluginName() const {
 
 void PluginVST2::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output, Steinberg::Vst::TSamples block_size) {
 	if (IsActive() && !BypassProcess()) {
-		std::lock_guard<std::mutex> lock(processing);
+		std::lock_guard<std::mutex> lock(plugin_lock);
 		StartProcessing();
 		if (0 != (plugin->flags & VstAEffectFlags::effFlagsCanReplacing))
 			plugin->processReplacing(plugin.get(), input, output, block_size);

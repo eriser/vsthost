@@ -31,7 +31,7 @@ public:
 	}
 
 	void Process(float** input, float** output, std::int64_t block_size) {
-		std::lock_guard<std::mutex> lock(processing_lock);
+		std::lock_guard<std::mutex> lock(plugins.GetLock());
 		if (plugins.Size() == 1) {
 			plugins.Front().Process(input, output, block_size);
 		}
@@ -39,10 +39,8 @@ public:
 			plugins.Front().Process(input, buffers[1], block_size);
 			unsigned i, last_processed = 1;
 			for (i = 1; i < plugins.Size() - 1; i++) {
-				if (!plugins[i].BypassProcess()) {
-					last_processed = (i + 1) % 2;
-					plugins[i].Process(buffers[i % 2], buffers[last_processed], block_size);
-				}
+				last_processed = (i + 1) % 2;
+				plugins[i].Process(buffers[i % 2], buffers[last_processed], block_size);
 			}
 			plugins.Back().Process(buffers[last_processed], output, block_size);
 		}
@@ -58,7 +56,7 @@ public:
 	}
 
 	void Process(std::int16_t* input, std::int16_t* output, std::int64_t block_size) {
-		std::lock_guard<std::mutex> lock(processing_lock);
+		std::lock_guard<std::mutex> lock(plugins.GetLock());
 		if (plugins.Size() == 0) {
 			std::memcpy(output, input, block_size * 2 * GetChannelCount());
 			return;
@@ -69,12 +67,11 @@ public:
 			ConvertTo16Bits(buffers[1], output);
 		}
 		else if (plugins.Size() > 1) {
-			unsigned i, last_processed = 0;			// remember where the most recently processed buffer is,
-			for (i = 0; i < plugins.Size(); i++)	// so that it could be moved to output.
-				if (!plugins[i].BypassProcess()) { // check whether i can bypass calling process,
-					last_processed = (i + 1) % 2;	// so that i can omit memcpying the buffers.
-					plugins[i].Process(buffers[i % 2], buffers[last_processed], block_size);
-				}
+			unsigned last_processed = 0;			// remember where the most recently processed buffer is,
+			for (unsigned i = 0; i < plugins.Size(); ++i) {	// so that it could be moved to output.
+				last_processed = (i + 1) % 2;
+				plugins[i].Process(buffers[i % 2], buffers[last_processed], block_size);
+			}
 			ConvertTo16Bits(buffers[last_processed], output);
 		}
 	}
@@ -103,7 +100,7 @@ public:
 	}
 
 	void CreateGUI() {
-		gui = std::unique_ptr<HostWindow>(new HostWindow(plugins, processing_lock));
+		gui = std::unique_ptr<HostWindow>(new HostWindow(plugins));
 		gui->Initialize(NULL);
 		gui->Go();
 	}
