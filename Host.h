@@ -8,12 +8,11 @@
 namespace VSTHost {
 class Host {
 public:
-	Host(std::int64_t block_size, double sample_rate);
+	Host(std::int64_t max_num_samples, double sample_rate); // block_size is maximum number of samples per channel
 	~Host();
-	void Process(float** input, float** output, std::int64_t block_size);
-	void Process(char* input, char* output);
-	void Process(std::int8_t* input, std::int8_t* output);
-	void Process(std::int16_t* input, std::int16_t* output);
+	void Process(float** input, float** output, std::int64_t num_samples);
+	void Process(char* input, char* output, std::int64_t num_samples);
+	void Process(std::int16_t* input, std::int16_t* output, std::int64_t num_samples);
 	void SetSampleRate(double sr);
 	void SetBlockSize(std::int64_t bs);
 	void CreateGUIThread();

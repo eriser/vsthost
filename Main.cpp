@@ -124,7 +124,7 @@ int main() {
 	init_player(bs_all_channels_bytes);
 	unsigned i = 0, pos = 0;
 
-	host.Process(wave.data, out_char[0]);
+	host.Process(wave.data, out_char[0], block_size);
 	write_header(0);
 	while (true) {
 		i = (i + 1) % 2;
@@ -132,7 +132,7 @@ int main() {
 			pos = 0;	// ignoring (wave.size - pos - bs_all_channels_bytes) bytes
 		else
 			pos += bs_all_channels_bytes;
-		host.Process(wave.data + pos, out_char[i]);
+		host.Process(wave.data + pos, out_char[i], block_size);
 		write_header(i);
 		unprepare_header(!i);
 	}

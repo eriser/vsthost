@@ -53,16 +53,11 @@ public:
 		}
 	}
 
-	void Process(char* input, char* output) { // char != int8_t
-		if (std::numeric_limits<char>::min() < 0)
-			Process(reinterpret_cast<std::int8_t*>(input), reinterpret_cast<std::int8_t*>(output));
+	void Process(char* input, char* output, std::int64_t block_size) {
+		Process(reinterpret_cast<std::int16_t*>(input), reinterpret_cast<std::int16_t*>(output), block_size);
 	}
 
-	void Process(std::int8_t* input, std::int8_t* output) {
-		Process(reinterpret_cast<std::int16_t*>(input), reinterpret_cast<std::int16_t*>(output));
-	}
-
-	void Process(std::int16_t* input, std::int16_t* output) { // todo: wheres block size?
+	void Process(std::int16_t* input, std::int16_t* output, std::int64_t block_size) {
 		std::lock_guard<std::mutex> lock(processing_lock);
 		if (plugins.Size() == 0) {
 			std::memcpy(output, input, block_size * 2 * GetChannelCount());
@@ -208,7 +203,7 @@ private:
 	Steinberg::Vst::Sample32** buffers[2];
 };
 
-Host::Host(std::int64_t block_size, double sample_rate) : impl(new Host::HostImpl(block_size, sample_rate)) {
+Host::Host(std::int64_t max_num_samples, double sample_rate) : impl(new Host::HostImpl(max_num_samples, sample_rate)) {
 
 }
 
@@ -216,20 +211,16 @@ Host::~Host() {
 
 }
 
-void Host::Process(float** input, float** output, std::int64_t block_size) {
-	impl->Process(input, output, block_size);
+void Host::Process(float** input, float** output, std::int64_t num_samples) {
+	impl->Process(input, output, num_samples);
 }
 
-void Host::Process(char* input, char* output) {
-	impl->Process(input, output);
+void Host::Process(char* input, char* output, std::int64_t num_samples) {
+	impl->Process(input, output, num_samples);
 }
 
-void Host::Process(std::int8_t* input, std::int8_t* output) {
-	impl->Process(input, output);
-}
-
-void Host::Process(std::int16_t* input, std::int16_t* output) {
-	impl->Process(input, output);
+void Host::Process(std::int16_t* input, std::int16_t* output, std::int64_t num_samples) {
+	impl->Process(input, output, num_samples);
 }
 
 void Host::SetSampleRate(double sr) {
