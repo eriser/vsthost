@@ -11,8 +11,10 @@ Plugin::Plugin(HMODULE m) : module(m) {
 }
 
 Plugin::~Plugin() {
-	if (module)
+	if (module) {
+		::Sleep(1000);
 		::FreeLibrary(module);
+	}
 }
 
 std::string Plugin::GetPluginFileName() const {

@@ -11,7 +11,6 @@
 #include "pluginterfaces/vst/ivstaudioprocessor.h"
 #include "pluginterfaces/vst/ivstmessage.h"
 #include "pluginterfaces/vst/ivstunits.h"
-#include "pluginterfaces/vst/ivstparameterchanges.h"//////////////
 
 #include "Plugin.h"
 #include "PluginLoader.h"
@@ -92,8 +91,8 @@ private:
 	Steinberg::Vst::IEditController* edit_controller;
 	bool processor_component_initialized{ false };
 	bool edit_controller_initialized{ false };
-	Steinberg::Vst::IConnectionPoint* iConnectionPointComponent{ nullptr };
-	Steinberg::Vst::IConnectionPoint* iConnectionPointController{ nullptr };
+	Steinberg::Vst::IConnectionPoint* connection_point_component{ nullptr };
+	Steinberg::Vst::IConnectionPoint* connection_point_controller{ nullptr };
 	// audio related
 	Steinberg::Vst::IAudioProcessor* audio;
 	Steinberg::Vst::ProcessData pd;

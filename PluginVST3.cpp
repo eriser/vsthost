@@ -62,13 +62,13 @@ PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::FUnkn
 
 PluginVST3::~PluginVST3() {
 	SetActive(false);
-	gui.reset();
-	state.reset(); // gui and state have to be destroyed before the rest of the plugin is freed...
-	if (iConnectionPointComponent && iConnectionPointController) {
-		iConnectionPointComponent->disconnect(iConnectionPointController);
-		iConnectionPointController->disconnect(iConnectionPointComponent);
-		iConnectionPointComponent->release();
-		iConnectionPointController->release();
+	gui.reset();  // gui and state have to be destroyed before the rest of the plugin is freed
+	state.reset();
+	if (connection_point_component && connection_point_controller) {
+		connection_point_component->disconnect(connection_point_controller);
+		connection_point_controller->disconnect(connection_point_component);
+		connection_point_component->release();
+		connection_point_controller->release();
 	}
 	if (pd.inputs)
 		delete pd.inputs;
@@ -222,11 +222,11 @@ void PluginVST3::Initialize(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleR
 	SetActive(true);
 
 	// synchronize controller and processor
-	processor_component->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&iConnectionPointComponent);
-	edit_controller->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&iConnectionPointController);
-	if (iConnectionPointComponent && iConnectionPointController) {
-		iConnectionPointComponent->connect(iConnectionPointController);
-		iConnectionPointController->connect(iConnectionPointComponent);
+	processor_component->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&connection_point_component);
+	edit_controller->queryInterface(Steinberg::Vst::IConnectionPoint::iid, (void**)&connection_point_controller);
+	if (connection_point_component && connection_point_controller) {
+		connection_point_component->connect(connection_point_controller);
+		connection_point_controller->connect(connection_point_component);
 	}
 	
 	Steinberg::MemoryStream stream;
@@ -241,13 +241,9 @@ void PluginVST3::Initialize(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleR
 
 std::basic_string<TCHAR> PluginVST3::GetPluginName() const {
 	Steinberg::PClassInfo ci;
-	factory->getClassInfo(class_index, &ci);
-#ifdef UNICODE // for some reason ci.name is single byte ASCII too
-	std::string tmp(ci.name); // if name is not single byte string, this will fail 
+	factory->getClassInfo(class_index, &ci); 
+	std::string tmp(ci.name); // for some reason ci.name is single byte ASCII too
 	return std::basic_string<TCHAR>(tmp.begin(), tmp.end());
-#else
-	return std::basic_string<TCHAR>(ci.name);
-#endif
 }
 
 void PluginVST3::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output, Steinberg::Vst::TSamples block_size) {
