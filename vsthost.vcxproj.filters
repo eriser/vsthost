@@ -36,9 +36,6 @@
     <ClCompile Include="Plugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\VST3 SDK\public.sdk\source\vst\hosting\parameterchanges.cpp">
-      <Filter>VST3 SDK</Filter>
-    </ClCompile>
     <ClCompile Include="PresetVST2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -96,6 +93,12 @@
     <ClCompile Include="PluginManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\VST3 SDK\public.sdk\source\vst\hosting\eventlist.cpp">
+      <Filter>VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="ParameterChanges.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Host.h">
@@ -111,9 +114,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\VST3 SDK\public.sdk\source\common\memorystream.h">
-      <Filter>VST3 SDK</Filter>
-    </ClInclude>
-    <ClInclude Include="..\VST3 SDK\public.sdk\source\vst\hosting\parameterchanges.h">
       <Filter>VST3 SDK</Filter>
     </ClInclude>
     <ClInclude Include="VSTHostHeader.h">
@@ -180,6 +180,12 @@
       <Filter>VST3 SDK\base</Filter>
     </ClInclude>
     <ClInclude Include="PluginManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VST3 SDK\public.sdk\source\vst\hosting\eventlist.h">
+      <Filter>VST3 SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="ParameterChanges.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

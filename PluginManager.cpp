@@ -102,7 +102,7 @@ bool PluginManager::LoadPluginList(const std::string& path) {
 		return true;
 	}
 	else
-		std::cout << "Could not open " << path << '.' << std::endl;
+		std::cout << ::GetLastError() << " Could not open " << path << '.' << std::endl;
 	return false;
 }
 

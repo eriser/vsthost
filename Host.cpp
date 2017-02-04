@@ -9,7 +9,6 @@
 #define UNICODE_OFF
 #endif
 #include "base/source/fstring.h"
-#include "base/source/fobject.h"
 #include "pluginterfaces/vst/ivsthostapplication.h"
 
 #include "HostWindow.h"
@@ -17,7 +16,7 @@
 #include "PluginManager.h"
 
 namespace VSTHost {
-class Host::HostImpl : public Steinberg::FObject, Steinberg::Vst::IHostApplication {
+class Host::HostImpl : Steinberg::Vst::IHostApplication {
 public:
 	HostImpl(std::int64_t block_size, double sample_rate)
 		: block_size(block_size), sample_rate(sample_rate), plugins(block_size, sample_rate) {
@@ -123,7 +122,7 @@ public:
 
 	Steinberg::tresult PLUGIN_API getName(Steinberg::Vst::String128 name) {
 		Steinberg::String str("VSTHost");
-		str.copyTo16(name, 0, 7);
+		str.copyTo16(name, 0, 127);
 		return Steinberg::kResultTrue;
 	}
 
@@ -132,11 +131,20 @@ public:
 		return Steinberg::kResultFalse;
 	}
 
-	OBJ_METHODS(Host::HostImpl, FObject)
-		REFCOUNT_METHODS(FObject)
-		DEFINE_INTERFACES
-		DEF_INTERFACE(IHostApplication)
-	END_DEFINE_INTERFACES(FObject)
+	Steinberg::tresult PLUGIN_API queryInterface(const Steinberg::TUID _iid, void** obj) {
+		QUERY_INTERFACE(_iid, obj, Steinberg::FUnknown::iid, Steinberg::Vst::IHostApplication)
+		QUERY_INTERFACE(_iid, obj, Steinberg::Vst::IHostApplication::iid, Steinberg::Vst::IHostApplication)
+		*obj = 0;
+		return Steinberg::kNoInterface;
+	}
+
+	Steinberg::uint32 PLUGIN_API addRef() {
+		return 1;
+	}
+
+	Steinberg::uint32 PLUGIN_API release() {
+		return 1;
+	}
 
 private:
 	Steinberg::uint32 GetChannelCount() const {

@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 #include "public.sdk/source/vst/vstpresetfile.h"
 

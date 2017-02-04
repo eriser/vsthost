@@ -7,12 +7,11 @@
 #ifndef UNICODE
 #define UNICODE_OFF
 #endif
-#include "base/source/fobject.h"
 #include "pluginterfaces/vst/ivsteditcontroller.h"
 #include "pluginterfaces/vst/ivstaudioprocessor.h"
 #include "pluginterfaces/vst/ivstmessage.h"
 #include "pluginterfaces/vst/ivstunits.h"
-#include "public.sdk/source/vst/hosting/parameterchanges.h"
+#include "pluginterfaces/vst/ivstparameterchanges.h"//////////////
 
 #include "Plugin.h"
 #include "PluginLoader.h"
@@ -25,7 +24,7 @@ struct Steinberg::PClassInfo;
 struct Steinberg::PClassInfo2;
 class Steinberg::Vst::IComponent;
 class Steinberg::Vst::IConnectionPoint;
-class PluginVST3 : public Plugin, public Steinberg::FObject, public Steinberg::Vst::IComponentHandler {
+class PluginVST3 : public Plugin, public Steinberg::Vst::IComponentHandler {
 	friend class PluginVST3Window;
 	friend class PresetVST3;
 	friend std::unique_ptr<Plugin> PluginLoader::Load(const std::string& path, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
@@ -53,16 +52,14 @@ public:
 	bool HasEditor() const;
 	void CreateEditor(HWND hWnd);
 
-	// vst3 specific
+	// vst3 interfaces specific
 	Steinberg::tresult PLUGIN_API beginEdit(Steinberg::Vst::ParamID id);
 	Steinberg::tresult PLUGIN_API performEdit(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue valueNormalized);
 	Steinberg::tresult PLUGIN_API endEdit(Steinberg::Vst::ParamID id);
 	Steinberg::tresult PLUGIN_API restartComponent(Steinberg::int32 flags);
-	OBJ_METHODS(PluginVST3, FObject)
-		REFCOUNT_METHODS(FObject)
-		DEFINE_INTERFACES
-		DEF_INTERFACE(IComponentHandler)
-		END_DEFINE_INTERFACES(FObject)
+	Steinberg::tresult PLUGIN_API queryInterface(const Steinberg::TUID _iid, void** obj);
+	Steinberg::uint32 PLUGIN_API addRef();
+	Steinberg::uint32 PLUGIN_API release();
 private:
 	void Resume();
 	void Suspend();
@@ -87,7 +84,7 @@ private:
 	Steinberg::int32 class_index; // index of the class produced by factory which is valid 
 	Steinberg::FUnknown* UnknownCast();
 	Steinberg::IPluginFactory* factory;
-	Steinberg::FObject* plugin;
+	Steinberg::FUnknown* plugin;
 	Steinberg::Vst::IComponent* processor_component;
 	Steinberg::Vst::IEditController* edit_controller;
 	bool processor_component_initialized{ false };

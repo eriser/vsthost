@@ -107,7 +107,7 @@ void unprepare_header(int i) {
 
 
 int main() {
-	wave.Load("feed/Amen-break.wav");
+	wave.Load("D:\\Development\\Praca In¿ynierska\\vsthost\\feed\\Amen-break.wav");
 	if (wave.data == nullptr)
 		return 1;
 	wave.Print();
@@ -118,6 +118,7 @@ int main() {
 	double sample_rate = static_cast<double>(wave.GetSampleRate());
 	VSTHost::Host host(block_size, sample_rate);
 	host.LoadPluginList();
+	//host.CreateGUI();
 	host.CreateGUIThread();
 
 	// this player is bad, because for small block_sizes it just doesn't work well
