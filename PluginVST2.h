@@ -16,13 +16,13 @@ class PresetVST3;
 class PluginVST2 : public Plugin {
 	friend class PluginVST2Window;
 	friend class PresetVST2;
-	friend std::unique_ptr<Plugin> PluginLoader::Load(const std::string& path, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr, Steinberg::FUnknown* context);
-	PluginVST2(HMODULE m, AEffect* p, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
+	friend std::unique_ptr<Plugin> PluginLoader::Load(const std::string& path, Steinberg::FUnknown* context);
+	PluginVST2(HMODULE m, AEffect* p);
 public:
 	~PluginVST2();
 	// basic plugin interface
 	bool IsValid() const;
-	void Initialize();
+	void Initialize(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
 	std::basic_string<TCHAR> GetPluginName() const;
 	void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output, Steinberg::Vst::TSamples block_size);
 	void SetBlockSize(Steinberg::Vst::TSamples bs);

@@ -15,8 +15,8 @@
 extern "C" typedef bool (PLUGIN_API *VST3ExitProc)();
 
 namespace VSTHost {
-PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr, Steinberg::FUnknown* c)
-	: Plugin(m, bs, sr), factory(f), class_index(0), context(c) {
+PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::FUnknown* c)
+	: Plugin(m), factory(f), class_index(0), context(c) {
 	pd.inputs = nullptr;
 	pd.outputs = nullptr;
 	pd.inputParameterChanges = nullptr;
@@ -117,17 +117,23 @@ bool PluginVST3::IsValid() const {
 	return false;
 }
 
-void PluginVST3::Initialize() {
+void PluginVST3::Initialize(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr) {
+	block_size = bs;
+	sample_rate = sr;
+
 	// initialize edit controller (processor component is already initialized)
 	edit_controller->initialize(context);
 	edit_controller_initialized = true;
 	edit_controller->setComponentHandler(this);
 
 	// check if plugin has editor and remember it
-	auto tmp = edit_controller->createView(Steinberg::Vst::ViewType::kEditor);
-	has_editor = tmp != nullptr;
-	if (tmp)
-		tmp->release();
+	//auto tmp = edit_controller->createView(Steinberg::Vst::ViewType::kEditor);
+	//has_editor = tmp != nullptr;
+	//if (tmp)
+	//	tmp->release();
+	// some plugins can't create editor twice, so theres no way of telling if they have it
+	// so i will assume they do have the editor and potentially update has_editor later
+	has_editor = true;
 
 	// check for bypass parameter (soft bypass) and for preset change parameter
 	Steinberg::Vst::ParameterInfo pi;
@@ -352,6 +358,8 @@ void PluginVST3::CreateEditor(HWND hWnd) {
 			gui = std::unique_ptr<PluginWindow>(new PluginVST3Window(*this, create_view));
 			gui->Initialize(hWnd);
 		}
+		else
+			has_editor = false;
 	}
 }
 

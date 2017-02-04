@@ -62,10 +62,10 @@ bool PluginManager::Add(const std::string& path) {
 	_fullpath(a, path.c_str(), MAX_PATH);
 	MessageBoxA(NULL, a, NULL, NULL);
 	*/
-	auto plugin = PluginLoader::Load(path, def_block_size, def_sample_rate, vst3_context);
+	auto plugin = PluginLoader::Load(path, vst3_context);
 	if (plugin) { // host now owns what plugin points at
 		std::cout << "Loaded " << path << "." << std::endl;
-		plugin->Initialize();
+		plugin->Initialize(def_block_size, def_sample_rate);
 		plugins.push_back(std::move(plugin));
 		return true;
 	}

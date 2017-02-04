@@ -8,8 +8,8 @@
 #include "PluginVST2Window.h"
 
 namespace VSTHost {
-PluginVST2::PluginVST2(HMODULE m, AEffect* p, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr)
-	: Plugin(m, bs, sr), plugin(p) {
+PluginVST2::PluginVST2(HMODULE m, AEffect* p)
+	: Plugin(m), plugin(p) {
 	plugin->resvd1 = reinterpret_cast<VstIntPtr>(this);
 }
 
@@ -25,16 +25,19 @@ PluginVST2::~PluginVST2() {
 bool PluginVST2::IsValid() const {
 	if (plugin) {
 		VstPlugCategory c = static_cast<VstPlugCategory>(plugin->dispatcher(plugin.get(), AEffectXOpcodes::effGetPlugCategory, 0, 0, nullptr, 0.));
-		return plugin->magic == kEffectMagic && c != kPlugCategSynth && c >= kPlugCategUnknown && c <= kPlugCategRestoration;
+		return plugin->magic == kEffectMagic && c != kPlugCategSynth && c >= kPlugCategUnknown && c <= kPlugCategRestoration 
+			&& plugin->numInputs == 2 && plugin->numOutputs == 2;
 	}
 	else
 		return false;
 }
 
-void PluginVST2::Initialize() {
+void PluginVST2::Initialize(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr) {
+	sample_rate = sr;
+	block_size = bs;
 	Dispatcher(AEffectOpcodes::effOpen);
-	//Dispatcher(AEffectOpcodes::effSetSampleRate, 0, static_cast<float>(sample_rate));
-	//Dispatcher(AEffectOpcodes::effSetBlockSize, 0, static_cast<VstIntPtr>(block_size));
+	Dispatcher(AEffectOpcodes::effSetSampleRate, 0, static_cast<float>(sample_rate));
+	Dispatcher(AEffectOpcodes::effSetBlockSize, 0, static_cast<VstIntPtr>(block_size));
 	state = std::unique_ptr<Preset>(new PresetVST2(*this));
 	soft_bypass = CanDo("bypass");
 	SetActive(true);
@@ -44,12 +47,8 @@ std::basic_string<TCHAR> PluginVST2::GetPluginName() const {
 	char name[kVstMaxProductStrLen] = { 0 }; // vst2 does not support unicode
 	if (plugin->dispatcher(plugin.get(), AEffectXOpcodes::effGetEffectName, 0, 0, reinterpret_cast<void*>(name), 0.) ||
 		plugin->dispatcher(plugin.get(), AEffectXOpcodes::effGetProductString, 0, 0, reinterpret_cast<void*>(name), 0.)) {
-#ifdef UNICODE	// if name is not single byte string, this will fail 
-		std::string tmp(name);	// (enabling unicode would be beneficial here)
+		std::string tmp(name);
 		return std::basic_string<TCHAR>(tmp.begin(), tmp.end());
-#else
-		return std::basic_string<TCHAR>(name);
-#endif
 	}
 	else {
 		TCHAR buf[MAX_PATH] = { 0 };
@@ -85,7 +84,7 @@ void PluginVST2::SetBlockSize(Steinberg::Vst::TSamples bs) {
 	if (was_active = IsActive())
 		SetActive(false);
 	block_size = bs;
-	//Dispatcher(AEffectOpcodes::effSetBlockSize, 0, static_cast<VstIntPtr>(block_size));
+	Dispatcher(AEffectOpcodes::effSetBlockSize, 0, static_cast<VstIntPtr>(block_size));
 	if (was_active)
 		SetActive(true);
 }
@@ -95,7 +94,7 @@ void PluginVST2::SetSampleRate(Steinberg::Vst::SampleRate sr) {
 	if (was_active = IsActive())
 		SetActive(false);
 	sample_rate = sr;
-	//Dispatcher(AEffectOpcodes::effSetSampleRate, 0, static_cast<float>(sample_rate));
+	Dispatcher(AEffectOpcodes::effSetSampleRate, 0, static_cast<float>(sample_rate));
 	if (was_active)
 		SetActive(true);
 }

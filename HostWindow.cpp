@@ -216,7 +216,7 @@ void HostWindow::SelectPlugin(size_t i) {
 			EnableWindow(buttons[Items::Delete], false);
 		}
 		else {
-			EnableWindow(buttons[Items::Show], !plugins[i].IsEditorVisible());
+			EnableWindow(buttons[Items::Show], plugins[i].HasEditor() && !plugins[i].IsEditorVisible());
 			EnableWindow(buttons[Items::Hide], plugins[i].IsEditorVisible());
 			EnableWindow(buttons[Items::Delete], true);
 		}

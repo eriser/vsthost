@@ -6,7 +6,7 @@
 namespace VSTHost {
 const std::string Plugin::kPluginDirectory{ "plugins\\" };
 
-Plugin::Plugin(HMODULE m, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr) : module(m), block_size(bs), sample_rate(sr) {
+Plugin::Plugin(HMODULE m) : module(m) {
 
 }
 

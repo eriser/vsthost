@@ -14,7 +14,7 @@ extern "C" {
 }
 
 namespace VSTHost {
-std::unique_ptr<Plugin> PluginLoader::Load(const std::string& path, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr, Steinberg::FUnknown* context) {
+std::unique_ptr<Plugin> PluginLoader::Load(const std::string& path, Steinberg::FUnknown* context) {
 	Plugin* plugin = nullptr;
 	auto module = ::LoadLibraryA(path.c_str());
 	if (module) {
@@ -26,7 +26,7 @@ std::unique_ptr<Plugin> PluginLoader::Load(const std::string& path, Steinberg::V
 			Steinberg::IPluginFactory* factory = nullptr;
 			GetFactoryProc getFactory = reinterpret_cast<GetFactoryProc>(proc);
 			factory = getFactory(); // retrieving factory pointer from factory proc
-			plugin = new PluginVST3(module, factory, bs, sr, context);
+			plugin = new PluginVST3(module, factory, context);
 		}
 		else {
 			proc = ::GetProcAddress(module, "VSTPluginMain");
@@ -36,7 +36,7 @@ std::unique_ptr<Plugin> PluginLoader::Load(const std::string& path, Steinberg::V
 				AEffect* effect = nullptr;
 				VSTInitProc init_proc = reinterpret_cast<VSTInitProc>(proc);
 				effect = init_proc(PluginVST2::HostCallbackWrapper);
-				plugin = new PluginVST2(module, effect, bs, sr);
+				plugin = new PluginVST2(module, effect);
 			}
 		}
 	}

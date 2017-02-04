@@ -14,7 +14,7 @@ namespace VSTHost {
 class Plugin;
 class PluginLoader {
 public:
-	static std::unique_ptr<Plugin> Load(const std::string& path, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr, Steinberg::FUnknown* context);
+	static std::unique_ptr<Plugin> Load(const std::string& path, Steinberg::FUnknown* context);
 };
 } // namespace
 

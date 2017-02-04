@@ -18,10 +18,10 @@ class Preset;
 class Plugin {
 public:
 	// basic plugin interface
-	Plugin(HMODULE m, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
+	Plugin(HMODULE m);
 	virtual ~Plugin();
 	virtual bool IsValid() const = 0;
-	virtual void Initialize() = 0;
+	virtual void Initialize(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr) = 0;
 	virtual std::basic_string<TCHAR> GetPluginName() const = 0;
 	std::string GetPluginFileName() const;
 	virtual void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output, Steinberg::Vst::TSamples block_size) = 0;
