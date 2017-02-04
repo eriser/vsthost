@@ -8,12 +8,13 @@
 #define UNICODE_OFF
 #endif
 #include "pluginterfaces/vst/vsttypes.h"
+#include "pluginterfaces/base/funknown.h"
 
 namespace VSTHost {
 class Plugin;
 class PluginLoader {
 public:
-	static std::unique_ptr<Plugin> Load(const std::string& path, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
+	static std::unique_ptr<Plugin> Load(const std::string& path, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr, Steinberg::FUnknown* context);
 };
 } // namespace
 

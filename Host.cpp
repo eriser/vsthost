@@ -19,7 +19,7 @@ namespace VSTHost {
 class Host::HostImpl : Steinberg::Vst::IHostApplication {
 public:
 	HostImpl(std::int64_t block_size, double sample_rate)
-		: block_size(block_size), sample_rate(sample_rate), plugins(block_size, sample_rate) {
+		: block_size(block_size), sample_rate(sample_rate), plugins(block_size, sample_rate, UnknownCast()) {
 		buffers[0] = nullptr;
 		buffers[1] = nullptr;
 		AllocateBuffers();
@@ -196,6 +196,10 @@ private:
 					output[out_i] = std::numeric_limits<std::int16_t>::min();
 				else
 					output[out_i] = static_cast<std::int16_t>(input[j][i] * std::numeric_limits<std::int16_t>::max());
+	}
+
+	Steinberg::FUnknown* UnknownCast() {
+		return static_cast<Steinberg::FUnknown *>(this);
 	}
 
 	PluginManager plugins;

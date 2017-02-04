@@ -16,7 +16,7 @@ class PresetVST3;
 class PluginVST2 : public Plugin {
 	friend class PluginVST2Window;
 	friend class PresetVST2;
-	friend std::unique_ptr<Plugin> PluginLoader::Load(const std::string& path, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
+	friend std::unique_ptr<Plugin> PluginLoader::Load(const std::string& path, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr, Steinberg::FUnknown* context);
 	PluginVST2(HMODULE m, AEffect* p, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
 public:
 	~PluginVST2();

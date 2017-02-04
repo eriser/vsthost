@@ -15,8 +15,8 @@
 extern "C" typedef bool (PLUGIN_API *VST3ExitProc)();
 
 namespace VSTHost {
-PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr)
-	: Plugin(m, bs, sr), factory(f), class_index(0) {
+PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr, Steinberg::FUnknown* c)
+	: Plugin(m, bs, sr), factory(f), class_index(0), context(c) {
 	pd.inputs = nullptr;
 	pd.outputs = nullptr;
 	pd.inputParameterChanges = nullptr;
@@ -38,9 +38,11 @@ PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::
 						result = factory->createInstance(controllerCID, Steinberg::Vst::IEditController::iid, (void**)&edit_controller);
 				}
 				if (result == Steinberg::kResultOk)
-					if (initialized = (processor_component->initialize(UnknownCast()) == Steinberg::kResultOk)) {
+					if (initialized = (processor_component->initialize(context) == Steinberg::kResultOk)) {
 						result = processor_component->queryInterface(Steinberg::Vst::IAudioProcessor::iid, reinterpret_cast<void**>(&audio));
 						processor_component_initialized = true;
+						Steinberg::Vst::SpeakerArrangement sa = Steinberg::Vst::SpeakerArr::kStereo;
+						can_stereo = audio->setBusArrangements(&sa, 1, &sa, 1) == Steinberg::kResultOk;
 					}
 			}
 		}
@@ -54,6 +56,7 @@ PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::
 		edit_controller = nullptr;
 		audio = nullptr;
 		initialized = false;
+		can_stereo = false;
 	}
 }
 
@@ -108,7 +111,7 @@ bool PluginVST3::IsValid() const {
 		factory2->release();
 		std::string subcategory(ci2.subCategories, ci2.kSubCategoriesSize);
 		if (!std::strcmp(ci2.category, "Audio Module Class") && subcategory.find("Fx") != std::string::npos
-			&& edit_controller && audio && processor_component)
+			&& edit_controller && audio && processor_component && can_stereo)
 			return true;
 	}
 	return false;
@@ -116,15 +119,9 @@ bool PluginVST3::IsValid() const {
 
 void PluginVST3::Initialize() {
 	// initialize edit controller (processor component is already initialized)
-	edit_controller->initialize(UnknownCast());
+	edit_controller->initialize(context);
 	edit_controller_initialized = true;
 	edit_controller->setComponentHandler(this);
-
-	// setup bus arrangement
-	Steinberg::Vst::SpeakerArrangement sa = Steinberg::Vst::SpeakerArr::kStereo;
-	auto res = audio->setBusArrangements(&sa, 1, &sa, 1);
-	//if (res != Steinberg::kResultOk)
-		//std::cout << "bad!" << std::endl;
 
 	// check if plugin has editor and remember it
 	auto tmp = edit_controller->createView(Steinberg::Vst::ViewType::kEditor);
@@ -212,20 +209,10 @@ void PluginVST3::Initialize() {
 	pd.inputEvents = nullptr;
 	pd.outputEvents = nullptr;
 	pd.processContext = nullptr;
+	// create parameter changes objects
+	pd.inputParameterChanges = new ParameterChanges(edit_controller);
+	pd.outputParameterChanges = new ParameterChanges(edit_controller);
 
-	// create parameter changes
-	if (edit_controller) {
-		auto param_count = edit_controller->getParameterCount();
-		pd.inputParameterChanges = new ParameterChanges(edit_controller);
-		Steinberg::Vst::ParameterInfo pi;
-		//for (Steinberg::int32 i = 0; i < param_count; ++i) {
-			//edit_controller->getParameterInfo(i, pi);
-			//SetParameter(pi.id, GetParameter(pi.id));
-			//pd.inputParameterChanges->addParameterData(pi.id, i);
-		//}
-		pd.outputParameterChanges = new ParameterChanges(edit_controller);
-			//reinterpret_cast<Steinberg::Vst::IParameterChanges*>(123);
-	}
 	SetActive(true);
 
 	// synchronize controller and processor
@@ -263,13 +250,13 @@ void PluginVST3::Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sampl
 		pd.inputs->channelBuffers32 = input;
 		pd.outputs->channelBuffers32 = output;
 		pd.numSamples = block_size;
+		if (current_queue && current_queue->GetIndex() == -1)
+			pd.inputParameterChanges->addParameterData(current_queue->getParameterId(), current_param_idx);
 		audio->process(pd);
 		if (!bypass) {
 			ProcessOutputParameterChanges();
 			dynamic_cast<ParameterChanges*>(pd.inputParameterChanges)->ClearQueue();
-			current_queue = nullptr;
-			current_param_idx = -1;
-			offset = 0;
+			//offset = 0;
 		}
 	}
 	else {
@@ -375,14 +362,18 @@ Steinberg::tresult PLUGIN_API PluginVST3::beginEdit(Steinberg::Vst::ParamID id) 
 
 Steinberg::tresult PLUGIN_API PluginVST3::performEdit(Steinberg::Vst::ParamID id, Steinberg::Vst::ParamValue valueNormalized) {
 	Steinberg::int32 index;
-	if (current_queue) {
+	if (current_queue)
 		current_queue->addPoint(offset++, valueNormalized, index);
-		pd.inputParameterChanges->addParameterData(id, current_param_idx);
-	}
 	return Steinberg::kResultTrue;
 }
 
 Steinberg::tresult PLUGIN_API PluginVST3::endEdit(Steinberg::Vst::ParamID id) {
+	if (current_queue) {
+		pd.inputParameterChanges->addParameterData(id, current_param_idx);
+		current_queue = nullptr;
+		current_param_idx = -1;
+		offset = 0;
+	}
 	return Steinberg::kResultTrue;
 }
 
@@ -427,7 +418,7 @@ void PluginVST3::StopProcessing() {
 
 void PluginVST3::ProcessOutputParameterChanges() {
 	auto pc = dynamic_cast<ParameterChanges*>(pd.outputParameterChanges);
-	for (unsigned i = 0; i < static_cast<unsigned>(pd.outputParameterChanges->getParameterCount()); ++i) {
+	for (unsigned i = 0; i < static_cast<unsigned>(pc->getParameterCount()); ++i) {
 		auto q = pc->getParameterData(i);
 		Steinberg::Vst::ParamValue value;
 		Steinberg::int32 offset;
@@ -435,9 +426,5 @@ void PluginVST3::ProcessOutputParameterChanges() {
 		edit_controller->setParamNormalized(q->getParameterId(), value);
 	}
 	pc->ClearQueue();
-}
-
-Steinberg::FUnknown* PluginVST3::UnknownCast() {
-	return static_cast<Steinberg::FUnknown *>(this);
 }
 } // namespace

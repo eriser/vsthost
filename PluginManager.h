@@ -7,6 +7,7 @@
 #include <mutex>
 
 #include "pluginterfaces/vst/vsttypes.h"
+#include "pluginterfaces/base/funknown.h"
 
 namespace VSTHost {
 class Plugin;
@@ -24,7 +25,7 @@ public:
 	private:
 		std::vector<std::unique_ptr<Plugin>>::iterator it;
 	};
-	PluginManager(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
+	PluginManager(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr, Steinberg::FUnknown* context);
 	IndexType Size() const;
 	Plugin& GetAt(IndexType i) const;
 	Plugin& operator[](IndexType i) const;
@@ -48,6 +49,7 @@ public:
 private:
 	Steinberg::Vst::TSamples def_block_size;		// default block size & sample rate
 	Steinberg::Vst::SampleRate def_sample_rate;		// for new plugins
+	Steinberg::FUnknown* vst3_context;
 	std::vector<std::unique_ptr<Plugin>> plugins;
 	std::mutex manager_lock; // used to not delete an element while iterating over all contents
 };

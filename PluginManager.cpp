@@ -18,8 +18,8 @@ PluginManager::PluginIterator PluginManager::PluginIterator::operator++() { retu
 PluginManager::PluginIterator PluginManager::PluginIterator::operator++(int) { return PluginIterator(it++); }
 Plugin& PluginManager::PluginIterator::operator*() { return *(*it); }
 
-PluginManager::PluginManager(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr)
-	: def_block_size(bs), def_sample_rate(sr) {
+PluginManager::PluginManager(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr, Steinberg::FUnknown* context)
+	: def_block_size(bs), def_sample_rate(sr), vst3_context(context) {
 
 }
 
@@ -62,7 +62,7 @@ bool PluginManager::Add(const std::string& path) {
 	_fullpath(a, path.c_str(), MAX_PATH);
 	MessageBoxA(NULL, a, NULL, NULL);
 	*/
-	auto plugin = PluginLoader::Load(path, def_block_size, def_sample_rate);
+	auto plugin = PluginLoader::Load(path, def_block_size, def_sample_rate, vst3_context);
 	if (plugin) { // host now owns what plugin points at
 		std::cout << "Loaded " << path << "." << std::endl;
 		plugin->Initialize();

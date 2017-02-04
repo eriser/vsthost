@@ -32,7 +32,7 @@ Steinberg::int32 PLUGIN_API ParameterValueQueue::getPointCount() {
 }
 
 Steinberg::tresult PLUGIN_API ParameterValueQueue::getPoint(Steinberg::int32 index, Steinberg::int32& sampleOffset /*out*/, Steinberg::Vst::ParamValue& value /*out*/) {
-	if (index > 0 && index < static_cast<Steinberg::int32>(values.size())) {
+	if (index >= 0 && index < static_cast<Steinberg::int32>(values.size())) {
 		sampleOffset = values[index].offset;
 		value = values[index].value;
 		return Steinberg::kResultTrue;

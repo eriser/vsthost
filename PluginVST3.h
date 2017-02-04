@@ -24,13 +24,14 @@ struct Steinberg::PClassInfo;
 struct Steinberg::PClassInfo2;
 class Steinberg::Vst::IComponent;
 class Steinberg::Vst::IConnectionPoint;
+class ParameterValueQueue;
 class PluginVST3 : public Plugin, public Steinberg::Vst::IComponentHandler {
 	friend class PluginVST3Window;
 	friend class PresetVST3;
-	friend std::unique_ptr<Plugin> PluginLoader::Load(const std::string& path, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
+	friend std::unique_ptr<Plugin> PluginLoader::Load(const std::string& path, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr, Steinberg::FUnknown* context);
 public:
 	// basic plugin interface
-	PluginVST3(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
+	PluginVST3(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr, Steinberg::FUnknown* c);
 	~PluginVST3();
 	bool IsValid() const;
 	void Initialize();
@@ -66,6 +67,9 @@ private:
 	void StartProcessing();
 	void StopProcessing();
 
+	Steinberg::FUnknown* context;
+	// can stereo
+	bool can_stereo{ false };
 	// soft bypass
 	Steinberg::Vst::ParamID bypass_param_id{ std::numeric_limits<std::uint32_t>::max() };
 	// vst3 presets handling
@@ -77,12 +81,11 @@ private:
 	// parameter changes
 	void ProcessOutputParameterChanges();
 	Steinberg::int32 current_param_idx, offset;
-	Steinberg::Vst::IParamValueQueue* current_queue;
+	ParameterValueQueue* current_queue;
 	// has editor flag for optimization
 	bool has_editor{ false };
 	// vst3 general
 	Steinberg::int32 class_index; // index of the class produced by factory which is valid 
-	Steinberg::FUnknown* UnknownCast();
 	Steinberg::IPluginFactory* factory;
 	Steinberg::FUnknown* plugin;
 	Steinberg::Vst::IComponent* processor_component;
