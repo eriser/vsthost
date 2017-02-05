@@ -4,12 +4,12 @@
 
 namespace VSTHost {
 const TCHAR* PluginWindow::kClassName = TEXT("PluginWindow");
-int PluginWindow::static_offset = 50;
+int PluginWindow::static_offset = 47;
 bool PluginWindow::registered = false;
 
 PluginWindow::PluginWindow(int width, int height, Plugin& p) : Window(width, height), menu(NULL), plugin(p) {
 	offset = static_offset;
-	static_offset += 40;
+	static_offset = (static_offset + 37) % 523;
 }
 
 PluginWindow::~PluginWindow() {

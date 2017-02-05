@@ -22,7 +22,7 @@ void PluginVST3Window::SetRect() {
 	rect.right = vr.right;
 	rect.bottom = vr.bottom;
 	rect.top = vr.top;
-	AdjustWindowRect(&rect, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, false);
+	::AdjustWindowRect(&rect, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, false);
 	rect.bottom += ::GetSystemMetrics(SM_CYMENU);
 	if (rect.left < 0) {
 		rect.right -= rect.left;
@@ -38,9 +38,9 @@ void PluginVST3Window::SetRect() {
 bool PluginVST3Window::Initialize(HWND parent) {
 	if (plugin_view && RegisterWC(kClassName)) {
 		SetRect();
-		wnd = CreateWindow(kClassName, plugin.GetPluginName().c_str(), WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+		wnd = ::CreateWindow(kClassName, plugin.GetPluginName().c_str(), WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
 			rect.left, rect.top, rect.right, rect.bottom, 
-			NULL/*parent*/, menu = CreateMenu(), GetModuleHandle(NULL), static_cast<LPVOID>(this));
+			NULL/*parent*/, menu = CreateMenu(), ::GetModuleHandle(NULL), static_cast<LPVOID>(this));
 		if (wnd)	// i'm setting parent hwnd to null, because child window are displayed in front of parend window
 			plugin_view->attached(static_cast<void*>(wnd), Steinberg::kPlatformTypeHWND);	// and it doesn't look right
 		return wnd != NULL;

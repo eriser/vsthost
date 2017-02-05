@@ -135,6 +135,7 @@ void PluginVST3::Initialize(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleR
 	// so i will assume they do have the editor and potentially update has_editor later
 	has_editor = true;
 
+	Steinberg::Vst::UnitID program_change_unit_id;
 	// check for bypass parameter (soft bypass) and for preset change parameter
 	Steinberg::Vst::ParameterInfo pi;
 	static Steinberg::Vst::ParamID kNoParamId = -1;
@@ -145,20 +146,25 @@ void PluginVST3::Initialize(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleR
 		else if (pi.flags & Steinberg::Vst::ParameterInfo::ParameterFlags::kIsProgramChange) {
 			program_change_param_id = pi.id;
 			program_change_param_idx = i;
+			program_change_unit_id = pi.unitId;
 		}
 	}
 
 	// establish program count
 	edit_controller->queryInterface(Steinberg::Vst::IUnitInfo::iid, reinterpret_cast<void**>(&unit_info));
 	if (unit_info) {
-		auto program_list_count = unit_info->getProgramListCount();
-		if (program_list_count > 0) {
-			Steinberg::int32 i = 0;
+		const auto program_list_count = unit_info->getProgramListCount();
+		Steinberg::Vst::ProgramListInfo prog_list{};
+		if (program_list_count == 0 && unit_info->getProgramListInfo(0, prog_list) == Steinberg::kResultOk) {
+			program_count = prog_list.programCount;
+		}
+		else if (program_list_count > 0) {
 			Steinberg::Vst::UnitInfo unit{};
+			Steinberg::int32 i = 0;
 			while (i < unit_info->getUnitCount() && unit_info->getUnitInfo(i, unit) == Steinberg::kResultTrue && unit.id != Steinberg::Vst::kRootUnitId)
 				++i; // there has got to be a root unit id if getUnitCount returns more than zero
 			program_list_root = unit.programListId;
-			Steinberg::Vst::ProgramListInfo prog_list{};
+			
 			i = 0;
 			while (i < program_list_count && unit_info->getProgramListInfo(i, prog_list) == Steinberg::kResultTrue) {
 				if (prog_list.id == program_list_root) {
