@@ -16,6 +16,8 @@ PluginVST3Window::~PluginVST3Window() {
 void PluginVST3Window::SetRect() {
 	Steinberg::ViewRect vr;
 	plugin_view->getSize(&vr);
+	size_x = vr.getWidth();
+	size_y = vr.getHeight();
 	rect.left = vr.left;
 	rect.right = vr.right;
 	rect.bottom = vr.bottom;

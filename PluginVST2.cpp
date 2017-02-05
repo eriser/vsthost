@@ -14,7 +14,6 @@ PluginVST2::PluginVST2(HMODULE m, AEffect* p)
 
 	// try setting correct number of inputs and outputs if there's a need
 	if (plugin->numInputs != 2 || plugin->numOutputs != 2) {
-		Dispatcher(AEffectOpcodes::effSetSampleRate, 0, 0, nullptr, static_cast<float>(44100.f));
 		VstSpeakerArrangement in{}, out{};
 		in.numChannels = 2;
 		in.type = VstSpeakerArrangementType::kSpeakerArrStereo;

@@ -10,6 +10,8 @@ PluginVST2Window::PluginVST2Window(PluginVST2& p) : PluginWindow(100, 100, p) {}
 void PluginVST2Window::SetRect() {
 	ERect* erect = nullptr; // do i free this or what?
 	if (dynamic_cast<PluginVST2&>(plugin).Dispatcher(AEffectOpcodes::effEditGetRect, 0, 0, &erect)) {
+		size_x = erect->right - erect->left;
+		size_y = erect->bottom - erect->top;
 		rect.left = erect->left;
 		rect.right = erect->right;
 		rect.top = erect->top;
@@ -47,7 +49,13 @@ bool PluginVST2Window::Initialize(HWND parent) {
 void PluginVST2Window::Show() {
 	if (wnd) {
 		is_active = true;
-		dynamic_cast<PluginVST2&>(plugin).Dispatcher(AEffectOpcodes::effEditOpen, 0, 0, wnd); // call this every time?
+		dynamic_cast<PluginVST2&>(plugin).Dispatcher(AEffectOpcodes::effEditOpen, 0, 0, wnd);
+		ERect* erect = nullptr;
+		dynamic_cast<PluginVST2&>(plugin).Dispatcher(AEffectOpcodes::effEditGetRect, 0, 0, &erect);
+		if (erect->right - erect->left != size_x || erect->bottom - erect->top != size_y) {
+			SetRect();
+			SetWindowPos(wnd, NULL, rect.left, rect.top, rect.right, rect.bottom, NULL);
+		}
 		Window::Show();
 	}
 }
@@ -55,7 +63,7 @@ void PluginVST2Window::Show() {
 void PluginVST2Window::Hide() {
 	if (wnd) {
 		is_active = false;
-		dynamic_cast<PluginVST2&>(plugin).Dispatcher(AEffectOpcodes::effEditClose, 0, 0, wnd); // this too?
+		dynamic_cast<PluginVST2&>(plugin).Dispatcher(AEffectOpcodes::effEditClose, 0, 0, wnd);
 		Window::Hide();
 	}
 }

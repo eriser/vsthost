@@ -25,7 +25,9 @@ protected:
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	bool RegisterWC(const TCHAR* class_name);
 	static bool registered;
-	static int offset;
+	static int static_offset;
+	int offset;
+	int size_x{ 0 }, size_y{ 0 };
 	bool is_active{ false };
 	Plugin& plugin;
 };
