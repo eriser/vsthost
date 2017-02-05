@@ -46,7 +46,7 @@ PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::FUnkn
 					}
 			}
 		}
-		if (IsValid() && result == Steinberg::kResultOk)
+		if (IsValid() == IsValidCodes::kValid && result == Steinberg::kResultOk)
 			break;
 		if (initialized) {
 			processor_component->terminate();
@@ -102,7 +102,7 @@ PluginVST3::~PluginVST3() {
 		static_cast<VST3ExitProc>(exitProc)();
 }
 
-bool PluginVST3::IsValid() const {
+Plugin::IsValidCodes PluginVST3::IsValid() const {
 	Steinberg::IPluginFactory2* factory2 = nullptr;
 	factory->queryInterface(Steinberg::IPluginFactory2::iid, reinterpret_cast<void**>(&factory2));
 	if (factory2) {
@@ -110,11 +110,21 @@ bool PluginVST3::IsValid() const {
 		factory2->getClassInfo2(class_index, &ci2);
 		factory2->release();
 		std::string subcategory(ci2.subCategories, ci2.kSubCategoriesSize);
-		if (!std::strcmp(ci2.category, "Audio Module Class") && subcategory.find("Fx") != std::string::npos
-			&& edit_controller && audio && processor_component && can_stereo)
-			return true;
+		if (!std::strcmp(ci2.category, "Audio Module Class") && subcategory.find("Fx") != std::string::npos) {
+			if (can_stereo) {
+				if (edit_controller && audio && processor_component)
+					return IsValidCodes::kValid;
+				else
+					return IsValidCodes::kInvalid;
+			}
+			else
+				return IsValidCodes::kWrongInOutNum;
+		}
+		else
+			return IsValidCodes::kIsNotEffect;
 	}
-	return false;
+	else
+		return IsValidCodes::kInvalid;
 }
 
 void PluginVST3::Initialize(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr) {
@@ -135,7 +145,6 @@ void PluginVST3::Initialize(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleR
 	// so i will assume they do have the editor and potentially update has_editor later
 	has_editor = true;
 
-	Steinberg::Vst::UnitID program_change_unit_id;
 	// check for bypass parameter (soft bypass) and for preset change parameter
 	Steinberg::Vst::ParameterInfo pi;
 	static Steinberg::Vst::ParamID kNoParamId = -1;
@@ -146,7 +155,6 @@ void PluginVST3::Initialize(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleR
 		else if (pi.flags & Steinberg::Vst::ParameterInfo::ParameterFlags::kIsProgramChange) {
 			program_change_param_id = pi.id;
 			program_change_param_idx = i;
-			program_change_unit_id = pi.unitId;
 		}
 	}
 
@@ -155,16 +163,14 @@ void PluginVST3::Initialize(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleR
 	if (unit_info) {
 		const auto program_list_count = unit_info->getProgramListCount();
 		Steinberg::Vst::ProgramListInfo prog_list{};
-		if (program_list_count == 0 && unit_info->getProgramListInfo(0, prog_list) == Steinberg::kResultOk) {
+		if (program_list_count == 0 && unit_info->getProgramListInfo(0, prog_list) == Steinberg::kResultOk)
 			program_count = prog_list.programCount;
-		}
 		else if (program_list_count > 0) {
 			Steinberg::Vst::UnitInfo unit{};
 			Steinberg::int32 i = 0;
 			while (i < unit_info->getUnitCount() && unit_info->getUnitInfo(i, unit) == Steinberg::kResultTrue && unit.id != Steinberg::Vst::kRootUnitId)
 				++i; // there has got to be a root unit id if getUnitCount returns more than zero
 			program_list_root = unit.programListId;
-			
 			i = 0;
 			while (i < program_list_count && unit_info->getProgramListInfo(i, prog_list) == Steinberg::kResultTrue) {
 				if (prog_list.id == program_list_root) {

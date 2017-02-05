@@ -69,7 +69,6 @@ bool PluginManager::Add(const std::string& path) {
 		plugins.push_back(std::move(plugin));
 		return true;
 	}
-	std::cout << "Could not load " << path << "." << std::endl;
 	return false;
 }
 
@@ -102,7 +101,7 @@ bool PluginManager::LoadPluginList(const std::string& path) {
 		return true;
 	}
 	else
-		std::cout << ::GetLastError() << " Could not open " << path << '.' << std::endl;
+		std::cout << " Could not open " << path << '.' << std::endl;
 	return false;
 }
 

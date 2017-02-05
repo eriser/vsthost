@@ -17,10 +17,16 @@ class PluginWindow;
 class Preset;
 class Plugin {
 public:
+	enum IsValidCodes {
+		kValid,
+		kInvalid = 5,
+		kWrongInOutNum,
+		kIsNotEffect
+	};
 	// basic plugin interface
 	Plugin(HMODULE m);
 	virtual ~Plugin();
-	virtual bool IsValid() const = 0;
+	virtual IsValidCodes IsValid() const = 0;
 	virtual void Initialize(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr) = 0;
 	virtual std::basic_string<TCHAR> GetPluginName() const = 0;
 	std::string GetPluginFileName() const;

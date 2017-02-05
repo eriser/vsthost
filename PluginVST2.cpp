@@ -44,14 +44,24 @@ PluginVST2::~PluginVST2() {
 	plugin.release();
 }
 
-bool PluginVST2::IsValid() const {
+Plugin::IsValidCodes PluginVST2::IsValid() const {
 	if (plugin) {
 		VstPlugCategory c = static_cast<VstPlugCategory>(plugin->dispatcher(plugin.get(), AEffectXOpcodes::effGetPlugCategory, 0, 0, nullptr, 0.));
-		return plugin->magic == kEffectMagic && c != kPlugCategSynth && c >= kPlugCategUnknown && c <= kPlugCategRestoration 
-			&& plugin->numInputs == 2 && plugin->numOutputs == 2;
+		if (c != kPlugCategSynth && c >= kPlugCategUnknown && c <= kPlugCategRestoration) {
+			if (plugin->numInputs == 2 && plugin->numOutputs == 2) {
+				if (plugin->magic == kEffectMagic)
+					return IsValidCodes::kValid;
+				else
+					return IsValidCodes::kInvalid;
+			}
+			else
+				return IsValidCodes::kWrongInOutNum;
+		}
+		else
+			return IsValidCodes::kIsNotEffect;
 	}
 	else
-		return false;
+		return IsValidCodes::kInvalid;
 }
 
 void PluginVST2::Initialize(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr) {

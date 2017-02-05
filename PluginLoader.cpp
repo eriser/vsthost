@@ -1,6 +1,7 @@
 #include "PluginLoader.h"
 
 #include <Windows.h>
+#include <iostream>
 
 #include "pluginterfaces/base/ipluginbase.h"
 #include "pluginterfaces/vst2.x/aeffect.h"
@@ -38,9 +39,42 @@ std::unique_ptr<Plugin> PluginLoader::Load(const std::string& path, Steinberg::F
 				effect = init_proc(PluginVST2::HostCallbackWrapper);
 				plugin = new PluginVST2(module, effect);
 			}
+			else
+				std::cerr << "Error loading plugin: Could not locate plugin entry procedure in " << path << "." << std::endl;
 		}
 	}
-	if (plugin && !plugin->IsValid()) {
+	else {
+		std::cerr << "Error loading plugin: ";
+		switch (::GetLastError()) {
+			case ERROR_MOD_NOT_FOUND:
+				std::cerr << "Could not locate " << path << ".";
+				break;
+			case ERROR_BAD_EXE_FORMAT: {
+				constexpr int bits = sizeof(void*) == 8 ? 64 : 32;
+				std::cerr << "Bad DLL format (need " << bits << "bit version).";
+				break;
+			}
+			default:
+				std::cerr << "Could not load " << path << ".";
+		}
+		std::cerr << std::endl;
+	}
+	if (plugin && plugin->IsValid() != Plugin::IsValidCodes::kValid) {
+		std::cerr << "Error loading plugin: ";
+		switch (plugin->IsValid()) {
+			case Plugin::IsValidCodes::kIsNotEffect:
+				std::cerr << path << " is not an effect.";
+				break;
+			case Plugin::IsValidCodes::kWrongInOutNum:
+				std::cerr << path << " does not support stereo.";
+				break;
+			case Plugin::IsValidCodes::kInvalid:
+				std::cerr << path << " is invalid.";
+				break;
+			default:
+				std::cerr << "Unknown error loading " << path << ".";
+		}
+		std::cerr << std::endl;
 		delete plugin;
 		plugin = nullptr;
 	}

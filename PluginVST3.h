@@ -32,7 +32,7 @@ public:
 	// basic plugin interface
 	PluginVST3(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::FUnknown* c);
 	~PluginVST3();
-	bool IsValid() const;
+	IsValidCodes IsValid() const;
 	void Initialize(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
 	std::basic_string<TCHAR> GetPluginName() const;
 	void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output, Steinberg::Vst::TSamples block_size);

@@ -21,7 +21,7 @@ class PluginVST2 : public Plugin {
 public:
 	~PluginVST2();
 	// basic plugin interface
-	bool IsValid() const;
+	IsValidCodes IsValid() const;
 	void Initialize(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr);
 	std::basic_string<TCHAR> GetPluginName() const;
 	void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output, Steinberg::Vst::TSamples block_size);
