@@ -28,7 +28,7 @@ Steinberg::Vst::ParamID PLUGIN_API ParameterValueQueue::getParameterId() {
 }
 
 Steinberg::int32 PLUGIN_API ParameterValueQueue::getPointCount() {
-	return values.size();
+	return static_cast<Steinberg::int32>(values.size());
 }
 
 Steinberg::tresult PLUGIN_API ParameterValueQueue::getPoint(Steinberg::int32 index, Steinberg::int32& sampleOffset /*out*/, Steinberg::Vst::ParamValue& value /*out*/) {
@@ -42,7 +42,8 @@ Steinberg::tresult PLUGIN_API ParameterValueQueue::getPoint(Steinberg::int32 ind
 }
 
 Steinberg::tresult PLUGIN_API ParameterValueQueue::addPoint(Steinberg::int32 sampleOffset, Steinberg::Vst::ParamValue value, Steinberg::int32& index /*out*/) {
-	auto size = static_cast<Steinberg::int32>(values.size()), dest_index = size;
+	const auto size = static_cast<Steinberg::int32>(values.size());
+	auto dest_index = size;
 	for (Steinberg::int32 i = 0; i < size; ++i) {
 		if (values[i].offset == sampleOffset) {
 			values[i].value = value;
@@ -95,7 +96,11 @@ ParameterChanges::~ParameterChanges() {
 }
 
 ParameterValueQueue* ParameterChanges::GetQueue(Steinberg::Vst::ParamID id) {
-	return &(*queues.find(id)).second;
+	auto it = queues.find(id);
+	if (it != queues.end())
+		return &(*queues.find(id)).second;
+	else
+		return nullptr;
 }
 
 void ParameterChanges::ClearQueue() {
