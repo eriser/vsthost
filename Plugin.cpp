@@ -12,7 +12,7 @@ Plugin::Plugin(HMODULE m) : module(m) {
 
 Plugin::~Plugin() {
 	if (module) {
-		::Sleep(1000);
+		::Sleep(100);
 		::FreeLibrary(module);
 	}
 }

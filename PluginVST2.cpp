@@ -11,6 +11,29 @@ namespace VSTHost {
 PluginVST2::PluginVST2(HMODULE m, AEffect* p)
 	: Plugin(m), plugin(p) {
 	plugin->resvd1 = reinterpret_cast<VstIntPtr>(this);
+
+	// try setting correct number of inputs and outputs if there's a need
+	if (plugin->numInputs != 2 || plugin->numOutputs != 2) {
+		Dispatcher(AEffectOpcodes::effSetSampleRate, 0, 0, nullptr, static_cast<float>(44100.f));
+		VstSpeakerArrangement in{}, out{};
+		in.numChannels = 2;
+		in.type = VstSpeakerArrangementType::kSpeakerArrStereo;
+		in.speakers[0].type = VstSpeakerType::kSpeakerL;
+		in.speakers[0].name[0] = 'L';
+		in.speakers[0].name[1] = '\0';
+		in.speakers[1].type = VstSpeakerType::kSpeakerR;
+		in.speakers[1].name[0] = 'R';
+		in.speakers[1].name[1] = '\0';
+		out.numChannels = 2;
+		out.type = VstSpeakerArrangementType::kSpeakerArrStereo;
+		out.speakers[0].type = VstSpeakerType::kSpeakerL;
+		out.speakers[0].name[0] = 'L';
+		out.speakers[0].name[1] = '\0';
+		out.speakers[1].type = VstSpeakerType::kSpeakerR;
+		out.speakers[1].name[0] = 'R';
+		out.speakers[1].name[1] = '\0';
+		Dispatcher(AEffectXOpcodes::effSetSpeakerArrangement, 0, reinterpret_cast<VstIntPtr>(&in), &out);
+	}
 }
 
 PluginVST2::~PluginVST2() {
@@ -36,7 +59,7 @@ void PluginVST2::Initialize(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleR
 	sample_rate = sr;
 	block_size = bs;
 	Dispatcher(AEffectOpcodes::effOpen);
-	Dispatcher(AEffectOpcodes::effSetSampleRate, 0, static_cast<float>(sample_rate));
+	Dispatcher(AEffectOpcodes::effSetSampleRate, 0, 0, nullptr, static_cast<float>(sample_rate));
 	Dispatcher(AEffectOpcodes::effSetBlockSize, 0, static_cast<VstIntPtr>(block_size));
 	state = std::unique_ptr<Preset>(new PresetVST2(*this));
 	soft_bypass = CanDo("bypass");
@@ -94,7 +117,7 @@ void PluginVST2::SetSampleRate(Steinberg::Vst::SampleRate sr) {
 	if (was_active = IsActive())
 		SetActive(false);
 	sample_rate = sr;
-	Dispatcher(AEffectOpcodes::effSetSampleRate, 0, static_cast<float>(sample_rate));
+	Dispatcher(AEffectOpcodes::effSetSampleRate, 0, 0, nullptr, static_cast<float>(sample_rate));
 	if (was_active)
 		SetActive(true);
 }
