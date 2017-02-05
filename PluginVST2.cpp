@@ -37,8 +37,8 @@ PluginVST2::PluginVST2(HMODULE m, AEffect* p)
 
 PluginVST2::~PluginVST2() {
 	SetActive(false);
-	gui.reset();
-	state.reset(); // gui and state have to be destroyed before the rest of the plugin is freed...
+	gui.reset();	// gui and state have to be destroyed before the rest of the plugin is freed
+	state.reset();
 	Dispatcher(AEffectOpcodes::effClose);
 	// turns out offClose opcode handles freeing AEffect object and I musn't do that
 	plugin.release();

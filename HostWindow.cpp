@@ -63,11 +63,10 @@ void HostWindow::OnCreate(HWND hWnd) {
 	buttons[Items::BUTTON_COUNT - 1] = CreateWindow(TEXT("button"), button_labels[Items::BUTTON_COUNT - 1], WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
 		20, 25 + kListHeight, kButtonWidth + 20 + kListWidth, kButtonHeight, hWnd, 
 		(HMENU)(Items::BUTTON_COUNT - 1), (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
-	for (int i = Items::Add; i < Items::BUTTON_COUNT - 1; ++i) {
-		//HMENU idx{};
-		//idx += i; // otherwise the compiler warned about invalid conversion
+	for (Steinberg::int64 i = Items::Add; i < Items::BUTTON_COUNT - 1; ++i) {
 		buttons[i] = CreateWindow(TEXT("button"), button_labels[i], WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-			20 + kListWidth + 20, 20 + i * 40, kButtonWidth, kButtonHeight, hWnd, (HMENU)i, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
+			20 + kListWidth + 20, 20 + i * 40, kButtonWidth, kButtonHeight, hWnd, reinterpret_cast<HMENU>(i),
+			reinterpret_cast<HINSTANCE>(GetWindowLongPtr(hWnd, GWLP_HINSTANCE)), NULL);
 	}
 }
 
