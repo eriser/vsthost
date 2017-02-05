@@ -13,11 +13,12 @@ const std::string PresetVST3::kExtension{ "vstpreset" };
 
 PresetVST3::PresetVST3(PluginVST3& p) : plugin(p) {
 	// preset file path
-	preset_file_path = plugin.GetPluginFileName(); 
+	//preset_file_path = Plugin::kPluginDirectory + plugin.GetPluginFileName();
+	preset_file_path = plugin.GetPluginDirectory() + "\\" + plugin.GetPluginFileName();
 	std::string::size_type pos = 0;
 	if ((pos = preset_file_path.find_last_of('.')) != std::string::npos)
 		preset_file_path = preset_file_path.substr(0, pos);
-	preset_file_path = Plugin::kPluginDirectory + preset_file_path + "." + kExtension;
+	preset_file_path += "." + kExtension;
 	// FUID of the component (processor) part
 	Steinberg::PClassInfo ci;
 	plugin.factory->getClassInfo(plugin.class_index, &ci);

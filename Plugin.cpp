@@ -27,6 +27,16 @@ std::string Plugin::GetPluginFileName() const {
 	return ret;
 }
 
+std::string Plugin::GetPluginDirectory() const {
+	char buf[MAX_PATH] = { 0 };
+	::GetModuleFileNameA(module, buf, MAX_PATH);
+	std::string ret(buf);
+	std::string::size_type pos = 0;
+	if ((pos = ret.find_last_of('\\')) != std::string::npos)
+		ret = ret.substr(0, pos);
+	return ret;
+}
+
 void Plugin::SetActive(bool active_) {
 	if (active != active_) {
 		std::lock_guard<std::mutex> lock(plugin_lock);

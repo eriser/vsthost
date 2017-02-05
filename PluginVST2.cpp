@@ -277,16 +277,9 @@ VstIntPtr VSTCALLBACK PluginVST2::HostCallback(AEffect *effect, VstInt32 opcode,
 		case AudioMasterOpcodesX::audioMasterGetLanguage:
 			return VstHostLanguage::kVstLangEnglish;
 		case AudioMasterOpcodesX::audioMasterGetDirectory: {
-			char buf[MAX_PATH]{};
-			auto length = GetModuleFileNameA(module, buf, MAX_PATH);
-			std::string tmp(buf, length);
-			std::string::size_type pos = 0;
-			if ((pos = tmp.find_last_of('\\')) != std::string::npos) {
-				std::memcpy(ptr, tmp.c_str(), tmp.size());
-				return 1;
-			}
-			else 
-				return 0;
+			auto buf = GetPluginDirectory();
+			std::memcpy(ptr, buf.c_str(), buf.size());
+			return 1;
 		}
 		case AudioMasterOpcodesX::audioMasterUpdateDisplay:
 			if (gui)
