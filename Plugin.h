@@ -29,11 +29,12 @@ public:
 	virtual IsValidCodes IsValid() const = 0;
 	virtual void Initialize(Steinberg::Vst::TSamples bs, Steinberg::Vst::SampleRate sr) = 0;
 	virtual std::basic_string<TCHAR> GetPluginName() const = 0;
-	std::string GetPluginFileName() const;
-	std::string GetPluginDirectory() const;
 	virtual void Process(Steinberg::Vst::Sample32** input, Steinberg::Vst::Sample32** output, Steinberg::Vst::TSamples block_size) = 0;
 	virtual void SetBlockSize(Steinberg::Vst::TSamples bs) = 0;
 	virtual void SetSampleRate(Steinberg::Vst::SampleRate sr) = 0;
+	std::string GetPluginFileName() const;
+	std::string GetPluginDirectory() const;
+	std::string GetPluginPath() const;
 	// presets
 	virtual Steinberg::int32 GetProgramCount() const = 0;
 	virtual void SetProgram(Steinberg::int32 id) = 0;

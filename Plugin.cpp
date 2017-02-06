@@ -18,9 +18,7 @@ Plugin::~Plugin() {
 }
 
 std::string Plugin::GetPluginFileName() const {
-	char buf[MAX_PATH] = { 0 };
-	::GetModuleFileNameA(module, buf, MAX_PATH);
-	std::string ret(buf);
+	std::string ret = GetPluginPath();
 	std::string::size_type pos = 0;
 	if ((pos = ret.find_last_of('\\')) != std::string::npos)
 		ret = ret.substr(pos + 1);
@@ -28,13 +26,17 @@ std::string Plugin::GetPluginFileName() const {
 }
 
 std::string Plugin::GetPluginDirectory() const {
-	char buf[MAX_PATH] = { 0 };
-	::GetModuleFileNameA(module, buf, MAX_PATH);
-	std::string ret(buf);
+	std::string ret = GetPluginPath();
 	std::string::size_type pos = 0;
 	if ((pos = ret.find_last_of('\\')) != std::string::npos)
 		ret = ret.substr(0, pos);
 	return ret;
+}
+
+std::string Plugin::GetPluginPath() const {
+	char buf[MAX_PATH] = { 0 };
+	::GetModuleFileNameA(module, buf, MAX_PATH);
+	return std::string(buf);;
 }
 
 void Plugin::SetActive(bool active_) {

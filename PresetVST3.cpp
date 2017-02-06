@@ -14,7 +14,7 @@ const std::string PresetVST3::kExtension{ "vstpreset" };
 PresetVST3::PresetVST3(PluginVST3& p) : plugin(p) {
 	// preset file path
 	//preset_file_path = Plugin::kPluginDirectory + plugin.GetPluginFileName();
-	preset_file_path = plugin.GetPluginDirectory() + "\\" + plugin.GetPluginFileName();
+	preset_file_path = plugin.GetPluginPath();
 	std::string::size_type pos = 0;
 	if ((pos = preset_file_path.find_last_of('.')) != std::string::npos)
 		preset_file_path = preset_file_path.substr(0, pos);

@@ -2,9 +2,8 @@
 
 #include <iostream>
 #include <fstream>
-
-//temp:
-#include <stdlib.h>
+#include <windows.h>
+//#include "Shlwapi.h"
 
 #include "Plugin.h"
 #include "PluginLoader.h"
@@ -56,12 +55,6 @@ PluginManager::PluginIterator PluginManager::End() {
 }
 
 bool PluginManager::Add(const std::string& path) {
-	/*
-	MessageBoxA(NULL, path.c_str(), NULL, NULL);
-	char a[MAX_PATH]{};
-	_fullpath(a, path.c_str(), MAX_PATH);
-	MessageBoxA(NULL, a, NULL, NULL);
-	*/
 	auto plugin = PluginLoader::Load(path, vst3_context);
 	if (plugin) { // host now owns what plugin points at
 		std::cout << "Loaded " << path << "." << std::endl;
@@ -106,10 +99,20 @@ bool PluginManager::LoadPluginList(const std::string& path) {
 }
 
 bool PluginManager::SavePluginList(const std::string& path) const {
+	char abs[MAX_PATH]{};
+	_fullpath(abs, ".", MAX_PATH);
+	std::string absolute(abs);
 	std::ofstream list(path, std::ofstream::out | std::ofstream::trunc);
 	if (list.is_open()) {
 		for (decltype(Size()) i = 0; i < Size(); ++i) {
-			list << Plugin::kPluginDirectory + GetAt(i).GetPluginFileName() << std::endl;
+			/*
+			char buf[MAX_PATH]{};
+			if (PathRelativePathToA(buf, absolute.c_str(), FILE_ATTRIBUTE_DIRECTORY, GetAt(i).GetPluginPath().c_str(), 0) == TRUE)
+				list << std::string(buf) << std::endl; // todo: write own function for this
+			else
+				list << GetAt(i).GetPluginPath();
+			*/
+			list << GetAt(i).GetPluginPath();
 		}
 		list.close();
 		return true;
