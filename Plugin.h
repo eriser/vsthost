@@ -51,6 +51,7 @@ public:
 	// editor
 	virtual bool HasEditor() const = 0;
 	virtual void CreateEditor(HWND hWnd) = 0;
+	bool IsGUICreated();
 	void ShowEditor();
 	void HideEditor();
 	bool IsEditorVisible() const;

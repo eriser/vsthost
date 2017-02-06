@@ -77,7 +77,7 @@ void PluginManager::Swap(IndexType i, IndexType j) {
 		std::swap(plugins[i], plugins[j]);
 }
 
-const std::string& PluginManager::GetDefaultPluginListPath() {
+const std::string& PluginManager::GetDefaultPluginListPath() const {
 	return kPluginList;
 }
 
@@ -105,14 +105,14 @@ bool PluginManager::SavePluginList(const std::string& path) const {
 	std::ofstream list(path, std::ofstream::out | std::ofstream::trunc);
 	if (list.is_open()) {
 		for (decltype(Size()) i = 0; i < Size(); ++i) {
-			/*
-			char buf[MAX_PATH]{};
-			if (PathRelativePathToA(buf, absolute.c_str(), FILE_ATTRIBUTE_DIRECTORY, GetAt(i).GetPluginPath().c_str(), 0) == TRUE)
-				list << std::string(buf) << std::endl; // todo: write own function for this
+			std::string relative = GetRelativePath(GetAt(i).GetPluginPath());
+			//for (auto &c : relative)
+			//	if (c == '\\')
+			//		c = '/';
+			if (!relative.empty())
+				list << relative << std::endl;
 			else
 				list << GetAt(i).GetPluginPath();
-			*/
-			list << GetAt(i).GetPluginPath();
 		}
 		list.close();
 		return true;
@@ -126,5 +126,46 @@ void PluginManager::SetBlockSize(Steinberg::Vst::TSamples bs) {
 
 void PluginManager::SetSampleRate(Steinberg::Vst::SampleRate sr) {
 	def_sample_rate = sr;
+}
+
+void temp(std::string s) {
+	std::string::size_type pos = 0;
+	if ((pos = s.find_last_of("\\")) != std::string::npos)
+	{
+		std::string ret = s.substr(pos);
+		s = s.substr(0, pos);
+	}
+}
+
+std::string PluginManager::GetRelativePath(const std::string& absolute) const {
+	const auto current_directory = GetAbsolutePath(".");
+	if (current_directory[0] == absolute[0]) {
+		std::string temp = current_directory, result = ".\\", prefix;
+		auto parent = [](std::string& s) {
+			std::string::size_type pos = 0;
+			if ((pos = s.find_last_of("\\")) != std::string::npos) {
+				s = s.substr(0, pos);
+			}
+			else {
+				pos = s.find_last_of(":");
+				s = s.substr(0, pos);
+			}
+		};
+		std::string::size_type pos = 0;
+		while ((pos = absolute.find(temp)) == std::string::npos) {
+			prefix.append("..\\");
+			parent(temp);
+		}
+		result.append(prefix).append(absolute.substr(temp.size() + 1));
+		return result;
+	}
+	else
+		return "";
+}
+
+std::string PluginManager::GetAbsolutePath(const std::string& relative) const {
+	char tmp[MAX_PATH]{};
+	_fullpath(tmp, relative.c_str(), MAX_PATH);
+	return std::string(tmp);
 }
 } // namespace

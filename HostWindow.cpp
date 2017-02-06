@@ -48,7 +48,6 @@ bool HostWindow::Initialize(HWND parent) {
 			rect.left, rect.top, rect.right, rect.bottom, parent, NULL, GetModuleHandle(NULL), reinterpret_cast<LPVOID>(this));
 		if (wnd) {
 			SetFont();
-			CreateEditors();
 			PopulatePluginList();
 			SelectPlugin(0);
 		}
@@ -84,30 +83,35 @@ LRESULT CALLBACK HostWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 					break;
 				case Items::Delete:
 					if (HIWORD(wParam) == BN_CLICKED) {
-						auto sel = GetPluginSelection();
-						auto count = plugins.Size();
-						plugins.Delete(sel);
-						PopulatePluginList();
-						if (sel == count - 1)
-							SelectPlugin(sel - 1);
-						else
-							SelectPlugin(sel);
+						const auto sel = GetPluginSelection(), count = plugins.Size();
+						if (sel < count) {
+							plugins.Delete(sel);
+							PopulatePluginList();
+							if (sel == count - 1)
+								SelectPlugin(sel - 1);
+							else
+								SelectPlugin(sel);
+						}
 					}
 					break;
 				case Items::Up:
 					if (HIWORD(wParam) == BN_CLICKED) {
-						auto sel = GetPluginSelection();
-						plugins.Swap(sel, sel - 1);
-						PopulatePluginList();
-						SelectPlugin(sel - 1);
+						const auto sel = GetPluginSelection();
+						if (sel > 0 && sel < plugins.Size()) {
+							plugins.Swap(sel, sel - 1);
+							PopulatePluginList();
+							SelectPlugin(sel - 1);
+						}
 					}
 					break;
 				case Items::Down:
 					if (HIWORD(wParam) == BN_CLICKED) {
-						auto sel = GetPluginSelection();
-						plugins.Swap(sel, sel + 1);
-						PopulatePluginList();
-						SelectPlugin(sel + 1);
+						const auto sel = GetPluginSelection();
+						if (sel < plugins.Size() - 1) {
+							plugins.Swap(sel, sel + 1);
+							PopulatePluginList();
+							SelectPlugin(sel + 1);
+						}
 					}
 					break;
 				case Items::PluginList:
@@ -116,8 +120,10 @@ LRESULT CALLBACK HostWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 					break;
 				case Items::Show:
 					if (HIWORD(wParam) == BN_CLICKED) {
-						auto sel = GetPluginSelection();
-						if (plugins[sel].HasEditor()) {
+						const auto sel = GetPluginSelection();
+						if (sel < plugins.Size() && plugins[sel].HasEditor()) {
+							if (!plugins[sel].IsGUICreated())
+								plugins[sel].CreateEditor(wnd);
 							plugins[sel].ShowEditor();
 							EnableWindow(buttons[Items::Show], false);
 							EnableWindow(buttons[Items::Hide], true);
@@ -127,7 +133,7 @@ LRESULT CALLBACK HostWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 				case Items::Hide:
 					if (HIWORD(wParam) == BN_CLICKED) {
 						auto sel = GetPluginSelection();
-						if (plugins[sel].HasEditor()) {
+						if (sel < plugins.Size() && plugins[sel].HasEditor()) {
 							plugins[sel].HideEditor();
 							EnableWindow(buttons[Items::Show], true);
 							EnableWindow(buttons[Items::Hide], false);
@@ -187,7 +193,7 @@ void HostWindow::OpenDialog() {
 	}
 	ofn->lpstrFile = filename;
 	if (::GetOpenFileNameA(ofn.get())) {
-		auto count = plugins.Size();
+		const auto count = plugins.Size();
 		if (plugins.Add(std::string(filename))) {
 			plugins.Back().CreateEditor(wnd);
 			PopulatePluginList();

@@ -3,8 +3,6 @@
 #include "Preset.h"
 #include "PluginWindow.h"
 
-#include <iostream>/////////////////////////////
-
 namespace VSTHost {
 const std::string Plugin::kPluginDirectory{ ".\\plugins" };
 
@@ -57,6 +55,13 @@ bool Plugin::IsActive() const {
 
 bool Plugin::IsBypassed() const {
 	return bypass;
+}
+
+bool Plugin::IsGUICreated() {
+	if (gui)
+		return true;
+	else
+		return false;
 }
 
 bool Plugin::IsEditorVisible() const {

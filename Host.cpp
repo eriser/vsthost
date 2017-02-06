@@ -101,6 +101,7 @@ public:
 	void CreateGUI() {
 		gui = std::unique_ptr<HostWindow>(new HostWindow(plugins));
 		gui->Initialize(NULL);
+		gui->CreateEditors();
 		gui->Go();
 	}
 

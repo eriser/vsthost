@@ -38,15 +38,16 @@ public:
 	void Delete(IndexType i);
 	void Swap(IndexType i, IndexType j);
 
-	const std::string& GetDefaultPluginListPath();
+	const std::string& GetDefaultPluginListPath() const;
 	bool LoadPluginList(const std::string& path = kPluginList);
 	bool SavePluginList(const std::string& path = kPluginList) const;
 
 	void SetBlockSize(Steinberg::Vst::TSamples bs);
 	void SetSampleRate(Steinberg::Vst::SampleRate sr);
-
-	const static std::string kPluginList;
 private:
+	std::string GetRelativePath(const std::string& absolute) const;
+	std::string GetAbsolutePath(const std::string& relative) const;
+	const static std::string kPluginList;
 	Steinberg::Vst::TSamples def_block_size;		// default block size & sample rate
 	Steinberg::Vst::SampleRate def_sample_rate;		// for new plugins
 	Steinberg::FUnknown* vst3_context;
