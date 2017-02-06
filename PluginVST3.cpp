@@ -43,16 +43,19 @@ PluginVST3::PluginVST3(HMODULE m, Steinberg::IPluginFactory* f, Steinberg::FUnkn
 						processor_component_initialized = true;
 						Steinberg::Vst::BusInfo bi_in{}, bi_out{};
 						Steinberg::Vst::MediaType mt = Steinberg::Vst::MediaTypes::kAudio;
-						for (Steinberg::int32 i = 0; i < processor_component->getBusCount(mt, Steinberg::Vst::BusDirections::kInput); ++i)
+						for (Steinberg::int32 i = 0; i < processor_component->getBusCount(mt, Steinberg::Vst::BusDirections::kInput); ++i) {
 							processor_component->getBusInfo(mt, Steinberg::Vst::BusDirections::kInput, i, bi_in);
 							if (bi_out.channelCount == GetChannelCount() && bi_in.busType == Steinberg::Vst::BusTypes::kMain)
 								break;
-						for (Steinberg::int32 i = 0; i < processor_component->getBusCount(mt, Steinberg::Vst::BusDirections::kOutput); ++i)
+						}
+						for (Steinberg::int32 i = 0; i < processor_component->getBusCount(mt, Steinberg::Vst::BusDirections::kOutput); ++i) {
 							processor_component->getBusInfo(mt, Steinberg::Vst::BusDirections::kOutput, i, bi_out);
 							if (bi_out.channelCount == GetChannelCount() && bi_out.busType == Steinberg::Vst::BusTypes::kMain)
 								break;
+						}
 						Steinberg::Vst::SpeakerArrangement sa = Steinberg::Vst::SpeakerArr::kStereo;
-						can_stereo = (bi_out.channelCount == 2 && bi_in.channelCount == 2) || audio->setBusArrangements(&sa, 1, &sa, 1) == Steinberg::kResultOk;
+						can_stereo = (bi_out.channelCount == GetChannelCount() && bi_in.channelCount == GetChannelCount()) 
+							|| audio->setBusArrangements(&sa, 1, &sa, 1) == Steinberg::kResultOk;
 					}
 			}
 		}

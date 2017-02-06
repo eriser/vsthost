@@ -3,8 +3,10 @@
 #include "Preset.h"
 #include "PluginWindow.h"
 
+#include <iostream>/////////////////////////////
+
 namespace VSTHost {
-const std::string Plugin::kPluginDirectory{ "plugins\\" };
+const std::string Plugin::kPluginDirectory{ ".\\plugins" };
 
 Plugin::Plugin(HMODULE m) : module(m) {
 
