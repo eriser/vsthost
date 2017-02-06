@@ -51,6 +51,12 @@ bool PluginVST3Window::Initialize(HWND parent) {
 
 void PluginVST3Window::Show() {
 	if (wnd) {
+		Steinberg::ViewRect vr;
+		plugin_view->getSize(&vr);
+		if (vr.right - vr.left != size_x || vr.bottom - vr.top != size_y) {
+			SetRect();
+			::SetWindowPos(wnd, NULL, rect.left, rect.top, rect.right, rect.bottom, NULL);
+		}
 		is_active = true;
 		Window::Show();
 	}

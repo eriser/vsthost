@@ -106,9 +106,6 @@ bool PluginManager::SavePluginList(const std::string& path) const {
 	if (list.is_open()) {
 		for (decltype(Size()) i = 0; i < Size(); ++i) {
 			std::string relative = GetRelativePath(GetAt(i).GetPluginPath());
-			//for (auto &c : relative)
-			//	if (c == '\\')
-			//		c = '/';
 			if (!relative.empty())
 				list << relative << std::endl;
 			else
@@ -126,15 +123,6 @@ void PluginManager::SetBlockSize(Steinberg::Vst::TSamples bs) {
 
 void PluginManager::SetSampleRate(Steinberg::Vst::SampleRate sr) {
 	def_sample_rate = sr;
-}
-
-void temp(std::string s) {
-	std::string::size_type pos = 0;
-	if ((pos = s.find_last_of("\\")) != std::string::npos)
-	{
-		std::string ret = s.substr(pos);
-		s = s.substr(0, pos);
-	}
 }
 
 std::string PluginManager::GetRelativePath(const std::string& absolute) const {

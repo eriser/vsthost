@@ -5,7 +5,9 @@
 #include "PluginVST2.h"
 
 namespace VSTHost {
-PluginVST2Window::PluginVST2Window(PluginVST2& p) : PluginWindow(100, 100, p) {}
+PluginVST2Window::PluginVST2Window(PluginVST2& p) : PluginWindow(100, 100, p) {
+
+}
 
 void PluginVST2Window::SetRect() {
 	ERect* erect = nullptr; // do i free this or what?
